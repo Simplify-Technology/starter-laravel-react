@@ -7,34 +7,34 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::create('roles', function(Blueprint $table) {
+        Schema::create('roles', function(Blueprint $table): void {
             $table->id();
             $table->string('name')->unique();
             $table->string('label')->nullable();
             $table->timestamps();
         });
 
-        Schema::create('permissions', function(Blueprint $table) {
+        Schema::create('permissions', function(Blueprint $table): void {
             $table->id();
             $table->string('name')->unique();
             $table->string('label')->nullable();
             $table->timestamps();
         });
 
-        Schema::create('permission_role', function(Blueprint $table) {
+        Schema::create('permission_role', function(Blueprint $table): void {
             $table->foreignId('role_id')->constrained();
             $table->foreignId('permission_id')->constrained();
             $table->primary(['role_id', 'permission_id']);
         });
 
         // Relacionamento entre usuários e roles
-        Schema::create('role_user', function(Blueprint $table) {
+        Schema::create('role_user', function(Blueprint $table): void {
             $table->foreignId('user_id')->constrained();
             $table->foreignId('role_id')->constrained();
             $table->primary(['user_id', 'role_id']);
         });
 
-        Schema::create('permission_user', function(Blueprint $table) {
+        Schema::create('permission_user', function(Blueprint $table): void {
             $table->foreignId('user_id')->constrained();
             $table->foreignId('permission_id')->constrained();
             $table->primary(['user_id', 'permission_id']);
