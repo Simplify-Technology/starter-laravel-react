@@ -15,7 +15,11 @@ class UserFactory extends Factory
         return [
             'name'              => fake()->name(),
             'email'             => fake()->unique()->safeEmail(),
-            'is_admin'          => fake()->boolean(),
+            'cpf_cnpj'          => fake()->numerify('###########'),
+            'phone'             => fake()->numerify('(##) #####-####'),
+            'mobile'            => fake()->numerify('(##) #####-####'),
+            'user_notes'        => fake()->text(),
+            'is_active'         => fake()->boolean(),
             'email_verified_at' => now(),
             'password'          => static::$password ??= Hash::make('password'),
             'remember_token'    => Str::random(10),

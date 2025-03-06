@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Models\HasRolesAndPermissions;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,11 +14,16 @@ class User extends Authenticatable implements MustVerifyEmail, Auditable
     use HasFactory;
     use Notifiable;
     use \OwenIt\Auditing\Auditable;
+    use HasRolesAndPermissions;
 
     protected $fillable = [
+        'is_active',
         'name',
         'email',
-        'is_admin',
+        'cpf_cnpj',
+        'phone',
+        'mobile',
+        'user_notes',
         'password',
     ];
 

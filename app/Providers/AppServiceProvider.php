@@ -2,10 +2,14 @@
 
 namespace App\Providers;
 
+use App\Enum\Permissions;
+use App\Enum\Roles;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
@@ -29,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function setupLogViewer(): void
     {
-        LogViewer::auth(fn($request) => $request->user()?->is_admin);
+        LogViewer::auth(fn($request) => $request->user()?->hasRole(Roles::SUPER_USER));
     }
 
     private function configModels(): void
@@ -39,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
 
     private function configCommands(): void
     {
+        if (!app()->isProduction()) {
+            Log::warning('Destructive database commands are enabled in development mode.');
+        }
+
         DB::prohibitDestructiveCommands(
             app()->isProduction()
         );
@@ -46,7 +54,9 @@ class AppServiceProvider extends ServiceProvider
 
     private function configUrls(): void
     {
-        URL::forceHttps();
+        if (app()->isProduction()) {
+            URL::forceHttps();
+        }
     }
 
     private function configDate(): void
@@ -56,21 +66,24 @@ class AppServiceProvider extends ServiceProvider
 
     private function configGates(): void
     {
-        //        foreach (Can::cases() as $permission) {
-        //            Gate::define(
-        //                $permission->value,
-        //                function ($user) use ($permission) {
-        //                    $check = $user
-        //                        ->permissions()
-        //                        ->whereName($permission->value)
-        //                        ->exists();
-        //
-        //                    Log::info('Checking permission: '.$permission->value,
-        //                        ['user' => $user->id, 'check' => $check ? 'true' : 'false']);
-        //
-        //                    return $check;
-        //                }
-        //            );
-        //        }
+        foreach (Permissions::cases() as $permission) {
+            Gate::define(
+                $permission->value,
+                function($user) use ($permission) {
+                    if (!$user) {
+                        return false;
+                    }
+
+                    $hasPermission = $user->hasPermissionTo($permission->value);
+
+                    Log::channel('daily')->info(
+                        "[Gate Check] Permission: $permission->value | User ID: $user->id | Allowed: " . ($hasPermission ? 'YES' : 'NO'),
+                        ['env' => app()->environment()]
+                    );
+
+                    return $hasPermission;
+                }
+            );
+        }
     }
 }
