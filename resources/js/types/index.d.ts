@@ -50,17 +50,15 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
-export interface Role {
-    id: number;
+export interface Permission {
     name: string;
-    label?: string;
-    permissions: Permission[];
+    label: string;
 }
 
-export interface Permission {
-    id: number;
+export interface Role {
     name: string;
-    label?: string;
+    label: string;
+    permissions: Permission[];
 }
 
 export interface PermissionGuardProps {

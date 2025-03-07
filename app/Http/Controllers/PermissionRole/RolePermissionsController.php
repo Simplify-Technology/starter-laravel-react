@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\PermissionRole;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoleResource;
 use App\Models\Role;
 
-class IndexController extends Controller
+class RolePermissionsController extends Controller
 {
-    public function __invoke()
+    public function __invoke($role)
     {
         $roles = Role::with('permissions')->get()->mapWithKeys(function($role) {
             return [
@@ -18,8 +19,13 @@ class IndexController extends Controller
             ];
         });
 
-        return inertia('permission-role/roles', [
+        $role = Role::where('name', $role)
+            ->with('permissions')
+            ->first();
+
+        return inertia('permission-role/RolePermissions', [
             'roles' => $roles,
+            'role'  => RoleResource::make($role)->toArray(request()),
         ]);
     }
 }

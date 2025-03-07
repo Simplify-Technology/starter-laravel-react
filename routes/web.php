@@ -18,7 +18,12 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
     Route::get('users', User\IndexController::class)->name('users');
     // endregion
     // region Permissions and Roles
-    Route::get('permissions', PermissionRole\IndexController::class)->name('permission-role');
+    Route::redirect('/permissions', '/permissions/role/admin');
+    //    Route::get('permissions', PermissionRole\IndexController::class)->name('permissions');
+    Route::get(
+        '/permissions/role/{role}',
+        PermissionRole\RolePermissionsController::class
+    )->name('role-permissions');
     // endregion
 });
 

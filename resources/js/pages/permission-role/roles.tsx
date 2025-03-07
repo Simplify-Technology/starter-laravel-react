@@ -1,76 +1,35 @@
-import { type BreadcrumbItem, Role } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import Layout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
+import { Role } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 
-import DeleteUser from '@/components/delete-user';
-import HeadingSmall from '@/components/heading-small';
-import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-import { Box, CheckboxCards, Flex, Text } from '@radix-ui/themes';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Funções e Permissões ',
-        href: '/permission-roles',
-    },
-];
-
-interface PermissionRoleProps {
-    roles: Role[];
-}
-
-export default function Roles({ roles }: PermissionRoleProps) {
-    // const { auth } = usePage<SharedData>().props;
-
-    // const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-    //     name: auth.user.name,
-    //     email: auth.user.email,
-    // });
-    //
-    // const submit: FormEventHandler = (e) => {
-    //     e.preventDefault();
-    //
-    //     patch(route('profile.update'), {
-    //         preserveScroll: true,
-    //     });
-    // };
-    console.log(
-        Object.entries(roles)?.map(([key, role]) => {
-            return Object.entries(role.permissions).map(([key, permission]) => {
-                return {};
-            });
-        }),
-    );
-
+type RolesProps = {
+    roles: Record<string, Role>;
+};
+export default function roles({ roles }: RolesProps) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Permissions" />
+        <Layout>
+            <Head title="roles" />
 
-            <SettingsLayout roles={roles}>
-                <div className="space-y-6">
-                    <HeadingSmall title="Permissões vinculadas" description="Essas são as permissões vinculadas a essa função." />
-
-                    {/* permissions related to selected role*/}
-
-                    {Object.entries(roles)?.map(([key, role]) => (
-                        <div key={role.id}>
-                            {Object.entries(role.permissions).map(([key, permission]) => (
-                                <Box maxWidth="600px">
-                                    <CheckboxCards.Root defaultValue={['1']} columns={{ initial: '1', sm: '3' }}>
-                                        <CheckboxCards.Item value={permission}>
-                                            <Flex direction="column" width="100%">
-                                                <Text weight="bold">{permission}</Text>
-                                                <Text>US Layout</Text>
-                                            </Flex>
-                                        </CheckboxCards.Item>
-                                    </CheckboxCards.Root>
-                                </Box>
-                            ))}
-                        </div>
-                    ))}
-                </div>
-
-                <DeleteUser />
-            </SettingsLayout>
-        </AppLayout>
+            {Object.entries(roles).map(([key, value]) => {
+                console.log({ key, value });
+                return (
+                    <Button
+                        key={key}
+                        size="sm"
+                        variant="ghost"
+                        asChild
+                        className={cn('w-full justify-start', {
+                            'bg-muted': !key,
+                        })}
+                    >
+                        <Link href={`/permissions/role/${key}`} prefetch>
+                            {key}
+                        </Link>
+                    </Button>
+                );
+            })}
+        </Layout>
     );
 }

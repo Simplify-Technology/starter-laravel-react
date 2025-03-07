@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem, Role } from '@/types';
 import { Link } from '@inertiajs/react';
-import { PropsWithChildren } from 'react';
+import { ReactNode } from 'react';
 
 const profileSidebarNavItems: NavItem[] = [
     {
@@ -26,14 +26,14 @@ const profileSidebarNavItems: NavItem[] = [
 
 interface SettingsLayoutProps {
     roles?: Role[];
-    children: PropsWithChildren;
+    children: ReactNode;
 }
 
 export default function SettingsLayout({ roles, children }: SettingsLayoutProps) {
     const sidebarNavItems = roles
         ? Object.entries(roles).map(([key, value]) => ({
               title: value.label,
-              url: `/settings/${key}`,
+              url: `/permissions/role/${key}`,
               icon: null,
           }))
         : profileSidebarNavItems;
@@ -47,10 +47,10 @@ export default function SettingsLayout({ roles, children }: SettingsLayoutProps)
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Roles and Permissions" description="Gerencie acesso aos módulos do sistema" />
+            <Heading title="Configurações" description="Configure preferências do sistema" />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
+                <aside className="w-full max-w-3xl lg:w-48">
                     <nav className="flex flex-col space-y-1 space-x-0">
                         {sidebarNavItems?.map((item) => (
                             <Button
@@ -72,8 +72,8 @@ export default function SettingsLayout({ roles, children }: SettingsLayoutProps)
 
                 <Separator className="my-6 md:hidden" />
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
+                <div className="flex-1 md:max-w-4xl">
+                    <section className="max-w-4xl space-y-12">{children}</section>
                 </div>
             </div>
         </div>
