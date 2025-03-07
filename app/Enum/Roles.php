@@ -9,6 +9,8 @@ enum Roles: string
     case MANAGER    = 'manager';
     case OWNER      = 'owner';
     case VISITOR    = 'visitor';
+    case EDITOR     = 'editor';
+    case VIEWER     = 'viewer';
 
     public static function options(): array
     {
@@ -26,6 +28,8 @@ enum Roles: string
             self::MANAGER    => 'Gerente',
             self::OWNER      => 'Proprietário',
             self::VISITOR    => 'Visitante',
+            self::EDITOR     => 'Editor',
+            self::VIEWER     => 'Visualizador',
         };
     }
 }
