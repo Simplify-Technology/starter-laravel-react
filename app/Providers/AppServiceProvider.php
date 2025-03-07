@@ -93,7 +93,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function getComposer(): void
     {
-        View::composer('*', function($view) {
+        View::composer('*', function($view): void {
             if (Auth::check()) {
                 $user = Auth::user()->load(['permissions', 'roles']);
                 $view->with('auth', [
