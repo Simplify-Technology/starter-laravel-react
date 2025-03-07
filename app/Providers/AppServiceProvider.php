@@ -6,11 +6,13 @@ use App\Enum\Permissions;
 use App\Enum\Roles;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
 
@@ -29,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
         $this->configUrls();
         $this->configDate();
         $this->configGates();
+
+        $this->getComposer();
     }
 
     private function setupLogViewer(): void
@@ -85,5 +89,21 @@ class AppServiceProvider extends ServiceProvider
                 }
             );
         }
+    }
+
+    public function getComposer(): void
+    {
+        View::composer('*', function($view) {
+            if (Auth::check()) {
+                $user = Auth::user()->load(['permissions', 'roles']);
+                $view->with('auth', [
+                    'user'        => $user,
+                    'roles'       => $user->roles->pluck('name'),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ]);
+            } else {
+                $view->with('auth', ['user' => null, 'roles' => [], 'permissions' => []]);
+            }
+        });
     }
 }

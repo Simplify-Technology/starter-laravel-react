@@ -48,7 +48,7 @@ trait HasRolesAndPermissions
         return "user:$this->id:permissions";
     }
 
-    private function getAllPermissions()
+    public function getAllPermissions()
     {
         return $this->roles->loadMissing('permissions')->pluck('permissions')->flatten()->merge($this->permissions)->unique('id');
     }

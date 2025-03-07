@@ -16,6 +16,8 @@ class User extends Authenticatable implements MustVerifyEmail, Auditable
     use \OwenIt\Auditing\Auditable;
     use HasRolesAndPermissions;
 
+    protected $with = ['roles', 'permissions'];
+
     protected $fillable = [
         'is_active',
         'name',
@@ -37,7 +39,7 @@ class User extends Authenticatable implements MustVerifyEmail, Auditable
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
-            'is_admin'          => 'boolean',
+            'is_active'         => 'boolean',
         ];
     }
 }

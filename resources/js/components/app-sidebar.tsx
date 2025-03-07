@@ -44,11 +44,15 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                {mainNavItems.map((item) => (
+                    <NavMain key={item.title} items={[item]} />
+                ))}
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {footerNavItems.map((item) => (
+                    <NavFooter key={item.title} items={[item]} />
+                ))}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
