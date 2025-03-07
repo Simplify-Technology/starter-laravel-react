@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\PermissionRole;
+use App\Http\Controllers\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,6 +13,13 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
     Route::get('dashboard', function() {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    // region Users
+    Route::get('users', User\IndexController::class)->name('users');
+    // endregion
+    // region Permissions and Roles
+    Route::get('permissions', PermissionRole\IndexController::class)->name('permission-role');
+    // endregion
 });
 
 require __DIR__ . '/settings.php';
