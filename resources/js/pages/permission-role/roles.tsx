@@ -1,35 +1,55 @@
-import { Button } from '@/components/ui/button';
-import Layout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
-import { Role } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import HeadingSmall from '@/components/heading-small';
+import AppLayout from '@/layouts/app-layout';
+import PermissionsLayout from '@/layouts/permissions/layout';
+import { type BreadcrumbItem, Role } from '@/types';
+import { Head } from '@inertiajs/react';
+import { Box, CheckboxCards, Flex, Spinner, Text } from '@radix-ui/themes';
+import { useEffect, useState } from 'react';
 
-type RolesProps = {
-    roles: Record<string, Role>;
-};
-export default function roles({ roles }: RolesProps) {
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Gerenciar Permissões',
+        href: '/permission-roles',
+    },
+];
+
+interface PermissionRoleProps {
+    roles: Role[];
+    role: Role;
+}
+
+export default function Roles({ role, roles }: PermissionRoleProps) {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setLoading(false);
+    }, [role]);
+
     return (
-        <Layout>
-            <Head title="roles" />
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Gerenciar Permissões" />
 
-            {Object.entries(roles).map(([key, value]) => {
-                console.log({ key, value });
-                return (
-                    <Button
-                        key={key}
-                        size="sm"
-                        variant="ghost"
-                        asChild
-                        className={cn('w-full justify-start', {
-                            'bg-muted': !key,
-                        })}
-                    >
-                        <Link href={`/permissions/role/${key}`} prefetch>
-                            {key}
-                        </Link>
-                    </Button>
-                );
-            })}
-        </Layout>
+            <PermissionsLayout roles={roles}>
+                <div className="w-full space-y-6">
+                    <HeadingSmall title="Permissões vinculadas" description="Essas são as permissões vinculadas a essa função." />
+
+                    {loading ? (
+                        <Spinner />
+                    ) : (
+                        <Box width={'100%'}>
+                            <CheckboxCards.Root defaultValue={['1']} columns={{ initial: '1', sm: '1', md: '3' }}>
+                                {role?.permissions.map((permission) => (
+                                    <CheckboxCards.Item key={permission.name} value={permission.name}>
+                                        <Flex direction="column" width="100%">
+                                            <Text weight="bold">{permission.label}</Text>
+                                        </Flex>
+                                    </CheckboxCards.Item>
+                                ))}
+                            </CheckboxCards.Root>
+                        </Box>
+                    )}
+                </div>
+            </PermissionsLayout>
+        </AppLayout>
     );
 }

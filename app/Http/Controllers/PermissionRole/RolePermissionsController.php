@@ -14,8 +14,8 @@ class RolePermissionsController extends Controller
             return [
                 $role->name => [
                     'label'       => $role->label ?? $role->name,
-                    'permissions' => $role->permissions->pluck('label', 'name')
-                ]
+                    'permissions' => $role->permissions->pluck('label', 'name'),
+                ],
             ];
         });
 
@@ -23,7 +23,7 @@ class RolePermissionsController extends Controller
             ->with('permissions')
             ->first();
 
-        return inertia('permission-role/RolePermissions', [
+        return inertia('permission-role/roles', [
             'roles' => $roles,
             'role'  => RoleResource::make($role)->toArray(request()),
         ]);

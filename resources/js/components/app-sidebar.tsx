@@ -49,9 +49,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                {mainNavItems.map((item) => (
-                    <NavMain key={item.title} items={[item]} />
-                ))}
+                <NavMain items={mainNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

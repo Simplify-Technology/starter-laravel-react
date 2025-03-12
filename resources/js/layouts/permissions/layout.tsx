@@ -2,29 +2,29 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
+import { Role } from '@/types';
 import { Link } from '@inertiajs/react';
-import { PropsWithChildren } from 'react';
+import { ReactNode } from 'react';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        url: '/settings/profile',
-        icon: null,
-    },
-    {
-        title: 'Password',
-        url: '/settings/password',
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        url: '/settings/appearance',
-        icon: null,
-    },
-];
+interface PermissionsLayoutProps {
+    roles?: Role[];
+    children: ReactNode;
+}
 
-export default function SettingsLayout({ children }: PropsWithChildren) {
+export default function PermissionsLayout({ roles, children }: PermissionsLayoutProps) {
+    const sidebarNavItems =
+        roles &&
+        Object.entries(roles).map(([key, value]) => ({
+            title: value.label,
+            url: `/permissions/role/${key}`,
+            icon: null,
+        }));
+
+    // When server-side rendering, we only render the layout on the client...
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
     const currentPath = window.location.pathname;
 
     return (
