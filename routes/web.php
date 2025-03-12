@@ -18,12 +18,15 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
     Route::get('users', User\IndexController::class)->name('users');
     // endregion
     // region Permissions and Roles
-    Route::redirect('/permissions', '/permissions/role/admin');
-    //    Route::get('permissions', PermissionRole\IndexController::class)->name('permissions');
+    Route::redirect('/permissions', '/permissions/roles');
     Route::get(
-        '/permissions/role/{role}',
-        PermissionRole\RolePermissionsController::class
+        '/permissions/roles',
+        PermissionRole\IndexController::class
     )->name('role-permissions');
+    Route::put(
+        '/permissions/roles/{role}',
+        PermissionRole\UpdateController::class
+    )->name('roles-permissions.update');
     // endregion
 });
 
