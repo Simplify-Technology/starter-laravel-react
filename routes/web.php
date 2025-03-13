@@ -14,6 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
 
     // region Users
     Route::get('users', User\IndexController::class)->name('users');
+
     // endregion
     // region Permissions and Roles
     Route::redirect('/permissions', '/permissions/roles');
@@ -25,6 +26,9 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
         '/permissions/roles/{role}',
         PermissionRole\UpdateController::class
     )->name('roles-permissions.update');
+
+    Route::post('/users/{user}/assign-role', PermissionRole\AssignRoleController::class)->name('user.assign-role');
+    Route::post('/users/{user}/remove-role', PermissionRole\RevokeRoleController::class)->name('user.remove-role');
     // endregion
 });
 
