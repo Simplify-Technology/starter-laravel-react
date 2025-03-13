@@ -5,8 +5,9 @@ import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
 import { type BreadcrumbItem, Permission, User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Table, Tabs, Text } from '@radix-ui/themes';
+import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
 import { UserX } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -32,12 +33,28 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
         ),
     });
 
-    const savePermissions = (roleName: string) => {
-        put(route('roles-permissions.update', { role: roleName, permissions: data.rolePermissions[roleName] }), {
-            preserveScroll: true,
-            onSuccess: () => console.log('Permissões enviadas com sucesso!'),
-            onError: (errors) => console.error('Erro ao enviar permissões:', errors),
-        });
+    const savePermissions = async (roleName: string) => {
+        await toast.promise(
+            new Promise((resolve, reject) => {
+                put(
+                    route('roles-permissions.update', {
+                        permissions: data.rolePermissions[roleName],
+                        role: roleName,
+                    }),
+                    {
+                        preserveScroll: true,
+
+                        onSuccess: () => resolve('Permissões atualizadas com sucesso!'),
+                        onError: () => reject('Erro ao atualizar permissões!'),
+                    },
+                );
+            }),
+            {
+                loading: 'Salvando permissões...',
+                success: 'Permissões salvas com sucesso!',
+                error: 'Erro ao salvar permissões. Por favor, tente novamente.',
+            },
+        );
     };
 
     return (
@@ -86,6 +103,7 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                 onClick={() => savePermissions(roleName)}
                                 disabled={processing}
                             >
+                                {processing ? <Spinner mr={'2'} /> : null}
                                 {processing ? 'Salvando...' : 'Salvar Permissões'}
                             </Button>
                         </Flex>

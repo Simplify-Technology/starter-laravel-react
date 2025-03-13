@@ -1,5 +1,6 @@
 import '../css/app.css';
 
+import ToastProvider from '@/components/ui/ToastProvider';
 import { createInertiaApp } from '@inertiajs/react';
 import { Theme } from '@radix-ui/themes';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -17,6 +18,7 @@ createInertiaApp({
         root.render(
             <>
                 <Theme>
+                    <ToastProvider />
                     <App {...props} />
                 </Theme>
             </>,
