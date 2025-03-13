@@ -14,13 +14,11 @@ class UpdateController extends Controller
     {
         $role = Role::where('name', $roleName)->firstOrFail();
 
-        $permissionIds = Permission::whereIn('name', $request->permissions)->pluck('id')->toArray();
-
-        $role->permissions()->sync($permissionIds);
+        $role->permissions()->sync(Permission::getIdsFromNames($request->permissions));
 
         Cache::forget("role:$role->id:permissions");
         Cache::rememberForever("role:$role->id:permissions", fn() => $role->permissions()->pluck('name')->toArray());
 
-        return redirect()->back()->with('success', "Permissões de $role->label atualizadas com sucesso!");
+        return redirect()->back()->with('success', "Permissões de {$role->label} atualizadas com sucesso!");
     }
 }

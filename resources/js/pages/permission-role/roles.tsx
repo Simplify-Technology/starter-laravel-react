@@ -5,8 +5,8 @@ import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
 import { type BreadcrumbItem, Permission, User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { Box, CheckboxCards, Flex, Table, Tabs, Text } from '@radix-ui/themes';
-import { Ellipsis, UserX } from 'lucide-react';
+import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Table, Tabs, Text } from '@radix-ui/themes';
+import { UserX } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -112,9 +112,25 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                                 <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
                                                 <Table.Cell>{user.email}</Table.Cell>
                                                 <Table.Cell>
-                                                    <Button variant={'ghost'} size={'sm'} className={'cursor-pointer'}>
-                                                        <Ellipsis />
-                                                    </Button>
+                                                    <DropdownMenu.Root>
+                                                        <DropdownMenu.Trigger>
+                                                            <DropdownButton color={'gray'} variant={'surface'} size={'1'}>
+                                                                Ações
+                                                                <DropdownMenu.TriggerIcon />
+                                                            </DropdownButton>
+                                                        </DropdownMenu.Trigger>
+                                                        <DropdownMenu.Content size="1">
+                                                            <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
+                                                            <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
+                                                            <DropdownMenu.Separator />
+                                                            <DropdownMenu.Item shortcut="⌘ N">Atribuir Cargo</DropdownMenu.Item>
+
+                                                            <DropdownMenu.Separator />
+                                                            <DropdownMenu.Item shortcut="⌘ ⌫" color="red">
+                                                                Remover Cargo
+                                                            </DropdownMenu.Item>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Root>
                                                 </Table.Cell>
                                             </Table.Row>
                                         ))

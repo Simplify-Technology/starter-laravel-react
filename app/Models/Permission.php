@@ -9,8 +9,14 @@ class Permission extends Model
 {
     protected $fillable = ['name', 'label'];
 
+    public static function getIdsFromNames(array $permissionNames): array
+    {
+        return self::whereIn('name', $permissionNames)->pluck('id')->toArray();
+    }
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
     }
+
 }
