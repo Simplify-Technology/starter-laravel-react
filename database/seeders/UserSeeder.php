@@ -12,9 +12,10 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $superUser = User::factory()->create([
-            'name'     => 'Super User',
-            'email'    => 'super@user.com',
-            'password' => bcrypt('password'),
+            'name'      => 'Super User',
+            'email'     => 'super@user.com',
+            'is_active' => true,
+            'password'  => bcrypt('password'),
         ]);
 
         $role = Role::where('name', Roles::SUPER_USER->value)->first();

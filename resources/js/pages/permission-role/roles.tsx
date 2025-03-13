@@ -1,9 +1,11 @@
+import { EmptyState } from '@/components/EmptyState';
 import HeadingSmall from '@/components/heading-small';
 import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
-import { type BreadcrumbItem, Permission } from '@/types';
+import { type BreadcrumbItem, Permission, User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { Box, CheckboxCards, Flex, Tabs, Text } from '@radix-ui/themes';
+import { Box, CheckboxCards, Flex, Table, Tabs, Text } from '@radix-ui/themes';
+import { Ellipsis, UserX } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -13,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface PermissionRoleProps {
-    roles: Record<string, { label: string; permissions: Record<string, string> }>; // ⬅️ Corrigido
+    roles: Record<string, { label: string; permissions: Record<string, string>; users: User[] }>; // ⬅️ Corrigido
     permissions: Permission[];
 }
 
@@ -43,40 +45,86 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
 
             <PermissionsLayout roles={roles}>
                 {Object.entries(roles).map(([roleName, roleData]) => (
-                    <Tabs.Content value={roleName} key={roleName}>
-                        <HeadingSmall
-                            title="Permissões vinculadas"
-                            description={`Essas são as permissões vinculadas à função de ${roleData.label}.`}
-                        />
+                    <Tabs.Content
+                        value={roleName}
+                        key={roleName}
+                        className={'flex w-full grow flex-col space-y-8 gap-x-8 lg:justify-between xl:flex-row xl:space-y-0'}
+                    >
+                        <Flex direction={'column'}>
+                            <HeadingSmall
+                                title="Permissões vinculadas"
+                                description={`Essas são as permissões vinculadas à função de ${roleData.label}.`}
+                            />
 
-                        <Box width={'100%'} pt={'4'}>
-                            <CheckboxCards.Root
-                                columns={{ initial: '1', sm: '1', md: '3' }}
-                                value={data.rolePermissions[roleName]}
-                                onValueChange={(newValues) =>
-                                    setData('rolePermissions', {
-                                        ...data.rolePermissions,
-                                        [roleName]: newValues,
-                                    })
-                                }
+                            <Box width={'100%'} mt={'6'}>
+                                <CheckboxCards.Root
+                                    columns={{ initial: '1', sm: '2', xl: '3' }}
+                                    value={data.rolePermissions[roleName]}
+                                    onValueChange={(newValues) =>
+                                        setData('rolePermissions', {
+                                            ...data.rolePermissions,
+                                            [roleName]: newValues,
+                                        })
+                                    }
+                                >
+                                    {permissions.map((permission) => (
+                                        <CheckboxCards.Item className="grow" key={permission.name} value={permission.name}>
+                                            <Flex direction="column">
+                                                <Text weight="bold" className={'min-w-max'}>
+                                                    {permission.label}
+                                                </Text>
+                                            </Flex>
+                                        </CheckboxCards.Item>
+                                    ))}
+                                </CheckboxCards.Root>
+                            </Box>
+
+                            <button
+                                className="bg-secondary mt-4 max-w-max cursor-pointer rounded px-4 py-2 text-white"
+                                onClick={() => savePermissions(roleName)}
+                                disabled={processing}
                             >
-                                {permissions.map((permission) => (
-                                    <CheckboxCards.Item key={permission.name} value={permission.name}>
-                                        <Flex direction="column" width="100%">
-                                            <Text weight="bold">{permission.label}</Text>
-                                        </Flex>
-                                    </CheckboxCards.Item>
-                                ))}
-                            </CheckboxCards.Root>
-                        </Box>
+                                {processing ? 'Salvando...' : 'Salvar Permissões'}
+                            </button>
+                        </Flex>
 
-                        <button
-                            className="bg-secondary mt-4 cursor-pointer rounded px-4 py-2 text-white"
-                            onClick={() => savePermissions(roleName)}
-                            disabled={processing}
-                        >
-                            {processing ? 'Salvando...' : 'Salvar Permissões'}
-                        </button>
+                        <Flex direction={'column'} className={'w-full flex-1'}>
+                            <HeadingSmall
+                                title="Usuários com essa função"
+                                description={`Esses são os usuários que possuem a função de ${roleData.label}.`}
+                            />
+
+                            <Table.Root variant="surface" mt={'6'}>
+                                <Table.Header>
+                                    <Table.Row>
+                                        <Table.ColumnHeaderCell>Nome</Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+                                    </Table.Row>
+                                </Table.Header>
+
+                                <Table.Body>
+                                    {roleData.users.length > 0 ? (
+                                        roleData.users.map((user) => (
+                                            <Table.Row key={user.id}>
+                                                <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
+                                                <Table.Cell>{user.email}</Table.Cell>
+                                                <Table.Cell>
+                                                    <Ellipsis />
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        ))
+                                    ) : (
+                                        <EmptyState
+                                            icon={UserX}
+                                            type={'row'}
+                                            title="Nenhum usuário encontrado"
+                                            description="Nenhum usuário foi encontrado com essa função."
+                                        />
+                                    )}
+                                </Table.Body>
+                            </Table.Root>
+                        </Flex>
                     </Tabs.Content>
                 ))}
             </PermissionsLayout>

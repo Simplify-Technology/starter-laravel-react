@@ -6,6 +6,7 @@ use App\Enum\Permissions;
 use App\Enum\Roles;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configUrls();
         $this->configDate();
         $this->configGates();
+        $this->configResources();
 
         $this->getComposer();
     }
@@ -105,5 +107,10 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('auth', ['user' => null, 'roles' => [], 'permissions' => []]);
             }
         });
+    }
+
+    private function configResources(): void
+    {
+        JsonResource::withoutWrapping();
     }
 }
