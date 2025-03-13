@@ -1,9 +1,10 @@
 import HeadingSmall from '@/components/heading-small';
+import { Role } from '@/types';
 import { Box, Flex, Tabs } from '@radix-ui/themes';
 import { ReactNode } from 'react';
 
 interface PermissionsLayoutProps {
-    roles?: Record<string, { label: string; permissions: Record<string, string> }>;
+    roles?: Role[];
     children: ReactNode;
 }
 

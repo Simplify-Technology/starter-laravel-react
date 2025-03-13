@@ -1,12 +1,14 @@
-import { EmptyState } from '@/components/EmptyState';
+import AssignRoleUser from '@/components/assign-role-user';
+import { EmptyState } from '@/components/empty-state';
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
-import { type BreadcrumbItem, Permission, User } from '@/types';
+import { type BreadcrumbItem, Permission, Role, User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
 import { UserX } from 'lucide-react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -17,16 +19,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface PermissionRoleProps {
-    roles: Record<string, { label: string; permissions: Record<string, string>; users: User[] }>; // ⬅️ Corrigido
+    roles: Role[];
+    users: User[];
     permissions: Permission[];
 }
 
 export default function Roles({ permissions, roles }: PermissionRoleProps) {
-    // Corrigido: Ajuste para o formato de roles
+    const [isAssignRoleOpen, setAssignRoleOpen] = useState(false);
     const { data, setData, put, processing } = useForm({
         rolePermissions: Object.entries(roles).reduce(
             (acc, [roleName, roleData]) => {
-                acc[roleName] = Object.keys(roleData.permissions); // ⬅️ Extrai os nomes das permissões
+                acc[roleName] = Object.keys(roleData.permissions);
                 return acc;
             },
             {} as Record<string, string[]>,
@@ -43,7 +46,6 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                     }),
                     {
                         preserveScroll: true,
-
                         onSuccess: () => resolve('Permissões atualizadas com sucesso!'),
                         onError: () => reject('Erro ao atualizar permissões!'),
                     },
@@ -126,31 +128,38 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                 <Table.Body>
                                     {roleData.users.length > 0 ? (
                                         roleData.users.map((user) => (
-                                            <Table.Row key={user.id}>
-                                                <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
-                                                <Table.Cell>{user.email}</Table.Cell>
-                                                <Table.Cell>
-                                                    <DropdownMenu.Root>
-                                                        <DropdownMenu.Trigger>
-                                                            <DropdownButton color={'gray'} variant={'surface'} size={'1'}>
-                                                                Ações
-                                                                <DropdownMenu.TriggerIcon />
-                                                            </DropdownButton>
-                                                        </DropdownMenu.Trigger>
-                                                        <DropdownMenu.Content size="1">
-                                                            <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
-                                                            <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
-                                                            <DropdownMenu.Separator />
-                                                            <DropdownMenu.Item shortcut="⌘ N">Atribuir Cargo</DropdownMenu.Item>
+                                            <>
+                                                <Table.Row key={user.id}>
+                                                    <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
+                                                    <Table.Cell>{user.email}</Table.Cell>
+                                                    <Table.Cell>
+                                                        <DropdownMenu.Root>
+                                                            <DropdownMenu.Trigger>
+                                                                <DropdownButton color={'gray'} variant={'surface'} size={'1'}>
+                                                                    Ações
+                                                                    <DropdownMenu.TriggerIcon />
+                                                                </DropdownButton>
+                                                            </DropdownMenu.Trigger>
+                                                            <DropdownMenu.Content size="1">
+                                                                <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
+                                                                <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
+                                                                <DropdownMenu.Separator />
+                                                                <DropdownMenu.Item onClick={() => setAssignRoleOpen(true)} shortcut="⌘ N">
+                                                                    Atribuir Cargo
+                                                                </DropdownMenu.Item>
 
-                                                            <DropdownMenu.Separator />
-                                                            <DropdownMenu.Item shortcut="⌘ ⌫" color="red">
-                                                                Remover Cargo
-                                                            </DropdownMenu.Item>
-                                                        </DropdownMenu.Content>
-                                                    </DropdownMenu.Root>
-                                                </Table.Cell>
-                                            </Table.Row>
+                                                                <DropdownMenu.Separator />
+                                                                <DropdownMenu.Item shortcut="⌘ ⌫" color="red">
+                                                                    Remover Cargo
+                                                                </DropdownMenu.Item>
+                                                            </DropdownMenu.Content>
+                                                        </DropdownMenu.Root>
+                                                    </Table.Cell>
+                                                </Table.Row>
+                                                {isAssignRoleOpen && (
+                                                    <AssignRoleUser userId={user.id} roles={roles} onClose={() => setAssignRoleOpen(false)} />
+                                                )}
+                                            </>
                                         ))
                                     ) : (
                                         <EmptyState

@@ -61,6 +61,7 @@ export interface Role {
     name: string;
     label: string;
     permissions: Permission[];
+    users: User[];
 }
 
 export interface PermissionGuardProps {

@@ -19,21 +19,21 @@ class AssignRoleController extends Controller
         ]);
 
         $authUser = auth()->user();
-        $newRole  = Role::where('name', $request->role)->firstOrFail();
+        $newRole = Role::where('name', $request->role)->firstOrFail();
 
         // 🔹 1. Verifica se o usuário tem permissão "assign_roles"
         if (!$authUser->hasPermissionTo('assign_roles')) {
-            return response()->json(['message' => 'Acesso negado!'], 403);
+            return redirect()->back()->withErrors('error', 'Acesso negado!');
         }
 
         // 🔹 2. Impede que um Super Usuário altere seu próprio cargo
         if ($user->hasRole('super_user') && $authUser->id === $user->id) {
-            return response()->json(['message' => 'Você não pode alterar seu próprio cargo!'], 403);
+            return redirect()->back()->withErrors(['error' => 'Você não pode alterar o seu próprio cargo!']);
         }
 
         // 🔹 3. Impede que um usuário se promova para um cargo superior
         if ($authUser->role->priority < $newRole->priority) {
-            return response()->json(['message' => 'Você não pode atribuir um cargo superior ao seu!'], 403);
+            return redirect()->back()->withErrors(['error' => 'Você não pode atribuir um cargo superior ao seu!']);
         }
 
         // 🔹 4. Remove o cargo anterior e atribui o novo
@@ -46,6 +46,7 @@ class AssignRoleController extends Controller
         // 🔹 6. Dispara evento WebSocket para atualização em tempo real
         Broadcast::event(new RoleUserUpdatedEvent($user));
 
-        return response()->json(['message' => 'Cargo atualizado com sucesso!', 'role' => $newRole->name]);
+        return redirect()->back()->with('success', 'Cargo atualizado com sucesso!');
+
     }
 }
