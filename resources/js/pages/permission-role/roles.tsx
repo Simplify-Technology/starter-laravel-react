@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/EmptyState';
 import HeadingSmall from '@/components/heading-small';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
 import { type BreadcrumbItem, Permission, User } from '@/types';
@@ -79,13 +80,14 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                 </CheckboxCards.Root>
                             </Box>
 
-                            <button
-                                className="bg-secondary mt-4 max-w-max cursor-pointer rounded px-4 py-2 text-white"
+                            <Button
+                                className={'mt-4 max-w-max cursor-pointer'}
+                                variant={'secondary'}
                                 onClick={() => savePermissions(roleName)}
                                 disabled={processing}
                             >
                                 {processing ? 'Salvando...' : 'Salvar Permissões'}
-                            </button>
+                            </Button>
                         </Flex>
 
                         <Flex direction={'column'} className={'w-full flex-1'}>
@@ -110,7 +112,9 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                                 <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
                                                 <Table.Cell>{user.email}</Table.Cell>
                                                 <Table.Cell>
-                                                    <Ellipsis />
+                                                    <Button variant={'ghost'} size={'sm'} className={'cursor-pointer'}>
+                                                        <Ellipsis />
+                                                    </Button>
                                                 </Table.Cell>
                                             </Table.Row>
                                         ))

@@ -15,30 +15,31 @@ export default function Index({ users }: UsersProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gerenciamento de Usuários" />
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <Table.Root variant="surface">
+                    <Table.Header>
+                        <Table.Row>
+                            <Table.ColumnHeaderCell>Nome</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell>Celular</Table.ColumnHeaderCell>
+                        </Table.Row>
+                    </Table.Header>
 
-            <Table.Root variant="surface">
-                <Table.Header>
-                    <Table.Row>
-                        <Table.ColumnHeaderCell>Nome</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell>Celular</Table.ColumnHeaderCell>
-                    </Table.Row>
-                </Table.Header>
-
-                <Table.Body>
-                    {users.length > 0 ? (
-                        users.map((user) => (
-                            <Table.Row>
-                                <Table.RowHeaderCell>{user.name}</Table.RowHeaderCell>
-                                <Table.Cell>{user.email}</Table.Cell>
-                                <Table.Cell>{user.mobile}</Table.Cell>
-                            </Table.Row>
-                        ))
-                    ) : (
-                        <EmptyState title={'Nenhum usuário encontrado'} icon={User2} type={'row'} />
-                    )}
-                </Table.Body>
-            </Table.Root>
+                    <Table.Body>
+                        {users.length > 0 ? (
+                            users.map((user) => (
+                                <Table.Row>
+                                    <Table.RowHeaderCell>{user.name}</Table.RowHeaderCell>
+                                    <Table.Cell>{user.email}</Table.Cell>
+                                    <Table.Cell>{user.mobile}</Table.Cell>
+                                </Table.Row>
+                            ))
+                        ) : (
+                            <EmptyState title={'Nenhum usuário encontrado'} icon={User2} type={'row'} />
+                        )}
+                    </Table.Body>
+                </Table.Root>
+            </div>
         </AppLayout>
     );
 }

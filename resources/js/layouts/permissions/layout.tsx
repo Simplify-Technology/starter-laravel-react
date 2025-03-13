@@ -19,8 +19,8 @@ export default function PermissionsLayout({ roles, children }: PermissionsLayout
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <Tabs.Root defaultValue="admin" className={'flex flex-1 flex-col gap-x-8 sm:flex-row sm:justify-between'}>
-                    <Flex gap={'4'} className="flex flex-1 flex-col space-y-8 sm:flex-row sm:space-y-0 sm:space-x-12">
-                        <aside className="w-full max-w-3xl sm:w-48">
+                    <Flex gap={'4'} className="flex flex-1 flex-col space-y-8 gap-x-8 sm:flex-row sm:space-y-0 sm:space-x-6">
+                        <aside className="w-full max-w-3xl sm:w-52">
                             <HeadingSmall title="Funções/Cargos" description={'Funções e Permissões.'} />
                             <Tabs.List className={'mt-6 !shadow-none'}>
                                 <nav className="flex w-full flex-col space-y-1 space-x-0">
