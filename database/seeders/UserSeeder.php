@@ -11,6 +11,8 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        $roles = Role::all();
+
         $superUser = User::factory()->create([
             'name'      => 'Super User',
             'email'     => 'super@user.com',
@@ -21,7 +23,18 @@ class UserSeeder extends Seeder
         $role = Role::where('name', Roles::SUPER_USER->value)->first();
 
         if ($role) {
-            $superUser->roles()->attach($role->id);
+            $superUser->assignRole($role->name);
+        }
+
+        foreach ($roles as $role) {
+            $user = User::factory()->create([
+                'name'      => ' Usuário ' . $role->label,
+                'email'     => strtolower($role->name) . '@user.com',
+                'is_active' => true,
+                'password'  => bcrypt('password'),
+            ]);
+
+            $user->assignRole($role->name);
         }
     }
 }

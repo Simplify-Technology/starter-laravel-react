@@ -16,10 +16,11 @@ class User extends Authenticatable implements MustVerifyEmail, Auditable
     use \OwenIt\Auditing\Auditable;
     use HasRolesAndPermissions;
 
-    protected $with = ['roles', 'permissions'];
+    protected $with = ['role', 'permissions'];
 
     protected $fillable = [
         'is_active',
+        'role_id',
         'name',
         'email',
         'cpf_cnpj',

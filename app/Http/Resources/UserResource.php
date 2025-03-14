@@ -19,7 +19,7 @@ class UserResource extends JsonResource
             'phone'       => $this->phone,
             'mobile'      => $this->mobile,
             'is_active'   => $this->is_active,
-            'roles'       => $this->roles,
+            'role'        => $this->role,
             'permissions' => $this->permissions,
             'created_at'  => $this->created_at,
             'updated_at'  => $this->updated_at,

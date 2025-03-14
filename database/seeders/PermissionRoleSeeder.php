@@ -17,7 +17,7 @@ class PermissionRoleSeeder extends Seeder
         foreach (Roles::cases() as $role) {
             $roles[$role->value] = Role::updateOrCreate(
                 ['name' => $role->value],
-                ['label' => $role->label()]
+                ['label' => $role->label(), 'priority' => $role->priority()]
             );
         }
 

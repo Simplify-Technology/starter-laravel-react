@@ -32,4 +32,17 @@ enum Roles: string
             self::VIEWER     => 'Visualizador',
         };
     }
+
+    public function priority(): int
+    {
+        return match ($this) {
+            self::SUPER_USER => 100,
+            self::ADMIN      => 90,
+            self::MANAGER    => 80,
+            self::OWNER      => 70,
+            self::VISITOR    => 60,
+            self::EDITOR     => 50,
+            self::VIEWER     => 10,
+        };
+    }
 }

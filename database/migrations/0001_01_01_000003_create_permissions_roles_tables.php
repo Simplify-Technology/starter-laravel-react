@@ -11,6 +11,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('name')->unique();
             $table->string('label')->nullable();
+            $table->unsignedInteger('priority')->default(0);
             $table->timestamps();
         });
 
@@ -27,13 +28,6 @@ return new class () extends Migration {
             $table->primary(['role_id', 'permission_id']);
         });
 
-        // Relacionamento entre usuários e roles
-        Schema::create('role_user', function(Blueprint $table): void {
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('role_id')->constrained();
-            $table->primary(['user_id', 'role_id']);
-        });
-
         Schema::create('permission_user', function(Blueprint $table): void {
             $table->foreignId('user_id')->constrained();
             $table->foreignId('permission_id')->constrained();
@@ -45,8 +39,7 @@ return new class () extends Migration {
     {
         Schema::dropIfExists('roles');
         Schema::dropIfExists('permissions');
-        Schema::dropIfExists('permission_role');
-        Schema::dropIfExists('role_user');
         Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('permission_role');
     }
 };

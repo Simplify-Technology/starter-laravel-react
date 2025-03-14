@@ -13,20 +13,10 @@ trait HasRolesAndPermissions
     public function hasRole(Roles|string $role): bool
     {
         if ($role instanceof Roles) {
-            $role = $role->name;
+            $role = $role->value;
         }
 
-        $roles = Cache::rememberForever(
-            $this->getRoleCacheKey(),
-            fn() => $this->roles->pluck('name')->toArray()
-        );
-
-        return in_array($role, $roles);
-    }
-
-    private function getRoleCacheKey(): string
-    {
-        return "user:$this->id:roles";
+        return $this->role?->name === $role;
     }
 
     public function hasPermissionTo(Permissions|string $permission): bool
@@ -50,25 +40,13 @@ trait HasRolesAndPermissions
 
     public function getAllPermissions()
     {
-        return $this->roles->loadMissing('permissions')->pluck('permissions')->flatten()->merge($this->permissions)->unique('id');
+        return $this->role?->permissions->merge($this->permissions)->unique('id') ?? collect();
     }
 
-    public function assignRole(string $role): void
+    public function assignRole(Roles|string $role): void
     {
         $role = Role::where('name', $role)->firstOrFail();
-        $this->roles()->syncWithoutDetaching([$role->id]);
-        $this->refreshRolesAndPermissionsCache();
-    }
-
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class);
-    }
-
-    private function refreshRolesAndPermissionsCache(): void
-    {
-        Cache::forget($this->getRoleCacheKey());
-        Cache::rememberForever($this->getRoleCacheKey(), fn() => $this->roles->pluck('name')->toArray());
+        $this->update(['role_id' => $role->id]);
 
         $this->refreshPermissionsCache();
     }
@@ -82,20 +60,19 @@ trait HasRolesAndPermissions
         );
     }
 
-    public function revokeRole(string $role): void
+    public function revokeRole(): void
     {
-        $role = Role::where('name', $role)->first();
+        $visitorRole = Role::where('name', Roles::VISITOR->value)->firstOrFail();
+        $this->update(['role_id' => $visitorRole->id]);
 
-        if ($role) {
-            $this->roles()->detach($role->id);
-            $this->refreshRolesAndPermissionsCache();
-        }
+        $this->refreshPermissionsCache();
     }
 
     public function givePermissionTo(string $permission): void
     {
         $permission = Permission::firstOrCreate(['name' => $permission]);
         $this->permissions()->syncWithoutDetaching([$permission->id]);
+
         $this->refreshPermissionsCache();
     }
 
@@ -112,5 +89,10 @@ trait HasRolesAndPermissions
             $this->permissions()->detach($permission->id);
             $this->refreshPermissionsCache();
         }
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

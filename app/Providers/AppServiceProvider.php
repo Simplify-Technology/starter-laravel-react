@@ -93,24 +93,24 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 
+    private function configResources(): void
+    {
+        JsonResource::withoutWrapping();
+    }
+
     public function getComposer(): void
     {
         View::composer('*', function($view): void {
             if (Auth::check()) {
-                $user = Auth::user()->load(['permissions', 'roles']);
+                $user = Auth::user()->load(['permissions', 'role']);
                 $view->with('auth', [
                     'user'        => $user,
-                    'roles'       => $user->roles->pluck('name'),
+                    'role'        => $user->role?->name,
                     'permissions' => $user->getAllPermissions()->pluck('name'),
                 ]);
             } else {
-                $view->with('auth', ['user' => null, 'roles' => [], 'permissions' => []]);
+                $view->with('auth', ['user' => null, 'role' => null, 'permissions' => []]);
             }
         });
-    }
-
-    private function configResources(): void
-    {
-        JsonResource::withoutWrapping();
     }
 }
