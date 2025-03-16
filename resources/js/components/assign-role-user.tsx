@@ -1,7 +1,7 @@
 import { Role } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { Button, Dialog, Flex, Select, Text } from '@radix-ui/themes';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 
 type AssignRoleUserProps = {
@@ -14,18 +14,27 @@ export default function AssignRoleUser({ userId, roles, onClose }: AssignRoleUse
     const { data, setData, post, processing } = useForm({ role: '' });
     const [open, setOpen] = useState(true);
 
+    const handleRoleChange = useCallback(
+        (value: string) => {
+            if (data.role !== value) {
+                setData('role', value);
+            }
+        },
+        [data.role, setData],
+    );
+
     const assignRole = async () => {
         await toast.promise(
             new Promise((resolve, reject) => {
                 post(route('user.assign-role', { role: data.role, user: userId }), {
                     preserveScroll: true,
-                    onSuccess: (message) => {
-                        resolve(message);
+                    onSuccess: () => {
+                        resolve('Cargo atualizado com sucesso!');
                         setOpen(false);
                         onClose();
                     },
-                    onError: (res) => {
-                        reject(res);
+                    onError: ({ error }) => {
+                        reject(error);
                         setOpen(false);
                         onClose();
                     },
@@ -34,7 +43,7 @@ export default function AssignRoleUser({ userId, roles, onClose }: AssignRoleUse
             {
                 loading: 'Atribuindo cargo...',
                 success: (message) => String(message),
-                error: ({ error }) => String(error),
+                error: (error) => String(error),
             },
         );
     };
@@ -44,7 +53,7 @@ export default function AssignRoleUser({ userId, roles, onClose }: AssignRoleUse
             <Dialog.Content maxWidth="400px">
                 <Dialog.Title>Atribuir Novo Cargo</Dialog.Title>
                 <Dialog.Description size="2" mb="4">
-                    Selecione o cargo que deseja atribuir a este usuário.
+                    Selecione o cargo que deseja atribuir a esse usuário.
                 </Dialog.Description>
 
                 <Flex direction="column" gap="3">
@@ -52,7 +61,7 @@ export default function AssignRoleUser({ userId, roles, onClose }: AssignRoleUse
                         <Text as="div" size="2" mb="1" weight="bold">
                             Cargo
                         </Text>
-                        <Select.Root value={data.role} onValueChange={(value) => setData('role', value)}>
+                        <Select.Root value={data.role} onValueChange={handleRoleChange}>
                             <Select.Trigger placeholder="Selecione um cargo" />
                             <Select.Content>
                                 {Object.entries(roles).map(([key, role]) => (

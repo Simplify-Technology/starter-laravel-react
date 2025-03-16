@@ -26,6 +26,8 @@ interface PermissionRoleProps {
 
 export default function Roles({ permissions, roles }: PermissionRoleProps) {
     const [isAssignRoleOpen, setAssignRoleOpen] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
     const { data, setData, put, processing } = useForm({
         rolePermissions: Object.entries(roles).reduce(
             (acc, [roleName, roleData]) => {
@@ -128,38 +130,39 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                 <Table.Body>
                                     {roleData.users.length > 0 ? (
                                         roleData.users.map((user) => (
-                                            <>
-                                                <Table.Row key={user.id}>
-                                                    <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
-                                                    <Table.Cell>{user.email}</Table.Cell>
-                                                    <Table.Cell>
-                                                        <DropdownMenu.Root>
-                                                            <DropdownMenu.Trigger>
-                                                                <DropdownButton color={'gray'} variant={'surface'} size={'1'}>
-                                                                    Ações
-                                                                    <DropdownMenu.TriggerIcon />
-                                                                </DropdownButton>
-                                                            </DropdownMenu.Trigger>
-                                                            <DropdownMenu.Content size="1">
-                                                                <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
-                                                                <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
-                                                                <DropdownMenu.Separator />
-                                                                <DropdownMenu.Item onClick={() => setAssignRoleOpen(true)} shortcut="⌘ N">
-                                                                    Atribuir Cargo
-                                                                </DropdownMenu.Item>
+                                            <Table.Row key={user.id}>
+                                                <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
+                                                <Table.Cell>{user.email}</Table.Cell>
+                                                <Table.Cell>
+                                                    <DropdownMenu.Root>
+                                                        <DropdownMenu.Trigger>
+                                                            <DropdownButton color={'gray'} variant={'surface'} size={'1'}>
+                                                                Ações
+                                                                <DropdownMenu.TriggerIcon />
+                                                            </DropdownButton>
+                                                        </DropdownMenu.Trigger>
+                                                        <DropdownMenu.Content size="1">
+                                                            <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
+                                                            <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
+                                                            <DropdownMenu.Separator />
+                                                            <DropdownMenu.Item
+                                                                onClick={() => {
+                                                                    setSelectedUserId(user.id);
+                                                                    setAssignRoleOpen(true);
+                                                                }}
+                                                                shortcut="⌘ N"
+                                                            >
+                                                                Atribuir Cargo
+                                                            </DropdownMenu.Item>
 
-                                                                <DropdownMenu.Separator />
-                                                                <DropdownMenu.Item shortcut="⌘ ⌫" color="red">
-                                                                    Remover Cargo
-                                                                </DropdownMenu.Item>
-                                                            </DropdownMenu.Content>
-                                                        </DropdownMenu.Root>
-                                                    </Table.Cell>
-                                                </Table.Row>
-                                                {isAssignRoleOpen && (
-                                                    <AssignRoleUser userId={user.id} roles={roles} onClose={() => setAssignRoleOpen(false)} />
-                                                )}
-                                            </>
+                                                            <DropdownMenu.Separator />
+                                                            <DropdownMenu.Item shortcut="⌘ ⌫" color="red">
+                                                                Remover Cargo
+                                                            </DropdownMenu.Item>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Root>
+                                                </Table.Cell>
+                                            </Table.Row>
                                         ))
                                     ) : (
                                         <EmptyState
@@ -174,6 +177,9 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                         </Flex>
                     </Tabs.Content>
                 ))}
+                {isAssignRoleOpen && selectedUserId && (
+                    <AssignRoleUser userId={selectedUserId} roles={roles} onClose={() => setAssignRoleOpen(false)} />
+                )}
             </PermissionsLayout>
         </AppLayout>
     );
