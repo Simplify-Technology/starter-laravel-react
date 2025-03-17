@@ -48,8 +48,15 @@ export default function AssignRoleUser({ userId, roles, onClose }: AssignRoleUse
         );
     };
 
+    const handleOnOpenChange = (open: boolean) => {
+        if (!open) {
+            onClose();
+        }
+        setOpen(!open);
+    };
+
     return (
-        <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Root open={open} onOpenChange={handleOnOpenChange}>
             <Dialog.Content maxWidth="400px">
                 <Dialog.Title>Atribuir Novo Cargo</Dialog.Title>
                 <Dialog.Description size="2" mb="4">

@@ -7,7 +7,7 @@ import PermissionsLayout from '@/layouts/permissions/layout';
 import { type BreadcrumbItem, Permission, Role, User } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
-import { UserX } from 'lucide-react';
+import { Ellipsis, UserCog, UserX } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -123,7 +123,9 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                     <Table.Row>
                                         <Table.ColumnHeaderCell>Nome</Table.ColumnHeaderCell>
                                         <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell>
+                                            <UserCog className={'h-5 w-5'} />
+                                        </Table.ColumnHeaderCell>
                                     </Table.Row>
                                 </Table.Header>
 
@@ -136,12 +138,12 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                                 <Table.Cell>
                                                     <DropdownMenu.Root>
                                                         <DropdownMenu.Trigger>
-                                                            <DropdownButton color={'gray'} variant={'surface'} size={'1'}>
-                                                                Ações
-                                                                <DropdownMenu.TriggerIcon />
+                                                            <DropdownButton color={'cyan'} variant={'ghost'} size={'1'}>
+                                                                <Ellipsis className={'h-4 w-4'} />
+                                                                {/*<DropdownMenu.TriggerIcon />*/}
                                                             </DropdownButton>
                                                         </DropdownMenu.Trigger>
-                                                        <DropdownMenu.Content size="1">
+                                                        <DropdownMenu.Content size="2">
                                                             <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
                                                             <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
                                                             <DropdownMenu.Separator />
@@ -177,6 +179,7 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                         </Flex>
                     </Tabs.Content>
                 ))}
+
                 {isAssignRoleOpen && selectedUserId && (
                     <AssignRoleUser userId={selectedUserId} roles={roles} onClose={() => setAssignRoleOpen(false)} />
                 )}
