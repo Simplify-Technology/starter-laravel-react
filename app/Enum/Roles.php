@@ -6,11 +6,11 @@ enum Roles: string
 {
     case SUPER_USER = 'super_user';
     case ADMIN      = 'admin';
-    case MANAGER    = 'manager';
     case OWNER      = 'owner';
-    case VISITOR    = 'visitor';
+    case MANAGER    = 'manager';
     case EDITOR     = 'editor';
     case VIEWER     = 'viewer';
+    case VISITOR    = 'visitor';
 
     public static function options(): array
     {
@@ -25,11 +25,11 @@ enum Roles: string
         return match ($this) {
             self::SUPER_USER => 'Super Usuário',
             self::ADMIN      => 'Administrador',
-            self::MANAGER    => 'Gerente',
             self::OWNER      => 'Proprietário',
-            self::VISITOR    => 'Visitante',
+            self::MANAGER    => 'Gerente',
             self::EDITOR     => 'Editor',
             self::VIEWER     => 'Visualizador',
+            self::VISITOR    => 'Visitante',
         };
     }
 
