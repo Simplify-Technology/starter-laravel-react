@@ -14,9 +14,10 @@ export default function AuthSimpleLayout({ children, title, description }: Props
                 <div className="bg-secondary dark:bg-card flex flex-col gap-8 rounded-xl p-8">
                     <div className="flex flex-col items-center gap-4">
                         <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            {/*<div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">*/}
-                            {/*    <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />*/}
-                            {/*</div>*/}
+                            <div className="bg-card-foreground dark:bg-card mb-1 flex h-32 w-40 items-center justify-center rounded-md">
+                                {/*    <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />*/}
+                                <img src="/storage/logos/logo-simplify.png" className={'object-content h-full'} alt="" />
+                            </div>
                             <span className="sr-only">{title}</span>
                         </Link>
 
