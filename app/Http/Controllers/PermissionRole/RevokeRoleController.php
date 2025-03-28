@@ -17,14 +17,15 @@ class RevokeRoleController extends Controller
         $visitorRole = Role::where('name', 'visitor')->first();
 
         if ($visitorRole) {
-            $user->roles()->sync([$visitorRole->id]);
+            $user->role_id = $visitorRole->id;
+            $user->save();
         }
 
         Cache::forget("user:$user->id:roles");
-        Cache::rememberForever("user:$user->id:roles", fn() => $user->roles->pluck('name')->toArray());
+        Cache::rememberForever("user:$user->id:role", fn() => $user->role?->name);
 
         Broadcast::event(new RoleUserUpdatedEvent($user));
 
-        return response()->json(['message' => 'Cargo removido com sucesso!', 'role' => 'visitor']);
+        return redirect()->back()->with(['success' => 'Cargo removido com sucesso!', 'role' => $user->role?->name]);
     }
 }

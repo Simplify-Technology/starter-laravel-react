@@ -28,7 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
     )->name('roles-permissions.update');
 
     Route::post('/users/{user}/assign-role', PermissionRole\AssignRoleController::class)->name('user.assign-role');
-    Route::post('/users/{user}/remove-role', PermissionRole\RevokeRoleController::class)->name('user.remove-role');
+    Route::delete('/users/{user}/revoke-role', PermissionRole\RevokeRoleController::class)->name('user.revoke-role');
     // endregion
 });
 

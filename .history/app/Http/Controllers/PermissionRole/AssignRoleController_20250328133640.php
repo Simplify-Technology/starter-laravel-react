@@ -22,6 +22,12 @@ class AssignRoleController extends Controller
         $newRole  = Role::where('name', $request->role)->firstOrFail();
 
         if (!$authUser->hasPermissionTo('assign_roles')) {
+            /**
+             * Returns a redirect response with an access denied error message
+             * when the authenticated user lacks permission to assign roles.
+             *
+             * @return \Illuminate\Http\RedirectResponse
+             */
             return redirect()->back()->withErrors(['error' => 'Acesso negado!']);
         }
 

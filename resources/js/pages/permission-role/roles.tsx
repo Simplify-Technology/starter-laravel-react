@@ -4,8 +4,8 @@ import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
-import { type BreadcrumbItem, Permission, Role, User } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { type BreadcrumbItem, Permission, Role, type SharedData, User } from '@/types';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
 import { Ellipsis, UserCog, UserX } from 'lucide-react';
 import { useState } from 'react';
@@ -20,13 +20,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface PermissionRoleProps {
     roles: Role[];
-    users: User[];
     permissions: Permission[];
 }
 
 export default function Roles({ permissions, roles }: PermissionRoleProps) {
+    const { auth } = usePage<SharedData>().props;
     const [isAssignRoleOpen, setAssignRoleOpen] = useState(false);
-    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     const { data, setData, put, processing } = useForm({
         rolePermissions: Object.entries(roles).reduce(
@@ -57,6 +57,23 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                 loading: 'Salvando permissões...',
                 success: 'Permissões salvas com sucesso!',
                 error: 'Erro ao salvar permissões. Por favor, tente novamente.',
+            },
+        );
+    };
+
+    const revokeRole = async (userId: number) => {
+        await toast.promise(
+            new Promise((resolve, reject) => {
+                router.delete(route('user.revoke-role', userId), {
+                    preserveScroll: true,
+                    onSuccess: () => resolve('Cargo removido com sucesso!'),
+                    onError: () => reject('Erro ao remover o cargo!'),
+                });
+            }),
+            {
+                loading: 'Removendo cargo...',
+                success: 'Cargo removido com sucesso!',
+                error: 'Erro ao remover o cargo. Por favor, tente novamente.',
             },
         );
     };
@@ -149,7 +166,7 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                                             <DropdownMenu.Separator />
                                                             <DropdownMenu.Item
                                                                 onClick={() => {
-                                                                    setSelectedUserId(user.id);
+                                                                    setSelectedUser(user);
                                                                     setAssignRoleOpen(true);
                                                                 }}
                                                                 shortcut="⌘ N"
@@ -158,9 +175,11 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                                             </DropdownMenu.Item>
 
                                                             <DropdownMenu.Separator />
-                                                            <DropdownMenu.Item shortcut="⌘ ⌫" color="red">
-                                                                Remover Cargo
-                                                            </DropdownMenu.Item>
+                                                            {auth?.user?.id !== user.id && (
+                                                                <DropdownMenu.Item shortcut="⌘ ⌫" color="red" onClick={() => revokeRole(user.id)}>
+                                                                    Remover Cargo
+                                                                </DropdownMenu.Item>
+                                                            )}
                                                         </DropdownMenu.Content>
                                                     </DropdownMenu.Root>
                                                 </Table.Cell>
@@ -180,8 +199,13 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                     </Tabs.Content>
                 ))}
 
-                {isAssignRoleOpen && selectedUserId && (
-                    <AssignRoleUser userId={selectedUserId} roles={roles} onClose={() => setAssignRoleOpen(false)} />
+                {isAssignRoleOpen && selectedUser && (
+                    <AssignRoleUser
+                        currentRole={selectedUser.role?.name}
+                        userId={selectedUser.id}
+                        roles={roles}
+                        onClose={() => setAssignRoleOpen(false)}
+                    />
                 )}
             </PermissionsLayout>
         </AppLayout>

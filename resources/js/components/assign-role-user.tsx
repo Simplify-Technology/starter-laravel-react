@@ -7,11 +7,12 @@ import toast from 'react-hot-toast';
 type AssignRoleUserProps = {
     userId: number;
     roles: Role[];
+    currentRole?: string;
     onClose: () => void;
 };
 
-export default function AssignRoleUser({ userId, roles, onClose }: AssignRoleUserProps) {
-    const { data, setData, post, processing } = useForm({ role: '' });
+export default function AssignRoleUser({ userId, roles, onClose, currentRole }: AssignRoleUserProps) {
+    const { data, setData, post, processing } = useForm({ role: currentRole ?? '' });
     const [open, setOpen] = useState(true);
 
     const handleRoleChange = useCallback(

@@ -18,7 +18,8 @@ class AssignRoleController extends Controller
             'role' => ['required', 'exists:roles,name'],
         ]);
 
-        $authUser = auth()->user();
+
+        $authUser = auth()->guard()->user();
         $newRole  = Role::where('name', $request->role)->firstOrFail();
 
         if (!$authUser->hasPermissionTo('assign_roles')) {
