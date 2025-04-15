@@ -71,7 +71,7 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole }: 
                         </Text>
                         <Select.Root value={data.role} onValueChange={handleRoleChange}>
                             <Select.Trigger placeholder="Selecione um cargo" />
-                            <Select.Content>
+                            <Select.Content position="popper">
                                 {Object.entries(roles).map(([key, role]) => (
                                     <Select.Item key={key} value={key}>
                                         {role.label}
