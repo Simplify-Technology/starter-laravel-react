@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  # -----------------------
+  # Frontend pipeline
+  # -----------------------
+  frontend:
+    name: Frontend (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ 22 ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run types
+
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Unit tests
+        run: npm test -- --ci
+        env:
+          CI: true
+
+      - name: Build
+        run: npm run build
+
+  # -----------------------
+  # Backend pipeline
+  # -----------------------
+  backend:
+    name: Backend (PHP ${{ matrix.php }}, Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    needs: frontend
+    strategy:
+      matrix:
+        php: [ 8.3, 8.4 ]
+        node: [ 22 ] # pode expandir para [20, 22] se quiser
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - run: npm ci
+      - run: npm run build
+
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+
+      - name: Tests (Pest)
+        run: ./vendor/bin/pest
+
+  # -----------------------
+  # Code quality
+  # -----------------------
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - run: composer install -q --no-interaction --prefer-dist
+      - run: npm ci
+
+      - name: Run Pint (check only)
+        run: vendor/bin/pint --test
+
+      - name: Check frontend format
+        run: npm run format:check
+
+  # -----------------------
+  # Rector (opcional, não bloqueia)
+  # -----------------------
+  rector:
+    name: Rector (dry-run)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+
+      - run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Rector dry-run
+        run: ./vendor/bin/rector process --dry-run --config ./rector.php

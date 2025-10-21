@@ -34,6 +34,17 @@ export default [
         languageOptions: {
             globals: {
                 ...globals.browser,
+                ...globals.node,
+                route: 'readonly', // Ziggy route helper
+                __dirname: 'readonly', // Node.js __dirname
+                vi: 'readonly', // Vitest
+                describe: 'readonly', // Vitest
+                it: 'readonly', // Vitest
+                expect: 'readonly', // Vitest
+                beforeEach: 'readonly', // Vitest
+                afterEach: 'readonly', // Vitest
+                beforeAll: 'readonly', // Vitest
+                afterAll: 'readonly', // Vitest
             },
         },
         rules: {
@@ -54,6 +65,27 @@ export default [
         rules: {
             'react-hooks/rules-of-hooks': 'error',
             'react-hooks/exhaustive-deps': 'warn',
+        },
+    },
+    {
+        files: ['**/*.test.*', '**/*.spec.*', '**/test/**/*'],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.node,
+                vi: 'readonly',
+                describe: 'readonly',
+                it: 'readonly',
+                expect: 'readonly',
+                beforeEach: 'readonly',
+                afterEach: 'readonly',
+                beforeAll: 'readonly',
+                afterAll: 'readonly',
+            },
+        },
+        rules: {
+            '@typescript-eslint/no-explicit-any': 'off',
+            'no-constant-binary-expression': 'off',
         },
     },
     {

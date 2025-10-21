@@ -1,0 +1,44 @@
+name: Semgrep
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+  schedule:
+    - cron: "17 5 * * *" # execução diária
+  workflow_dispatch: { }
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Static Analysis (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cache das regras para acelerar execuções
+      - name: Cache Semgrep rules
+        uses: actions/cache@v4
+        with:
+          path: ~/.semgrep
+          key: ${{ runner.os }}-semgrep-rules
+          restore-keys: |
+            ${{ runner.os }}-semgrep
+
+      # Executa o Semgrep e gera relatório
+      - name: Run Semgrep
+        run: semgrep ci --sarif --output=semgrep.sarif
+
+      # Publica como artifact para consulta
+      - name: Upload Semgrep report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep.sarif

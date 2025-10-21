@@ -6,7 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
 import { type BreadcrumbItem, Permission, Role, type SharedData, User } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Box, Button as DropdownButton, CheckboxCards, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
+import { Box, CheckboxCards, Button as DropdownButton, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
 import { Ellipsis, UserCog, UserX } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';

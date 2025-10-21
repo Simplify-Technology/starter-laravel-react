@@ -1,0 +1,54 @@
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo_color() {
+    printf "%b\n" "$1$2${NC}"
+}
+
+CHECKS=""
+
+# 1. Lint e format do backend
+echo_color "$YELLOW" "Rodando Pint (PHP lint/format)..."
+composer ci:lint
+if [ $? -ne 0 ]; then
+    echo_color "$RED" "Falha no Pint! Corrija antes de commitar."
+    exit 1
+else
+    CHECKS="${CHECKS}\n${GREEN}✔ Pint (PHP)"
+fi
+
+# 2. Lint e types do frontend
+echo_color "$YELLOW" "Rodando lint/typescript checks..."
+npm run ci:lint
+if [ $? -ne 0 ]; then
+    echo_color "$RED" "Falha no lint/typescript! Corrija antes de commitar."
+    exit 1
+else
+    CHECKS="${CHECKS}\n${GREEN}✔ Lint e Typescript"
+fi
+
+# 3. Testes rápidos
+echo_color "$YELLOW" "Rodando testes do Laravel..."
+composer ci:test
+if [ $? -ne 0 ]; then
+    echo_color "$RED" "Falha nos testes do Laravel!"
+    exit 1
+else
+    CHECKS="${CHECKS}\n${GREEN}✔ Testes do Laravel"
+fi
+
+echo_color "$YELLOW" "Rodando testes do frontend..."
+npm run ci:test
+if [ $? -ne 0 ]; then
+    echo_color "$RED" "Falha nos testes do frontend!"
+    exit 1
+else
+    CHECKS="${CHECKS}\n${GREEN}✔ Testes do Frontend"
+fi
+
+echo -e "$CHECKS"
+echo_color "$GREEN" "Tudo certo 🚀"
+exit 0

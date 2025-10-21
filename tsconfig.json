@@ -112,7 +112,8 @@
             "@/*": ["./resources/js/*"],
             "ziggy-js": ["./vendor/tightenco/ziggy"]
         },
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "types": ["vitest/globals"]
     },
     "include": [
         "resources/js/**/*.ts",
