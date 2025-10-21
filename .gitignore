@@ -22,6 +22,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-.cursorrules
-.cursor
+
 .history
