@@ -49,9 +49,9 @@ class AppServiceProvider extends ServiceProvider
 
     private function configCommands(): void
     {
-        if (!app()->isProduction()) {
-            Log::warning('Destructive database commands are enabled in development mode.');
-        }
+        // if (!app()->isProduction()) {
+        //     Log::warning('Destructive database commands are enabled in development mode.');
+        // }
 
         DB::prohibitDestructiveCommands(
             app()->isProduction()
