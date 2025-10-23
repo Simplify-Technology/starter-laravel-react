@@ -4,12 +4,19 @@ namespace App\Providers;
 
 use App\Enum\Permissions;
 use App\Enum\Roles;
+use App\Events\ImpersonateStarted;
+use App\Events\ImpersonateStopped;
+use App\Listeners\LogImpersonateStarted;
+use App\Listeners\LogImpersonateStopped;
+use App\Models\User;
+use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
@@ -33,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configDate();
         $this->configGates();
         $this->configResources();
+        $this->configEvents();
 
         $this->getComposer();
     }
@@ -72,6 +80,8 @@ class AppServiceProvider extends ServiceProvider
 
     private function configGates(): void
     {
+        Gate::policy(User::class, UserPolicy::class);
+
         foreach (Permissions::cases() as $permission) {
             Gate::define(
                 $permission->value,
@@ -79,9 +89,7 @@ class AppServiceProvider extends ServiceProvider
                     if (!$user) {
                         return false;
                     }
-
                     $hasPermission = $user->hasPermissionTo($permission->value);
-
                     Log::channel('daily')->info(
                         "[Gate Check] Permission: $permission->value | User ID: $user->id | Allowed: " . ($hasPermission ? 'YES' : 'NO'),
                         ['env' => app()->environment()]
@@ -96,6 +104,12 @@ class AppServiceProvider extends ServiceProvider
     private function configResources(): void
     {
         JsonResource::withoutWrapping();
+    }
+
+    private function configEvents(): void
+    {
+        Event::listen(ImpersonateStarted::class, LogImpersonateStarted::class);
+        Event::listen(ImpersonateStopped::class, LogImpersonateStopped::class);
     }
 
     public function getComposer(): void

@@ -36,58 +36,22 @@ class PermissionRoleSeeder extends Seeder
 
         $rolePermissions = [
             Roles::SUPER_USER->value => $allPermissions,
-            Roles::ADMIN->value      => $allPermissions,
-
-            Roles::OWNER->value => [
-                Permissions::VIEW_DASHBOARD->value,
-                Permissions::MANAGE_CLIENTS->value,
-                Permissions::MANAGE_BILLING->value,
-                Permissions::VIEW_REPORTS->value,
-                Permissions::EXPORT_DATA->value,
-                Permissions::GENERATE_REPORTS->value,
-                Permissions::SCHEDULE_REPORTS->value,
-                Permissions::ACCESS_LOGS->value,
-                Permissions::CLEAR_CACHE->value,
-                Permissions::EDIT_SETTINGS->value,
-                Permissions::UPDATE_SYSTEM->value,
-                Permissions::VIEW_CLIENTS->value,
-                Permissions::VIEW_BILLING->value,
-                Permissions::MANAGE_SUPPORT->value,
-            ],
-
-            Roles::MANAGER->value => [
-                Permissions::VIEW_DASHBOARD->value,
+            Roles::ADMIN->value      => array_filter($allPermissions, fn($perm) => $perm !== Permissions::IMPERSONATE_USERS->value),
+            Roles::OWNER->value      => [
                 Permissions::MANAGE_USERS->value,
-                Permissions::MANAGE_CLIENTS->value,
-                Permissions::MANAGE_SUPPORT->value,
-                Permissions::VIEW_REPORTS->value,
-                Permissions::EXPORT_DATA->value,
-                Permissions::GENERATE_REPORTS->value,
-                Permissions::SCHEDULE_REPORTS->value,
-                Permissions::VIEW_CLIENTS->value,
+                Permissions::MANAGE_ROLES->value,
+                Permissions::MANAGE_PERMISSIONS->value,
+                Permissions::ASSIGN_ROLES->value,
             ],
-
+            Roles::MANAGER->value => [
+                Permissions::MANAGE_USERS->value,
+                Permissions::ASSIGN_ROLES->value,
+            ],
             Roles::EDITOR->value => [
-                Permissions::VIEW_DASHBOARD->value,
-                Permissions::VIEW_REPORTS->value,
-                Permissions::VIEW_CLIENTS->value,
-                Permissions::MANAGE_SUPPORT->value,
-                Permissions::GENERATE_REPORTS->value,
-                Permissions::SCHEDULE_REPORTS->value,
-                Permissions::EXPORT_DATA->value,
-                Permissions::VIEW_BILLING->value,
+                Permissions::MANAGE_USERS->value,
             ],
-
-            Roles::VIEWER->value => [
-                Permissions::VIEW_DASHBOARD->value,
-                Permissions::VIEW_REPORTS->value,
-                Permissions::VIEW_CLIENTS->value,
-                Permissions::VIEW_BILLING->value,
-            ],
-
-            Roles::VISITOR->value => [
-                Permissions::VIEW_DASHBOARD->value,
-            ],
+            Roles::VIEWER->value  => [],
+            Roles::VISITOR->value => [],
         ];
 
         // Vincula permissões às roles

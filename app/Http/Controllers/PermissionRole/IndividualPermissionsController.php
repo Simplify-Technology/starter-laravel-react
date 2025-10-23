@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\PermissionRole;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
@@ -11,19 +11,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Response;
 
-final class IndexController extends Controller
+final class IndividualPermissionsController extends Controller
 {
     public function __invoke(Request $request): Response
     {
+        Gate::authorize('managePermissions', User::class);
+
         $users = UserResource::collection(
             User::with(['role', 'permissions'])
                 ->where('is_active', true)
                 ->get()
         );
 
-        return inertia('users/index', [
-            'users'                  => $users->toArray($request),
-            'can_manage_permissions' => Gate::allows('managePermissions', User::class),
+        return inertia('permission-role/individual', [
+            'users' => $users->toArray($request),
         ]);
     }
 }
