@@ -1,6 +1,4 @@
 import { router } from '@inertiajs/react';
-import { XCircle } from 'lucide-react';
-import { Button } from './ui/button';
 
 interface ImpersonateBannerProps {
   active: boolean;
@@ -12,24 +10,24 @@ export function ImpersonateBanner({ active, originalUserName }: ImpersonateBanne
     return null;
   }
 
-  const stopImpersonation = () => {
+  const stopImpersonation = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
     router.delete(route('users.impersonate.stop'));
   };
 
   return (
-    <div className="bg-yellow-500 text-white p-2 text-center flex items-center justify-center gap-2 text-sm">
-      <XCircle className="h-4 w-4" />
+    <div className="bg-teal-500 text-white py-1.5 px-4 text-center rounded-md text-sm mb-2">
       <span>
-        Você está personificando a conta de <strong>{originalUserName}</strong>.
+        Você está impersonando <strong>{originalUserName}</strong>,{' '}
+        <a
+          href="#"
+          onClick={stopImpersonation}
+          className="underline hover:no-underline cursor-pointer"
+        >
+          clique aqui para sair
+        </a>
+        .
       </span>
-      <Button
-        onClick={stopImpersonation}
-        variant="secondary"
-        size="sm"
-        className="ml-4 bg-yellow-600 hover:bg-yellow-700 text-white"
-      >
-        Voltar para minha conta
-      </Button>
     </div>
   );
 }
