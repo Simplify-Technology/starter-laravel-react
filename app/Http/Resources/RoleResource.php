@@ -15,10 +15,13 @@ class RoleResource extends JsonResource
             'id'          => $this->id,
             'name'        => $this->name,
             'label'       => $this->label,
-            'permissions' => $this->permissions,
-            'users'       => $this->users,
-            'created_at'  => $this->created_at,
-            'updated_at'  => $this->updated_at,
+            'permissions' => $this->whenLoaded('permissions', fn() => $this->permissions?->map(fn($perm) => [
+                'name'  => $perm->name,
+                'label' => $perm->label,
+            ]) ?? []),
+            'users'      => $this->whenLoaded('users'),
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }

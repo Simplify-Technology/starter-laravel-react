@@ -18,7 +18,7 @@ class AssignRoleController extends Controller
             'role' => ['required', 'exists:roles,name'],
         ]);
 
-        $authUser = auth()->user();
+        $authUser = auth()->user()->load('role');
         $newRole  = Role::where('name', $request->role)->firstOrFail();
 
         if (!$authUser->hasPermissionTo('assign_roles')) {
@@ -29,7 +29,7 @@ class AssignRoleController extends Controller
             return redirect()->back()->withErrors(['error' => 'Você não pode alterar o seu próprio cargo!']);
         }
 
-        if ($authUser->role->priority < $newRole->priority) {
+        if ($authUser->role && $authUser->role->priority < $newRole->priority) {
             return redirect()->back()->withErrors(['error' => 'Você não pode atribuir um cargo superior ao seu!']);
         }
 

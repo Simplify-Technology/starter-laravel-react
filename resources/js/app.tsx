@@ -4,6 +4,7 @@ import ToastProvider from '@/components/ui/toast-provider';
 import { createInertiaApp } from '@inertiajs/react';
 import { Theme } from '@radix-ui/themes';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import type { CSSProperties } from 'react';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 
@@ -18,10 +19,14 @@ createInertiaApp({
         root.render(
             <>
                 <Theme
-                    style={{
-                        fontFamily: "'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-                        '--default-font-family': "'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-                    } as React.CSSProperties}
+                    style={
+                        {
+                            fontFamily:
+                                "'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+                            '--default-font-family':
+                                "'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+                        } as CSSProperties
+                    }
                 >
                     <ToastProvider />
                     <App {...props} />

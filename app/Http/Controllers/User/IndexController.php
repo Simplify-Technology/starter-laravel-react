@@ -3,18 +3,95 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class IndexController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): Response
     {
-        $users = UserResource::collection(User::whereIsActive(true)->get());
+        $this->authorize('viewAny', User::class);
 
-        return inertia('users/index', [
-            'users' => $users->toArray($request),
+        $query = User::query()->with(['role', 'permissions']);
+
+        // Busca por nome ou email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por role
+        if ($request->filled('role_id')) {
+            $roleId = is_numeric($request->role_id) ? (int) $request->role_id : null;
+
+            if ($roleId) {
+                $query->where('role_id', $roleId);
+            }
+        }
+
+        // Filtro por status ativo
+        if ($request->filled('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        // Ordenação
+        $sortBy    = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        $allowedSortFields = ['name', 'email', 'created_at', 'updated_at'];
+
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Paginação
+        $perPage = $request->get('per_page', 15);
+        $users   = $query->paginate($perPage)->withQueryString();
+
+        $roles = RoleResource::collection(Role::with(['permissions'])->get());
+
+        // Build filters array only with non-empty values
+        $filters = [
+            'sort_by'    => $sortBy,
+            'sort_order' => $sortOrder,
+        ];
+
+        if ($request->filled('search')) {
+            $filters['search'] = $request->search;
+        }
+
+        if ($request->filled('role_id') && is_numeric($request->role_id)) {
+            $filters['role_id'] = (int) $request->role_id;
+        }
+
+        if ($request->filled('is_active')) {
+            $isActive = filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            if ($isActive !== null) {
+                $filters['is_active'] = $isActive;
+            }
+        }
+
+        return Inertia::render('users/index', [
+            'users'      => UserResource::collection($users->items())->toArray($request),
+            'roles'      => $roles->toArray($request),
+            'filters'    => $filters,
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page'    => $users->lastPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+            ],
         ]);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Enum\Permissions;
 use App\Enum\Roles;
+use App\Models\User;
+use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configUrls();
         $this->configDate();
         $this->configGates();
+        $this->configPolicies();
         $this->configResources();
 
         $this->getComposer();
@@ -91,6 +94,11 @@ class AppServiceProvider extends ServiceProvider
                 }
             );
         }
+    }
+
+    private function configPolicies(): void
+    {
+        Gate::policy(User::class, UserPolicy::class);
     }
 
     private function configResources(): void

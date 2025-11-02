@@ -13,7 +13,16 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
     })->name('dashboard');
 
     // region Users
-    Route::get('users', User\IndexController::class)->name('users');
+    Route::middleware('can:manage_users')->group(function(): void {
+        Route::get('users', User\IndexController::class)->name('users.index');
+        Route::get('users/create', User\CreateController::class)->name('users.create');
+        Route::post('users', User\StoreController::class)->name('users.store');
+        Route::get('users/{user}', User\ShowController::class)->name('users.show');
+        Route::get('users/{user}/edit', User\EditController::class)->name('users.edit');
+        Route::put('users/{user}', User\UpdateController::class)->name('users.update');
+        Route::delete('users/{user}', User\DestroyController::class)->name('users.destroy');
+        Route::patch('users/{user}/toggle-active', User\ToggleActiveController::class)->name('users.toggle-active');
+    });
 
     // endregion
     // region Permissions and Roles
@@ -29,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
 
     Route::post('/users/{user}/assign-role', PermissionRole\AssignRoleController::class)->name('user.assign-role');
     Route::delete('/users/{user}/revoke-role', PermissionRole\RevokeRoleController::class)->name('user.revoke-role');
+    Route::post('/users/{user}/sync-permissions', PermissionRole\SyncPermissionsController::class)
+        ->middleware('can:manage_users')
+        ->name('user.sync-permissions');
     // endregion
 });
 

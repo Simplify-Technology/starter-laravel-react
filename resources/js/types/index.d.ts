@@ -40,12 +40,15 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    mobile?: string;
-    phone?: string;
+    cpf_cnpj?: string | null;
+    mobile?: string | null;
+    phone?: string | null;
+    is_active: boolean;
+    user_notes?: string | null;
     avatar?: string;
     email_verified_at: string | null;
-    role: Role;
-    permissions: Permission[];
+    role?: Role | null;
+    permissions?: Permission[];
     created_at: string;
     updated_at: string;
 
@@ -58,10 +61,11 @@ export interface Permission {
 }
 
 export interface Role {
+    id?: number;
     name: string;
-    label: string;
-    permissions: Permission[];
-    users: User[];
+    label?: string;
+    permissions?: Permission[];
+    users?: User[];
 }
 
 export interface PermissionGuardProps {

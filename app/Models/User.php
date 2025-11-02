@@ -16,7 +16,8 @@ class User extends Authenticatable implements MustVerifyEmail, Auditable
     use \OwenIt\Auditing\Auditable;
     use HasRolesAndPermissions;
 
-    protected $with = ['role', 'permissions'];
+    // Removido $with para evitar eager loading automático que pode causar problemas
+    // Use explicitamente ->with(['role', 'permissions']) quando necessário
 
     protected $fillable = [
         'is_active',

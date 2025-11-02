@@ -31,7 +31,7 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
     const { data, setData, put, processing } = useForm({
         rolePermissions: Object.entries(roles).reduce(
             (acc, [roleName, roleData]) => {
-                acc[roleName] = Object.keys(roleData.permissions);
+                acc[roleName] = Object.keys(roleData.permissions || {});
                 return acc;
             },
             {} as Record<string, string[]>,
@@ -147,7 +147,7 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                 </Table.Header>
 
                                 <Table.Body>
-                                    {roleData.users.length > 0 ? (
+                                    {roleData.users && roleData.users.length > 0 ? (
                                         roleData.users.map((user) => (
                                             <Table.Row key={user.id}>
                                                 <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
