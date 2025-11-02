@@ -73,7 +73,6 @@
 /* BASE                                                                       */
 /* -------------------------------------------------------------------------- */
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -127,9 +126,9 @@
 
     /* Functional colors */
     --muted: var(--base-1);
-    --muted-foreground: oklch(0.50 0.03 230);
+    --muted-foreground: oklch(0.5 0.03 230);
     /* Aumentado para melhor legibilidade */
-    --destructive: oklch(0.58 0.20 25);
+    --destructive: oklch(0.58 0.2 25);
     /* Ajustado para melhor contraste */
     --destructive-foreground: oklch(0.98 0.01 25);
     /* Branco quase puro para máximo contraste */
@@ -137,7 +136,7 @@
     /* Borders & rings */
     --border: oklch(0.78 0.025 220);
     /* Sutil mas visível */
-    --input: oklch(0.80 0.025 220);
+    --input: oklch(0.8 0.025 220);
     /* Input borders um pouco mais claros para hierarquia */
     --ring: var(--brand-primary);
     /* Focus ring usa cor de marca */
@@ -171,7 +170,7 @@
 /* -------------------------------------------------------------------------- */
 .dark {
     /* Base tones - escala de cinzas escuros com tom frio muito discreto */
-    --base-0: oklch(0.15 0.010 220);
+    --base-0: oklch(0.15 0.01 220);
     /* Quase preto com tom frio muito discreto */
     --base-1: oklch(0.19 0.012 220);
     /* Cinza muito escuro com tom frio sutil */
@@ -179,7 +178,7 @@
     /* Cinza escuro */
     --base-3: oklch(0.35 0.018 220);
     /* Cinza médio-escuro */
-    --base-4: oklch(0.50 0.020 220);
+    --base-4: oklch(0.5 0.02 220);
     /* Cinza médio */
 
     /* Brand colors */
@@ -203,14 +202,14 @@
 
     /* Brand colors */
     --primary: var(--brand-primary);
-    --primary-foreground: oklch(0.10 0.005 240);
+    --primary-foreground: oklch(0.1 0.005 240);
     /* Escuro para contraste sobre cor primária */
-    --secondary: oklch(0.20 0.010 220);
+    --secondary: oklch(0.2 0.01 220);
     /* Cinza escuro */
     --secondary-foreground: oklch(0.92 0.005 240);
     /* Texto claro */
     --accent: var(--brand-accent);
-    --accent-foreground: oklch(0.10 0.005 240);
+    --accent-foreground: oklch(0.1 0.005 240);
     /* Escuro para contraste sobre cor de destaque */
 
     /* Functional colors */
@@ -218,15 +217,15 @@
     /* Cinza escuro para elementos muted */
     --muted-foreground: oklch(0.65 0.008 230);
     /* Cinza médio para texto muted */
-    --destructive: oklch(0.55 0.20 25);
+    --destructive: oklch(0.55 0.2 25);
     /* Vermelho ligeiramente mais claro para dark mode */
     --destructive-foreground: oklch(0.98 0.005 25);
     /* Branco para máximo contraste */
 
     /* Borders & rings */
-    --border: oklch(0.22 0.010 220);
+    --border: oklch(0.22 0.01 220);
     /* Bordas muito sutis */
-    --input: oklch(0.20 0.010 220);
+    --input: oklch(0.2 0.01 220);
     /* Input borders */
     --ring: var(--brand-primary);
     /* Focus ring usa cor de marca */
@@ -234,8 +233,8 @@
     /* Charts */
     --chart-1: var(--brand-primary);
     --chart-2: var(--brand-accent);
-    --chart-3: oklch(0.60 0.12 185);
-    --chart-4: oklch(0.70 0.14 90);
+    --chart-3: oklch(0.6 0.12 185);
+    --chart-4: oklch(0.7 0.14 90);
     --chart-5: oklch(0.68 0.13 70);
 
     /* Sidebar - tons escuros com tom frio muito discreto */
@@ -250,7 +249,7 @@
     /* Levemente mais claro para hover states */
     --sidebar-accent-foreground: oklch(0.97 0.02 240);
     /* Texto claro */
-    --sidebar-border: oklch(0.26 0.100 220);
+    --sidebar-border: oklch(0.26 0.1 220);
     /* Border mais visível, ainda discreto */
     --sidebar-ring: var(--brand-primary);
 }
@@ -265,7 +264,9 @@
 
     body {
         @apply bg-background text-foreground antialiased;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
     }
 }
 
