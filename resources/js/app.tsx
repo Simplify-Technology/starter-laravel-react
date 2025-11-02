@@ -17,7 +17,12 @@ createInertiaApp({
 
         root.render(
             <>
-                <Theme>
+                <Theme
+                    style={{
+                        fontFamily: "'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+                        '--default-font-family': "'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+                    } as React.CSSProperties}
+                >
                     <ToastProvider />
                     <App {...props} />
                 </Theme>
