@@ -16,9 +16,14 @@ final class ShowUserPermissionsController extends Controller
         Gate::authorize('managePermissions', $user);
 
         return response()->json([
-            'user_id'     => $user->id,
-            'user_name'   => $user->name,
-            'permissions' => $user->getCustomPermissionsList(),
+            'user_id'         => $user->id,
+            'user_name'       => $user->name,
+            'permissions'     => $user->getCustomPermissionsList(),
+            'all_permissions' => \App\Models\Permission::all()->map(fn($perm) => [
+                'id'    => $perm->id,
+                'name'  => $perm->name,
+                'label' => $perm->label,
+            ]),
         ]);
     }
 }

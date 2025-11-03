@@ -11,6 +11,7 @@ class IndexController extends Controller
 {
     public function __invoke()
     {
+        $this->authorize('manage_roles');
         $roles = Role::with(['permissions', 'users'])->get()->mapWithKeys(function($role) {
             return [
 

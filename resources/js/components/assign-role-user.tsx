@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 type AssignRoleUserProps = {
     userId: number;
-    roles: Role[];
+    roles: Record<string, Role> | Role[];
     currentRole?: string;
     onClose: () => void;
 };
@@ -72,11 +72,17 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole }: 
                         <Select.Root value={data.role} onValueChange={handleRoleChange}>
                             <Select.Trigger placeholder="Selecione um cargo" />
                             <Select.Content position="popper">
-                                {Object.entries(roles).map(([key, role]) => (
-                                    <Select.Item key={key} value={key}>
-                                        {role.label}
-                                    </Select.Item>
-                                ))}
+                                {Array.isArray(roles)
+                                    ? roles.map((role) => (
+                                          <Select.Item key={role.name || ''} value={role.name || ''}>
+                                              {role.label || role.name}
+                                          </Select.Item>
+                                      ))
+                                    : Object.entries(roles).map(([key, role]) => (
+                                          <Select.Item key={key} value={key}>
+                                              {role.label || role.name}
+                                          </Select.Item>
+                                      ))}
                             </Select.Content>
                         </Select.Root>
                     </label>

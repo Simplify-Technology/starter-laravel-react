@@ -22,6 +22,11 @@ final class StartImpersonateController extends Controller
     {
         $user = $request->user();
 
+        // Prevent starting new impersonation if already impersonating
+        if ($this->impersonationService->isImpersonating()) {
+            abort(403, 'Você já está impersonando um usuário. Finalize a impersonação atual antes de iniciar outra.');
+        }
+
         // Manual user lookup since model binding is not working in tests
         $targetUser = User::findOrFail($request->route('user'));
 

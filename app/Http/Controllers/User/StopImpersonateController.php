@@ -25,7 +25,7 @@ final class StopImpersonateController extends Controller
         $originalUser = $this->impersonationService->stop();
 
         return redirect()
-            ->route('users')
+            ->route('users.index')
             ->with('success', "Você voltou para sua conta original: {$originalUser->name}");
     }
 }

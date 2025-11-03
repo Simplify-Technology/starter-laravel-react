@@ -12,6 +12,7 @@ class UpdateController extends Controller
 {
     public function __invoke(Request $request, $roleName)
     {
+        $this->authorize('manage_roles');
         $role = Role::where('name', $roleName)->firstOrFail();
 
         $role->permissions()->sync(Permission::getIdsFromNames($request->permissions));

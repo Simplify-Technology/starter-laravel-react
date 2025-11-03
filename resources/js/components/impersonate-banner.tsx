@@ -3,9 +3,10 @@ import { router } from '@inertiajs/react';
 interface ImpersonateBannerProps {
   active: boolean;
   originalUserName: string | null;
+  impersonatedUserName: string | null;
 }
 
-export function ImpersonateBanner({ active, originalUserName }: ImpersonateBannerProps) {
+export function ImpersonateBanner({ active, originalUserName, impersonatedUserName }: ImpersonateBannerProps) {
   if (!active) {
     return null;
   }
@@ -15,10 +16,13 @@ export function ImpersonateBanner({ active, originalUserName }: ImpersonateBanne
     router.delete(route('users.impersonate.stop'));
   };
 
+  // Mostra o nome do usuário que está sendo impersonado (não o impersonador)
+  const displayName = impersonatedUserName || originalUserName || 'este usuário';
+
   return (
     <div className="bg-teal-500 text-white py-1.5 px-4 text-center rounded-md text-sm mb-2">
       <span>
-        Você está impersonando <strong>{originalUserName}</strong>,{' '}
+        Você está impersonando <strong>{displayName}</strong>,{' '}
         <a
           href="#"
           onClick={stopImpersonation}

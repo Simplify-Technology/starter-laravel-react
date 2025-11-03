@@ -17,11 +17,13 @@ const mainNavItems: NavItem[] = [
         title: 'Usuários',
         url: '/users',
         icon: Users,
+        permission: 'manage_users',
     },
     {
         title: 'Permissões',
         url: '/permissions',
         icon: Shield,
+        permission: 'manage_roles',
     },
 ];
 

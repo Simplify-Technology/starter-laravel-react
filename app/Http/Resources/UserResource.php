@@ -11,6 +11,8 @@ class UserResource extends JsonResource
 
     public function toArray(Request $request): array
     {
+        $currentUser = $request->user();
+
         return [
             'id'         => $this->id,
             'name'       => $this->name,
@@ -35,8 +37,11 @@ class UserResource extends JsonResource
                 'name'  => $perm->name,
                 'label' => $perm->label,
             ]) ?? []),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'custom_permissions_count' => $this->getCustomPermissionsCount(),
+            'custom_permissions_list'  => $this->getCustomPermissionsList(),
+            'can_impersonate'          => $currentUser ? $currentUser->canImpersonate($this->resource) : false,
+            'created_at'               => $this->created_at?->toISOString(),
+            'updated_at'               => $this->updated_at?->toISOString(),
         ];
     }
 }

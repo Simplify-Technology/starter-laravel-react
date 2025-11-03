@@ -165,7 +165,7 @@ final class ImpersonateTest extends TestCase
 
         // Stop impersonation
         $this->delete(route('users.impersonate.stop'))
-            ->assertRedirect(route('users'));
+            ->assertRedirect(route('users.index'));
 
         $this->assertEquals($superUser->id, Auth::id());
     }

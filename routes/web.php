@@ -12,6 +12,10 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
+    // Impersonate routes (must be before users routes to avoid conflicts)
+    Route::delete('users/impersonate', User\StopImpersonateController::class)
+        ->name('users.impersonate.stop');
+
     // region Users
     Route::middleware('can:manage_users')->group(function(): void {
         Route::get('users', User\IndexController::class)->name('users.index');
@@ -24,23 +28,37 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
         Route::patch('users/{user}/toggle-active', User\ToggleActiveController::class)->name('users.toggle-active');
     });
 
+    // Impersonate start route (after users routes but specific enough)
+    Route::post('users/{user}/impersonate', User\StartImpersonateController::class)
+        ->middleware('throttle:10,1')
+        ->name('users.impersonate');
+
     // endregion
     // region Permissions and Roles
-    Route::redirect('/permissions', '/permissions/roles');
-    Route::get(
-        '/permissions/roles',
-        PermissionRole\IndexController::class
-    )->name('role-permissions');
-    Route::put(
-        '/permissions/roles/{role}',
-        PermissionRole\UpdateController::class
-    )->name('roles-permissions.update');
+    Route::middleware('can:manage_roles')->group(function(): void {
+        Route::redirect('/permissions', '/permissions/roles');
+        Route::get(
+            '/permissions/roles',
+            PermissionRole\IndexController::class
+        )->name('role-permissions');
+        Route::put(
+            '/permissions/roles/{role}',
+            PermissionRole\UpdateController::class
+        )->name('roles-permissions.update');
+    });
 
-    Route::post('/users/{user}/assign-role', PermissionRole\AssignRoleController::class)->name('user.assign-role');
-    Route::delete('/users/{user}/revoke-role', PermissionRole\RevokeRoleController::class)->name('user.revoke-role');
+    Route::middleware('can:assign_roles')->group(function(): void {
+        Route::post('/users/{user}/assign-role', PermissionRole\AssignRoleController::class)->name('user.assign-role');
+        Route::delete('/users/{user}/revoke-role', PermissionRole\RevokeRoleController::class)->name('user.revoke-role');
+    });
     Route::post('/users/{user}/sync-permissions', PermissionRole\SyncPermissionsController::class)
         ->middleware('can:manage_users')
         ->name('user.sync-permissions');
+
+    // Individual permissions page
+    Route::get('/permissions/individual', PermissionRole\IndividualPermissionsController::class)
+        ->middleware('can:manage_users')
+        ->name('permissions.individual');
     // endregion
 });
 

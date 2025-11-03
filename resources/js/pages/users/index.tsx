@@ -1,13 +1,23 @@
+import { AddPermissionDialog } from '@/components/add-permission-dialog';
+import AssignRoleUser from '@/components/assign-role-user';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { EmptyState } from '@/components/empty-state';
 import { InfoFeatureList, InfoSection } from '@/components/page-info';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FilterPanel } from '@/components/users/filter-panel';
 import { useFlashMessages } from '@/hooks/use-flash-messages';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem, Role, type SharedData, User } from '@/types';
@@ -21,6 +31,7 @@ import {
     Filter,
     Info,
     Mail,
+    MoreHorizontal,
     Phone,
     Plus,
     Search,
@@ -30,6 +41,7 @@ import {
     Trash2,
     User2,
     UserCheck,
+    UserCog,
     UserPlus,
     Users as UsersIcon,
     UserX,
@@ -69,6 +81,10 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
     const [showInfoDialog, setShowInfoDialog] = useState(false);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [showAddPermissionDialog, setShowAddPermissionDialog] = useState(false);
+    const [showAssignRoleDialog, setShowAssignRoleDialog] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const { hasPermission } = usePermissions();
 
     // Local search state for debounced input
     const [localSearch, setLocalSearch] = useState(filters.search || '');
@@ -206,31 +222,21 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
         [localSearch, handleFilterChange],
     );
 
-    const handleDelete = useCallback(async () => {
+    const handleDelete = useCallback(() => {
         if (!userToDelete) return;
 
         setIsDeleting(true);
-        await toast.promise(
-            new Promise((resolve, reject) => {
-                router.delete(route('users.destroy', userToDelete.id), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        setShowDeleteDialog(false);
-                        setUserToDelete(null);
-                        resolve('Usuário excluído com sucesso!');
-                    },
-                    onError: () => {
-                        reject('Erro ao excluir usuário. Por favor, tente novamente.');
-                    },
-                    onFinish: () => setIsDeleting(false),
-                });
-            }),
-            {
-                loading: 'Excluindo usuário...',
-                success: 'Usuário excluído com sucesso!',
-                error: 'Erro ao excluir usuário. Por favor, tente novamente.',
+        router.delete(route('users.destroy', userToDelete.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowDeleteDialog(false);
+                setUserToDelete(null);
             },
-        );
+            onError: () => {
+                setIsDeleting(false);
+            },
+            onFinish: () => setIsDeleting(false),
+        });
     }, [userToDelete]);
 
     const canDeleteUser = useCallback(
@@ -248,25 +254,38 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
         [auth.user.id],
     );
 
-    const handleToggleActive = useCallback(async (user: User) => {
-        await toast.promise(
-            new Promise((resolve, reject) => {
-                router.patch(
-                    route('users.toggle-active', user.id),
-                    {},
-                    {
-                        preserveScroll: true,
-                        onSuccess: () => resolve(user.is_active ? 'Usuário desativado com sucesso!' : 'Usuário ativado com sucesso!'),
-                        onError: () => reject('Erro ao alterar status do usuário.'),
-                    },
-                );
-            }),
+    const handleToggleActive = useCallback((user: User) => {
+        router.patch(
+            route('users.toggle-active', user.id),
+            {},
             {
-                loading: 'Alterando status...',
-                success: (message) => String(message),
-                error: 'Erro ao alterar status do usuário. Por favor, tente novamente.',
+                preserveScroll: true,
             },
         );
+    }, []);
+
+    const handleImpersonate = useCallback((user: User) => {
+        router.post(route('users.impersonate', user.id), {});
+    }, []);
+
+    const handleAddPermission = useCallback((user: User) => {
+        setSelectedUser(user);
+        setShowAddPermissionDialog(true);
+    }, []);
+
+    const handleAssignRole = useCallback((user: User) => {
+        setSelectedUser(user);
+        setShowAssignRoleDialog(true);
+    }, []);
+
+    const handleRevokeRole = useCallback((user: User) => {
+        if (!confirm('Tem certeza que deseja remover o cargo deste usuário?')) {
+            return;
+        }
+
+        router.delete(route('user.revoke-role', user.id), {
+            preserveScroll: true,
+        });
     }, []);
 
     const handlePageChange = useCallback(
@@ -560,7 +579,7 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
                                             </Table.Cell>
                                             <Table.Cell>
                                                 <div className="flex items-center justify-end gap-2">
-                                                    {/* View Button */}
+                                                    {/* Ver Detalhes - Botão visível (ação mais utilizada) */}
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Link href={route('users.show', user.id)}>
@@ -574,78 +593,128 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
                                                                 </Button>
                                                             </Link>
                                                         </TooltipTrigger>
-                                                        <TooltipContent>Ver detalhes</TooltipContent>
+                                                        <TooltipContent>Detalhes</TooltipContent>
                                                     </Tooltip>
 
-                                                    {/* Edit Button */}
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Link href={route('users.edit', user.id)}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    aria-label="Editar usuário"
-                                                                    className="hover:bg-muted/60 hover:text-primary dark:hover:bg-muted/40 dark:hover:text-primary [&_svg]:text-muted-foreground dark:[&_svg]:text-muted-foreground/70 hover:[&_svg]:text-primary dark:hover:[&_svg]:text-secondary-foreground/80 transition-colors"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                            </Link>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Editar usuário</TooltipContent>
-                                                    </Tooltip>
-
-                                                    {/* Toggle Active Status Button */}
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
+                                                    {/* Dropdown Menu - Ações menos utilizadas */}
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                onClick={() => handleToggleActive(user)}
-                                                                aria-label={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
-                                                                className={cn(
-                                                                    'transition-colors',
-                                                                    user.is_active
-                                                                        ? 'hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400'
-                                                                        : 'hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-500/10 dark:hover:text-green-400',
-                                                                )}
+                                                                aria-label="Mais opções"
+                                                                className="hover:bg-muted/60 hover:text-primary dark:hover:bg-muted/40 dark:hover:text-primary [&_svg]:text-muted-foreground dark:[&_svg]:text-muted-foreground/70 hover:[&_svg]:text-primary dark:hover:[&_svg]:text-secondary-foreground/80 transition-colors"
                                                             >
-                                                                {user.is_active ? (
-                                                                    <UserX className="h-4 w-4 text-red-600 transition-colors dark:text-red-400" />
-                                                                ) : (
-                                                                    <UserCheck className="h-4 w-4 text-green-600 transition-colors dark:text-green-400" />
-                                                                )}
+                                                                <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>{user.is_active ? 'Desativar usuário' : 'Ativar usuário'}</TooltipContent>
-                                                    </Tooltip>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-56">
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('users.show', user.id)} className="cursor-pointer">
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    Detalhes
+                                                                </Link>
+                                                            </DropdownMenuItem>
 
-                                                    {/* Delete Button */}
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    setUserToDelete(user);
-                                                                    setShowDeleteDialog(true);
-                                                                }}
-                                                                disabled={!canDeleteUser(user) || isDeleting}
-                                                                aria-label="Excluir usuário"
-                                                                className="hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 dark:hover:text-destructive transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                                            >
-                                                                <Trash2 className="text-destructive dark:text-destructive h-4 w-4 transition-colors" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            {!canDeleteUser(user)
-                                                                ? user.role?.name === 'super_user'
-                                                                    ? 'Não é possível excluir super usuários'
-                                                                    : 'Você não pode excluir sua própria conta'
-                                                                : 'Excluir usuário'}
-                                                        </TooltipContent>
-                                                    </Tooltip>
+                                                            {hasPermission('manage_users') && (
+                                                                <>
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('users.edit', user.id)} className="cursor-pointer">
+                                                                            <Edit className="mr-2 h-4 w-4" />
+                                                                            Editar
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+
+                                                                    {hasPermission('manage_users') && (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => handleAddPermission(user)}
+                                                                            className="cursor-pointer"
+                                                                        >
+                                                                            <Plus className="mr-2 h-4 w-4" />
+                                                                            Adicionar Permissão
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
+                                                                    <DropdownMenuSeparator />
+
+                                                                    {hasPermission('assign_roles') && (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => handleAssignRole(user)}
+                                                                            className="cursor-pointer"
+                                                                        >
+                                                                            <UserCheck className="mr-2 h-4 w-4" />
+                                                                            Atribuir Cargo
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
+                                                                    {hasPermission('assign_roles') && auth.user.id !== user.id && (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => handleRevokeRole(user)}
+                                                                            className="cursor-pointer text-destructive focus:text-destructive"
+                                                                        >
+                                                                            <UserX className="mr-2 h-4 w-4" />
+                                                                            Remover Cargo
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
+                                                                    <DropdownMenuSeparator />
+
+                                                                    {(user as User & { can_impersonate?: boolean }).can_impersonate && (
+                                                                        <DropdownMenuItem
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                handleImpersonate(user);
+                                                                            }}
+                                                                            className="cursor-pointer"
+                                                                        >
+                                                                            <UserCog className="mr-2 h-4 w-4" />
+                                                                            Personificar
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
+                                                                    {hasPermission('manage_users') && (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => handleToggleActive(user)}
+                                                                            className={cn(
+                                                                                'cursor-pointer',
+                                                                                user.is_active ? 'text-red-600 focus:text-red-600' : 'text-green-600 focus:text-green-600'
+                                                                            )}
+                                                                        >
+                                                                            {user.is_active ? (
+                                                                                <>
+                                                                                    <UserX className="mr-2 h-4 w-4" />
+                                                                                    Desativar
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <UserCheck className="mr-2 h-4 w-4" />
+                                                                                    Ativar
+                                                                                </>
+                                                                            )}
+                                                                        </DropdownMenuItem>
+                                                                    )}
+
+                                                                    {hasPermission('manage_users') && canDeleteUser(user) && (
+                                                                        <>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    setUserToDelete(user);
+                                                                                    setShowDeleteDialog(true);
+                                                                                }}
+                                                                                disabled={isDeleting}
+                                                                                className="cursor-pointer text-destructive focus:text-destructive disabled:opacity-50"
+                                                                            >
+                                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                                Excluir
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </div>
                                             </Table.Cell>
                                         </Table.Row>
@@ -739,6 +808,37 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
                 variant="danger"
                 processing={isDeleting}
             />
+
+            {/* Add Permission Dialog */}
+            {selectedUser && (
+                <AddPermissionDialog
+                    open={showAddPermissionDialog}
+                    onOpenChange={(open) => {
+                        setShowAddPermissionDialog(open);
+                        if (!open) {
+                            setSelectedUser(null);
+                        }
+                    }}
+                    user={{
+                        id: selectedUser.id,
+                        name: selectedUser.name,
+                        custom_permissions_list: (selectedUser as User & { custom_permissions_list?: Array<{ name: string; label: string; meta?: { can_impersonate_any?: boolean } }> }).custom_permissions_list || [],
+                    }}
+                />
+            )}
+
+            {/* Assign Role Dialog */}
+            {selectedUser && showAssignRoleDialog && (
+                <AssignRoleUser
+                    userId={selectedUser.id}
+                    roles={roles}
+                    currentRole={selectedUser.role?.name || undefined}
+                    onClose={() => {
+                        setShowAssignRoleDialog(false);
+                        setSelectedUser(null);
+                    }}
+                />
+            )}
         </AppLayout>
     );
 }

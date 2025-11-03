@@ -86,4 +86,14 @@ class UserPolicy
 
         return true;
     }
+
+    public function impersonate(User $user, User $model): bool
+    {
+        return $user->canImpersonate($model);
+    }
+
+    public function managePermissions(User $user): bool
+    {
+        return $user->hasPermissionTo('manage_users');
+    }
 }
