@@ -1,8 +1,9 @@
 import { Role } from '@/types';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Button, Dialog, Flex, Select, Text } from '@radix-ui/themes';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import { usePermissions } from '@/hooks/use-permissions';
 
 type AssignRoleUserProps = {
     userId: number;
@@ -11,7 +12,24 @@ type AssignRoleUserProps = {
     onClose: () => void;
 };
 
+interface SharedData {
+    auth: {
+        user: {
+            id: number;
+        };
+        roles: string[];
+        permissions: string[];
+    };
+}
+
 export default function AssignRoleUser({ userId, roles, onClose, currentRole }: AssignRoleUserProps) {
+    const { auth } = usePage<SharedData>().props;
+    const { hasPermission, hasRole } = usePermissions();
+    const isSuperUser = hasRole('super_user');
+    
+    // Verifica se o usuário tem permissão para atribuir roles
+    const canAssignRoles = hasPermission('assign_roles');
+    
     const { data, setData, post, processing } = useForm({ role: currentRole ?? '' });
     const [open, setOpen] = useState(true);
 
@@ -25,6 +43,11 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole }: 
     );
 
     const assignRole = async () => {
+        if (!canAssignRoles) {
+            toast.error('Você não tem permissão para atribuir cargos!');
+            return;
+        }
+
         await toast.promise(
             new Promise((resolve, reject) => {
                 post(route('user.assign-role', { role: data.role, user: userId }), {
@@ -56,6 +79,28 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole }: 
         setOpen(!open);
     };
 
+    // Converte roles para array se necessário
+    // As roles já vêm filtradas do backend pelo RoleFilterService
+    // Este filtro é apenas uma camada adicional de segurança no frontend
+    const filteredRoles = useMemo(() => {
+        const rolesArray = Array.isArray(roles)
+            ? roles
+            : Object.entries(roles).map(([key, role]) => ({
+                  name: key,
+                  label: role.label || role.name || key,
+                  id: (role as Role).id,
+              }));
+
+        // Proteção adicional: Remove SUPER_USER se o usuário não for SUPER_USER
+        // (as roles já vêm filtradas do backend, mas isso é uma camada extra de segurança)
+        return rolesArray.filter((role) => {
+            if (role.name === 'super_user' && !isSuperUser) {
+                return false;
+            }
+            return true;
+        });
+    }, [roles, isSuperUser]);
+
     return (
         <Dialog.Root open={open} onOpenChange={handleOnOpenChange}>
             <Dialog.Content maxWidth="400px">
@@ -72,17 +117,17 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole }: 
                         <Select.Root value={data.role} onValueChange={handleRoleChange}>
                             <Select.Trigger placeholder="Selecione um cargo" />
                             <Select.Content position="popper">
-                                {Array.isArray(roles)
-                                    ? roles.map((role) => (
-                                          <Select.Item key={role.name || ''} value={role.name || ''}>
-                                              {role.label || role.name}
-                                          </Select.Item>
-                                      ))
-                                    : Object.entries(roles).map(([key, role]) => (
-                                          <Select.Item key={key} value={key}>
-                                              {role.label || role.name}
-                                          </Select.Item>
-                                      ))}
+                                {filteredRoles.length === 0 ? (
+                                    <Select.Item value="" disabled>
+                                        Nenhum cargo disponível
+                                    </Select.Item>
+                                ) : (
+                                    filteredRoles.map((role) => (
+                                        <Select.Item key={role.name || ''} value={role.name || ''}>
+                                            {role.label || role.name}
+                                        </Select.Item>
+                                    ))
+                                )}
                             </Select.Content>
                         </Select.Root>
                     </label>

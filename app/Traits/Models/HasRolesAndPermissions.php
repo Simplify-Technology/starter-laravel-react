@@ -165,8 +165,8 @@ trait HasRolesAndPermissions
             return true;
         }
 
-        $myPriority     = $this->role?->priority           ?? 0;
-        $targetPriority = $targetUser->role?->priority ?? 0;
+        $myPriority     = $this->role?->getPriority()       ?? 0;
+        $targetPriority = $targetUser->role?->getPriority() ?? 0;
 
         return $targetPriority < $myPriority;
     }

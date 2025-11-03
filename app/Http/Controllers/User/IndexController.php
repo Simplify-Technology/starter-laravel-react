@@ -1,18 +1,25 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
-use App\Models\Role;
 use App\Models\User;
+use App\Services\RoleFilterService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class IndexController extends Controller
+final class IndexController extends Controller
 {
+    public function __construct(
+        private readonly RoleFilterService $roleFilterService
+    ) {
+    }
+
     public function __invoke(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
@@ -58,7 +65,12 @@ class IndexController extends Controller
         $perPage = $request->get('per_page', 15);
         $users   = $query->paginate($perPage)->withQueryString();
 
-        $roles = RoleResource::collection(Role::with(['permissions'])->get());
+        // Para o filtro, usa roles visíveis baseado no usuário atual da sessão
+        // Isso fornece UX realista durante impersonação
+        $visibleRoles = $this->roleFilterService->getVisibleRolesForCurrentSession($request->user());
+
+        // Usa roles visíveis para o filtro (pode incluir o próprio role do usuário)
+        $roles = RoleResource::toArrayCollection($visibleRoles, $request);
 
         // Build filters array only with non-empty values
         $filters = [
@@ -84,7 +96,7 @@ class IndexController extends Controller
 
         return Inertia::render('users/index', [
             'users'      => UserResource::collection($users->items())->toArray($request),
-            'roles'      => $roles->toArray($request),
+            'roles'      => $roles,
             'filters'    => $filters,
             'pagination' => [
                 'current_page' => $users->currentPage(),

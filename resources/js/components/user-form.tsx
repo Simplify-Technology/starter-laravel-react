@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Role, User } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface UserFormData {
     name: string;
@@ -41,6 +42,9 @@ export default function UserForm({
     routeName,
     routeParams = {},
 }: UserFormProps) {
+    const { hasPermission } = usePermissions();
+    const canAssignRoles = hasPermission('assign_roles');
+    
     const {
         data,
         setData,
@@ -188,33 +192,37 @@ export default function UserForm({
                     <InputError message={errors.mobile} />
                 </div>
 
-                {/* Cargo */}
-                <div className="grid gap-2">
-                    <Label htmlFor="role_id">Cargo</Label>
-                    <Select
-                        value={data.role_id ? data.role_id.toString() : 'none'}
-                        onValueChange={(value) => {
-                            // Se value é 'none', seta null, senão converte para number
-                            setData('role_id', value === 'none' ? null : Number(value));
-                        }}
-                    >
-                        <SelectTrigger id="role_id" aria-invalid={errors.role_id ? true : undefined}>
-                            <SelectValue placeholder="Selecione um cargo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">Sem cargo</SelectItem>
-                            {roles.map((role) => {
-                                const roleId = role.id || role.name;
-                                return (
-                                    <SelectItem key={roleId} value={roleId.toString()}>
-                                        {role.label || role.name}
-                                    </SelectItem>
-                                );
-                            })}
-                        </SelectContent>
-                    </Select>
-                    <InputError message={errors.role_id} />
-                </div>
+                {/* Cargo - Só aparece se o usuário tiver permissão assign_roles */}
+                {canAssignRoles && (
+                    <div className="grid gap-2">
+                        <Label htmlFor="role_id">Cargo</Label>
+                        <Select
+                            value={data.role_id ? data.role_id.toString() : 'none'}
+                            onValueChange={(value) => {
+                                // Se value é 'none', seta null, senão converte para number
+                                setData('role_id', value === 'none' ? null : Number(value));
+                            }}
+                        >
+                            <SelectTrigger id="role_id" aria-invalid={errors.role_id ? true : undefined}>
+                                <SelectValue placeholder="Selecione um cargo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">Sem cargo</SelectItem>
+                                {Array.isArray(roles) && roles.length > 0
+                                    ? roles.map((role) => {
+                                          const roleId = role.id || role.name;
+                                          return (
+                                              <SelectItem key={roleId} value={roleId.toString()}>
+                                                  {role.label || role.name}
+                                              </SelectItem>
+                                          );
+                                      })
+                                    : null}
+                            </SelectContent>
+                        </Select>
+                        <InputError message={errors.role_id} />
+                    </div>
+                )}
             </div>
 
             {/* Senha */}

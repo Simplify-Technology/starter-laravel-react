@@ -50,4 +50,19 @@ final class ImpersonationService
     {
         return Session::get(self::SESSION_ORIGINAL_USER_NAME);
     }
+
+    public function getOriginalUser(): ?User
+    {
+        if (!$this->isImpersonating()) {
+            return null;
+        }
+
+        $originalUserId = Session::get(self::SESSION_ORIGINAL_USER_ID);
+
+        if (!$originalUserId) {
+            return null;
+        }
+
+        return User::find($originalUserId);
+    }
 }

@@ -497,8 +497,8 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
 
                     {/* Table Content */}
                     <div className="p-3">
-                        <Table.Root variant="surface">
-                            <Table.Header>
+                <Table.Root variant="surface">
+                    <Table.Header>
                                 <Table.Row className="bg-muted/30">
                                     <Table.ColumnHeaderCell className="text-xs font-semibold">
                                         <div className="flex items-center gap-1.5">
@@ -531,11 +531,11 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
                                         </div>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell className="text-end text-xs font-semibold">Ações</Table.ColumnHeaderCell>
-                                </Table.Row>
-                            </Table.Header>
+                        </Table.Row>
+                    </Table.Header>
 
-                            <Table.Body>
-                                {users.length > 0 ? (
+                    <Table.Body>
+                        {users.length > 0 ? (
                                     users.map((user, index) => (
                                         <Table.Row
                                             key={user.id}
@@ -717,9 +717,9 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
                                                     </DropdownMenu>
                                                 </div>
                                             </Table.Cell>
-                                        </Table.Row>
-                                    ))
-                                ) : (
+                                </Table.Row>
+                            ))
+                        ) : (
                                     <Table.Row>
                                         <Table.Cell colSpan={6}>
                                             <div className="flex items-center justify-center py-12">
@@ -740,10 +740,10 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
                                             </div>
                                         </Table.Cell>
                                     </Table.Row>
-                                )}
-                            </Table.Body>
-                        </Table.Root>
-                    </div>
+                        )}
+                    </Table.Body>
+                </Table.Root>
+            </div>
                 </div>
 
                 {/* Pagination */}
