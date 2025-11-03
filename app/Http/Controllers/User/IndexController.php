@@ -69,8 +69,29 @@ final class IndexController extends Controller
         // Isso fornece UX realista durante impersonação
         $visibleRoles = $this->roleFilterService->getVisibleRolesForCurrentSession($request->user());
 
+        // Para atribuição de roles, usa roles atribuíveis (com prioridade menor)
+        // Isso garante que apenas roles que podem ser atribuídas apareçam no componente AssignRoleUser
+        $assignableRoles = $this->roleFilterService->getAssignableRolesForCurrentSession($request->user());
+
+        // Inclui os cargos atuais dos usuários na lista se não estiverem presentes
+        // Isso garante que o cargo atual apareça selecionado no modal de atribuição
+        $userRoleIds = collect($users->items())->pluck('role_id')->filter()->unique();
+
+        foreach ($userRoleIds as $roleId) {
+            if (!$assignableRoles->contains('id', $roleId)) {
+                $role = \App\Models\Role::find($roleId);
+
+                if ($role) {
+                    $assignableRoles->push($role);
+                }
+            }
+        }
+
         // Usa roles visíveis para o filtro (pode incluir o próprio role do usuário)
         $roles = RoleResource::toArrayCollection($visibleRoles, $request);
+
+        // Roles atribuíveis para o componente de atribuição de cargo
+        $assignableRolesArray = RoleResource::toArrayCollection($assignableRoles, $request);
 
         // Build filters array only with non-empty values
         $filters = [
@@ -95,10 +116,11 @@ final class IndexController extends Controller
         }
 
         return Inertia::render('users/index', [
-            'users'      => UserResource::collection($users->items())->toArray($request),
-            'roles'      => $roles,
-            'filters'    => $filters,
-            'pagination' => [
+            'users'           => UserResource::collection($users->items())->toArray($request),
+            'roles'           => $roles,
+            'assignableRoles' => $assignableRolesArray,
+            'filters'         => $filters,
+            'pagination'      => [
                 'current_page' => $users->currentPage(),
                 'last_page'    => $users->lastPage(),
                 'per_page'     => $users->perPage(),

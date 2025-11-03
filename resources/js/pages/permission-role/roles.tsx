@@ -21,10 +21,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface PermissionRoleProps {
     roles: Role[];
+    assignableRoles?: Role[];
     permissions: Permission[];
 }
 
-export default function Roles({ permissions, roles }: PermissionRoleProps) {
+export default function Roles({ permissions, roles, assignableRoles = [] }: PermissionRoleProps) {
     const { auth } = usePage<SharedData>().props;
     const { hasPermission } = usePermissions();
     const canAssignRoles = hasPermission('assign_roles');
@@ -211,8 +212,9 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                 {isAssignRoleOpen && selectedUser && (
                     <AssignRoleUser
                         currentRole={selectedUser.role?.name}
+                        currentRoleLabel={selectedUser.role?.label}
                         userId={selectedUser.id}
-                        roles={roles}
+                        roles={assignableRoles.length > 0 ? assignableRoles : roles}
                         onClose={() => setAssignRoleOpen(false)}
                     />
                 )}

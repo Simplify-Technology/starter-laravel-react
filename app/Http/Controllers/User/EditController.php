@@ -30,6 +30,12 @@ final class EditController extends Controller
         // Usa getAssignableRolesForCurrentSession() para fornecer UX realista durante impersonação
         $assignableRoles = $this->roleFilterService->getAssignableRolesForCurrentSession($request->user());
 
+        // Inclui o cargo atual do usuário que está sendo editado se ele não estiver na lista
+        // Isso garante que o cargo atual apareça selecionado no formulário
+        if ($user->role && !$assignableRoles->contains('id', $user->role->id)) {
+            $assignableRoles->push($user->role);
+        }
+
         return Inertia::render('users/edit', [
             'user'  => new UserResource($user),
             'roles' => RoleResource::toArrayCollection($assignableRoles, $request),

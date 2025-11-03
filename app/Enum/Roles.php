@@ -108,4 +108,65 @@ enum Roles: string
             self::VIEWER  => 10,
         };
     }
+
+    /**
+     * Verifica se este papel é do grupo de Vendas/CRM.
+     */
+    public function isSalesRole(): bool
+    {
+        return match ($this) {
+            self::SALES_MANAGER,
+            self::ACCOUNT_EXECUTIVE,
+            self::SALES_REP,
+            self::CUSTOMER_SUPPORT => true,
+            default                => false,
+        };
+    }
+
+    /**
+     * Verifica se este papel é do grupo Financeiro.
+     */
+    public function isFinancialRole(): bool
+    {
+        return match ($this) {
+            self::FINANCE_MANAGER,
+            self::ACCOUNTANT,
+            self::TREASURER,
+            self::FINANCIAL_ANALYST,
+            self::ACCOUNTS_PAYABLE,
+            self::ACCOUNTS_RECEIVABLE,
+            self::BOOKKEEPER,
+            self::CASHIER => true,
+            default       => false,
+        };
+    }
+
+    /**
+     * Verifica se este papel pertence à equipe de vendas (gerenciável por SALES_MANAGER).
+     */
+    public function isSalesTeamRole(): bool
+    {
+        return match ($this) {
+            self::SALES_REP,
+            self::CUSTOMER_SUPPORT => true,
+            default                => false,
+        };
+    }
+
+    /**
+     * Verifica se este papel pertence à equipe financeira (gerenciável por FINANCE_MANAGER).
+     */
+    public function isFinancialTeamRole(): bool
+    {
+        return match ($this) {
+            self::ACCOUNTANT,
+            self::TREASURER,
+            self::FINANCIAL_ANALYST,
+            self::ACCOUNTS_PAYABLE,
+            self::ACCOUNTS_RECEIVABLE,
+            self::BOOKKEEPER,
+            self::CASHIER => true,
+            default       => false,
+        };
+    }
 }

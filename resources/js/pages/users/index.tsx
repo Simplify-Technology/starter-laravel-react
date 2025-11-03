@@ -56,6 +56,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuários', href: '/users' }];
 type UsersProps = {
     users: User[];
     roles: Role[];
+    assignableRoles?: Role[];
     filters?: {
         search?: string;
         role_id?: number;
@@ -71,7 +72,7 @@ type UsersProps = {
     };
 };
 
-export default function Index({ users, roles, filters = {}, pagination }: UsersProps) {
+export default function Index({ users, roles, assignableRoles = [], filters = {}, pagination }: UsersProps) {
     const { auth } = usePage<SharedData>().props;
     useFlashMessages();
 
@@ -831,8 +832,9 @@ export default function Index({ users, roles, filters = {}, pagination }: UsersP
             {selectedUser && showAssignRoleDialog && (
                 <AssignRoleUser
                     userId={selectedUser.id}
-                    roles={roles}
+                    roles={assignableRoles.length > 0 ? assignableRoles : roles}
                     currentRole={selectedUser.role?.name || undefined}
+                    currentRoleLabel={selectedUser.role?.label || undefined}
                     onClose={() => {
                         setShowAssignRoleDialog(false);
                         setSelectedUser(null);

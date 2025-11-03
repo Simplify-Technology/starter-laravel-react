@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PermissionRole;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Permission;
 use App\Services\RoleFilterService;
@@ -23,6 +24,9 @@ class IndexController extends Controller
         // Usa getVisibleRolesForCurrentSession() para fornecer UX realista durante impersonação
         $visibleRoles = $this->roleFilterService->getVisibleRolesForCurrentSession($request->user());
 
+        // Para atribuição de roles, usa roles atribuíveis (com prioridade menor)
+        $assignableRoles = $this->roleFilterService->getAssignableRolesForCurrentSession($request->user());
+
         $roles = $visibleRoles
             ->load(['permissions', 'users'])
             ->mapWithKeys(function($role) {
@@ -36,9 +40,13 @@ class IndexController extends Controller
                 ];
             });
 
+        // Prepara roles atribuíveis para o componente AssignRoleUser usando RoleResource
+        $assignableRolesArray = RoleResource::toArrayCollection($assignableRoles, $request);
+
         return inertia('permission-role/roles', [
-            'roles'       => $roles,
-            'permissions' => Permission::all(),
+            'roles'           => $roles,
+            'assignableRoles' => $assignableRolesArray,
+            'permissions'     => Permission::all(),
         ]);
     }
 }

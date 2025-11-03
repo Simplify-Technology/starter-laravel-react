@@ -38,7 +38,7 @@ class UserSeeder extends Seeder
         }
 
         foreach ($roles as $role) {
-            User::factory()->count(10)->create([
+            User::factory()->count(3)->create([
                 'name'      => ' Usuário ' . $role->label,
                 'is_active' => true,
                 'password'  => bcrypt('password'),

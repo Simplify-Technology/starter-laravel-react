@@ -1,3 +1,8 @@
+---
+description: use guide
+alwaysApply: false
+---
+
 # Guia de Implementação de Módulos - CRM e Financeiro
 
 Este guia fornece templates, padrões e checklists para implementar os módulos CRM e Financeiro respeitando o sistema de permissões estabelecido.

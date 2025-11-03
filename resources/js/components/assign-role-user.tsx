@@ -1,35 +1,26 @@
+import { usePermissions } from '@/hooks/use-permissions';
 import { Role } from '@/types';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Button, Dialog, Flex, Select, Text } from '@radix-ui/themes';
 import { useCallback, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { usePermissions } from '@/hooks/use-permissions';
 
 type AssignRoleUserProps = {
     userId: number;
     roles: Record<string, Role> | Role[];
     currentRole?: string;
+    currentRoleLabel?: string;
     onClose: () => void;
 };
 
-interface SharedData {
-    auth: {
-        user: {
-            id: number;
-        };
-        roles: string[];
-        permissions: string[];
-    };
-}
 
-export default function AssignRoleUser({ userId, roles, onClose, currentRole }: AssignRoleUserProps) {
-    const { auth } = usePage<SharedData>().props;
+export default function AssignRoleUser({ userId, roles, onClose, currentRole, currentRoleLabel }: AssignRoleUserProps) {
     const { hasPermission, hasRole } = usePermissions();
     const isSuperUser = hasRole('super_user');
-    
+
     // Verifica se o usuário tem permissão para atribuir roles
     const canAssignRoles = hasPermission('assign_roles');
-    
+
     const { data, setData, post, processing } = useForm({ role: currentRole ?? '' });
     const [open, setOpen] = useState(true);
 
@@ -86,20 +77,64 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole }: 
         const rolesArray = Array.isArray(roles)
             ? roles
             : Object.entries(roles).map(([key, role]) => ({
-                  name: key,
-                  label: role.label || role.name || key,
-                  id: (role as Role).id,
-              }));
+                name: key,
+                label: role.label || role.name || key,
+                id: (role as Role).id,
+            }));
 
         // Proteção adicional: Remove SUPER_USER se o usuário não for SUPER_USER
         // (as roles já vêm filtradas do backend, mas isso é uma camada extra de segurança)
-        return rolesArray.filter((role) => {
+        let filtered = rolesArray.filter((role) => {
             if (role.name === 'super_user' && !isSuperUser) {
                 return false;
             }
             return true;
         });
-    }, [roles, isSuperUser]);
+
+        // Se o cargo atual não estiver na lista, inclui ele para que apareça selecionado
+        // Isso garante que o cargo atual seja exibido mesmo que não esteja na lista de roles atribuíveis
+        if (currentRole && !filtered.some((role) => role.name === currentRole)) {
+            // Busca o role completo na lista original (rolesArray já contém todos os roles passados)
+            const originalRole = rolesArray.find((role) => role.name === currentRole);
+            if (originalRole) {
+                filtered.push(originalRole);
+            } else {
+                // Se não encontrou na lista original, tenta buscar na lista completa de roles
+                // (roles pode ser um array ou objeto)
+                const allRolesArray = Array.isArray(roles)
+                    ? roles
+                    : Object.values(roles);
+
+                const foundRole = allRolesArray.find((role: Role) => {
+                    if (typeof role !== 'object' || role === null) return false;
+                    return 'name' in role && role.name === currentRole;
+                });
+
+                if (foundRole && typeof foundRole === 'object' && 'name' in foundRole) {
+                    // Se encontrou, usa o role completo com label
+                    filtered.push({
+                        name: foundRole.name,
+                        label: foundRole.label || foundRole.name,
+                        id: foundRole.id || 0,
+                    });
+                } else {
+                    // Último recurso: cria um objeto temporário
+                    // Usa a label fornecida se disponível, senão formata o nome
+                    const label = currentRoleLabel || currentRole
+                        .split('_')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                    filtered.push({
+                        name: currentRole,
+                        label: label,
+                        id: 0,
+                    });
+                }
+            }
+        }
+
+        return filtered;
+    }, [roles, isSuperUser, currentRole, currentRoleLabel]);
 
     return (
         <Dialog.Root open={open} onOpenChange={handleOnOpenChange}>

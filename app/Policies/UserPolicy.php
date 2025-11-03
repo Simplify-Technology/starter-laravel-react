@@ -104,6 +104,6 @@ class UserPolicy
 
     public function managePermissions(User $user): bool
     {
-        return $user->hasPermissionTo('manage_users');
+        return $user->hasPermissionTo('manage_permissions');
     }
 }

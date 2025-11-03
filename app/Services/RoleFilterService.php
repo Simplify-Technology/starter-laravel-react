@@ -44,10 +44,11 @@ final class RoleFilterService
 
         $userPriority = $effectiveUser->role?->getPriority() ?? 0;
         $isSuperUser  = $effectiveUser->hasRole(RolesEnum::SUPER_USER);
+        $userRoleName = $effectiveUser->role?->name;
 
         return Role::query()
             ->get()
-            ->filter(function(Role $role) use ($userPriority, $isSuperUser) {
+            ->filter(function(Role $role) use ($userPriority, $isSuperUser, $userRoleName) {
                 $rolePriority = $role->getPriority();
 
                 // SUPER_USER só pode ser atribuído por SUPER_USER
@@ -61,7 +62,33 @@ final class RoleFilterService
                 }
 
                 // Outros usuários só podem atribuir roles com prioridade menor
-                return $rolePriority < $userPriority;
+                if ($rolePriority >= $userPriority) {
+                    return false;
+                }
+
+                // SALES_MANAGER só pode atribuir papéis da equipe de vendas
+                if ($userRoleName === RolesEnum::SALES_MANAGER->value) {
+                    try {
+                        $roleEnum = RolesEnum::from($role->name);
+
+                        return $roleEnum->isSalesTeamRole();
+                    } catch (\ValueError) {
+                        return false;
+                    }
+                }
+
+                // FINANCE_MANAGER só pode atribuir papéis da equipe financeira
+                if ($userRoleName === RolesEnum::FINANCE_MANAGER->value) {
+                    try {
+                        $roleEnum = RolesEnum::from($role->name);
+
+                        return $roleEnum->isFinancialTeamRole();
+                    } catch (\ValueError) {
+                        return false;
+                    }
+                }
+
+                return true;
             });
     }
 
@@ -94,10 +121,11 @@ final class RoleFilterService
 
         $userPriority = $effectiveUser->role?->getPriority() ?? 0;
         $isSuperUser  = $effectiveUser->hasRole(RolesEnum::SUPER_USER);
+        $userRoleName = $effectiveUser->role?->name;
 
         return Role::query()
             ->get()
-            ->filter(function(Role $role) use ($userPriority, $isSuperUser) {
+            ->filter(function(Role $role) use ($userPriority, $isSuperUser, $userRoleName) {
                 $rolePriority = $role->getPriority();
 
                 // SUPER_USER só pode ser atribuído por SUPER_USER
@@ -111,7 +139,33 @@ final class RoleFilterService
                 }
 
                 // Outros usuários só podem atribuir roles com prioridade menor
-                return $rolePriority < $userPriority;
+                if ($rolePriority >= $userPriority) {
+                    return false;
+                }
+
+                // SALES_MANAGER só pode atribuir papéis da equipe de vendas
+                if ($userRoleName === RolesEnum::SALES_MANAGER->value) {
+                    try {
+                        $roleEnum = RolesEnum::from($role->name);
+
+                        return $roleEnum->isSalesTeamRole();
+                    } catch (\ValueError) {
+                        return false;
+                    }
+                }
+
+                // FINANCE_MANAGER só pode atribuir papéis da equipe financeira
+                if ($userRoleName === RolesEnum::FINANCE_MANAGER->value) {
+                    try {
+                        $roleEnum = RolesEnum::from($role->name);
+
+                        return $roleEnum->isFinancialTeamRole();
+                    } catch (\ValueError) {
+                        return false;
+                    }
+                }
+
+                return true;
             });
     }
 
