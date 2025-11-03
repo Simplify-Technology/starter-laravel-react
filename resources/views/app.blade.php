@@ -19,21 +19,33 @@
         })();
     </script >
 
-    {{-- Inline style to set the HTML background color based on our theme in app.css --}}
+    {{-- Inline style to set the HTML background color --}}
     <style >
         html {
-            background-color: oklch(1 0 0);
+            background-color: white;
+            transition: background-color 0.2s ease;
         }
 
         html.dark {
-            background-color: oklch(0.145 0 0);
+            background-color: var(--color-primary-dark);
+            transition: background-color 0.2s ease;
         }
     </style >
 
+
     <title inertia >{{ config('app.name', 'Laravel') }}</title >
 
+    {{-- Preload fonts for immediate availability --}}
+    {{-- Aptos: UI, menus e navegação --}}
+    <link rel="preload" href="/fonts/woff2/aptos/aptos.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/fonts/woff2/aptos/aptos-semibold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/fonts/woff2/aptos/aptos-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    {{-- Montserrat: Títulos e indicadores-chave --}}
+    <link rel="preload" href="/fonts/woff2/montserrat/montserrat-v31-latin-800.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    {{-- Merriweather Sans: Subtítulos e textos de apoio --}}
+    <link rel="preload" href="/fonts/woff2/merriweather-sans/merriweather-sans-v28-latin-regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
     <link rel="preconnect" href="https://fonts.bunny.net" >
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
     @routes
     @viteReactRefresh

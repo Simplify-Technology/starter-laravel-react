@@ -1,3 +1,6 @@
+/* Font faces must be loaded FIRST, before any other CSS */
+@import './_fonts.css';
+
 @import 'tailwindcss';
 @import '@radix-ui/themes/styles.css';
 
@@ -9,8 +12,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Application fonts - Aptos must be loaded first via @font-face above */
+    /* UI, menus e navegação */
+    --font-sans: 'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Títulos e indicadores-chave */
+    --font-title: 'Montserrat', sans-serif;
+    /* Subtítulos e textos de apoio */
+    --font-subtitle: 'Merriweather Sans', sans-serif;
 
     --radius-xl: calc(var(--radius) * 2);
     --radius-lg: var(--radius);
@@ -69,257 +77,508 @@
   If we ever want to remove these styles, we need to add an explicit border
   color utility to any element that depends on these defaults.
 */
+/* -------------------------------------------------------------------------- */
+/* BASE                                                                       */
+/* -------------------------------------------------------------------------- */
 @layer base {
     *,
     ::after,
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--color-border, currentColor);
     }
 }
 
+/* Override Radix UI Themes default font family to use Aptos - MUST be after @radix-ui/themes import */
+:root,
+.dark,
+[data-radix-theme] {
+    --default-font-family:
+        'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    --code-font-family: 'Aptos', ui-monospace, 'Menlo', 'Consolas', monospace, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+/* -------------------------------------------------------------------------- */
+/* MODO CLARO                                                                 */
+/* -------------------------------------------------------------------------- */
 :root {
-    /* Nord base tones */
-    --nord0: oklch(0.97 0.02 220); /* quase branco azulado */
-    --nord1: oklch(0.92 0.02 220);
-    --nord2: oklch(0.75 0.03 220);
-    --nord3: oklch(0.45 0.03 220);
-    --nord4: oklch(0.25 0.02 220);
+    /* Application color palette - base colors */
+    --color-primary-dark: #0f2a44;
+    --color-primary: #1f3c57;
+    --color-primary-darker: #2c485e;
+    --color-accent-light: #8ac7e5;
+    --color-accent: #379bcb;
+    --color-muted-light: #e6e7e8;
 
-    /* Simplify brand */
-    --simplify-cyan: oklch(0.75 0.16 200); /* #00B5C9 */
-    --simplify-turquoise: oklch(0.68 0.14 190);
-    --simplify-dark: oklch(0.12 0.02 220);
-
-    /* Backgrounds & text */
-    --background: var(--nord0);
-    --foreground: oklch(0.15 0.02 220);
-
-    /* Surfaces */
-    --card: var(--nord1);
-    --card-foreground: oklch(0.15 0.02 220);
-    --popover: var(--nord1);
-    --popover-foreground: oklch(0.15 0.02 220);
-
-    /* Brand colors */
-    --primary: var(--simplify-cyan);
-    --primary-foreground: oklch(0.98 0.02 240);
-
-    --secondary: var(--nord2);
-    --secondary-foreground: oklch(0.15 0.02 220);
-
-    --accent: var(--simplify-turquoise);
-    --accent-foreground: oklch(0.15 0.02 220);
-
-    /* Functional colors */
-    --muted: var(--nord1);
-    --muted-foreground: oklch(0.45 0.03 230);
-    --destructive: oklch(0.6 0.18 25);
-    --destructive-foreground: oklch(0.98 0.02 25);
-
-    /* Borders & rings */
-    --border: var(--nord2);
-    --input: var(--nord2);
-    --ring: var(--simplify-cyan);
-
-    /* Charts */
-    --chart-1: var(--simplify-cyan);
-    --chart-2: var(--simplify-turquoise);
-    --chart-3: oklch(0.6 0.1 185);
-    --chart-4: oklch(0.78 0.12 90);
-    --chart-5: oklch(0.72 0.13 70);
-
-    /* Sidebar */
-    --sidebar: var(--nord1);
-    --sidebar-foreground: oklch(0.15 0.02 220);
-    --sidebar-primary: var(--simplify-cyan);
-    --sidebar-primary-foreground: oklch(0.98 0.02 240);
-    --sidebar-accent: var(--simplify-turquoise);
-    --sidebar-accent-foreground: oklch(0.15 0.02 220);
-    --sidebar-border: var(--nord2);
-    --sidebar-ring: var(--simplify-cyan);
-
+    /* Map application colors to theme variables - LIGHT MODE */
+    --background: white;
+    --foreground: var(--color-primary-dark);
+    --card: white;
+    --card-foreground: var(--color-primary-dark);
+    --popover: white;
+    --popover-foreground: var(--color-primary-dark);
+    --primary: var(--color-primary-dark);
+    --primary-foreground: white;
+    --secondary: var(--color-accent-light);
+    --secondary-foreground: var(--color-primary-dark);
+    --muted: var(--color-muted-light);
+    --muted-foreground: var(--color-primary-darker);
+    --accent: var(--color-accent-light);
+    --accent-foreground: var(--color-primary-dark);
+    --destructive: #e11d48;
+    --destructive-foreground: white;
+    --success: #16a34a;
+    --success-foreground: white;
+    --warning: #f59e0b;
+    --warning-foreground: white;
+    --info: #0ea5e9;
+    --info-foreground: white;
+    --border: var(--color-muted-light);
+    --input: var(--color-muted-light);
+    --ring: var(--color-accent-light);
+    --chart-1: var(--color-primary-dark);
+    --chart-2: var(--color-accent-light);
+    --chart-3: var(--color-primary-darker);
+    --chart-4: #4b9cd3;
+    --chart-5: #13b5ea;
     --radius: 0.625rem;
+
+    /* Sidebar - LIGHT MODE */
+    --sidebar: white;
+    --sidebar-foreground: var(--color-primary-dark);
+    --sidebar-primary: var(--color-primary-dark);
+    --sidebar-primary-foreground: white;
+    --sidebar-accent: var(--color-accent-light);
+    --sidebar-accent-foreground: var(--color-primary-dark);
+    --sidebar-border: var(--color-muted-light);
+    --sidebar-ring: var(--color-accent-light);
 }
 
+/* -------------------------------------------------------------------------- */
+/* MODO ESCURO                                                                */
+/* -------------------------------------------------------------------------- */
 .dark {
-    /* Nord dark tones - Melhorados para UX/UI */
-    --nord0: oklch(0.12 0.02 220); /* Background principal mais escuro */
-    --nord1: oklch(0.16 0.02 220); /* Cards e superfícies */
-    --nord2: oklch(0.22 0.02 220); /* Bordas e divisores */
-    --nord3: oklch(0.32 0.02 220); /* Texto secundário */
-    --nord4: oklch(0.48 0.03 220); /* Texto terciário */
+    /* Dark mode - improved for better contrast and consistency */
+    --background: var(--color-primary-dark);
+    --foreground: #ffffff;
+    --card: var(--color-primary-dark);
+    --card-foreground: #ffffff;
+    --popover: var(--color-primary-dark);
+    --popover-foreground: #ffffff;
+    --primary: var(--color-accent-light);
+    --primary-foreground: var(--color-primary-dark);
+    --secondary: #2c485e;
+    --secondary-foreground: #ffffff;
+    --muted: #1a3a5a;
+    --muted-foreground: #e6e7e8;
+    --accent: #a5d8f3;
+    --accent-foreground: var(--color-primary-dark);
+    --destructive: #f43f5e;
+    --destructive-foreground: #ffffff;
+    --success: #22c55e;
+    --success-foreground: #ffffff;
+    --warning: #fbbf24;
+    --warning-foreground: var(--color-primary-dark);
+    --info: #38bdf8;
+    --info-foreground: var(--color-primary-dark);
+    --border: var(--color-primary-darker);
+    --input: var(--color-primary-darker);
+    --ring: var(--color-accent-light);
+    --chart-1: var(--color-accent-light);
+    --chart-2: #4b9cd3;
+    --chart-3: #13b5ea;
+    --chart-4: #a5d8f3;
+    --chart-5: #d6ebf7;
 
-    /* Simplify brand - Ajustados para melhor contraste */
-    --simplify-cyan: oklch(0.78 0.18 200); /* Mais vibrante no dark */
-    --simplify-turquoise: oklch(0.72 0.16 190);
-    --simplify-cyan-muted: oklch(0.65 0.12 200); /* Versão mais suave */
-    --simplify-turquoise-muted: oklch(0.58 0.1 190);
-
-    /* Background & text - Hierarquia melhorada */
-    --background: var(--nord0);
-    --foreground: oklch(0.95 0.01 240); /* Texto principal mais suave */
-
-    /* Surfaces - Melhor diferenciação */
-    --card: var(--nord1);
-    --card-foreground: oklch(0.95 0.01 240);
-    --popover: oklch(0.14 0.02 220); /* Popover mais escuro que cards */
-    --popover-foreground: oklch(0.95 0.01 240);
-
-    /* Brand colors - Contraste otimizado */
-    --primary: var(--simplify-cyan);
-    --primary-foreground: oklch(0.1 0.02 220);
-
-    --secondary: var(--nord2);
-    --secondary-foreground: oklch(0.9 0.01 240);
-
-    --accent: var(--simplify-turquoise);
-    --accent-foreground: oklch(0.1 0.02 220);
-
-    /* Functional colors - Melhor legibilidade */
-    --muted: oklch(0.18 0.02 220); /* Muted mais escuro que cards */
-    --muted-foreground: oklch(0.65 0.02 230); /* Texto muted mais legível */
-    --destructive: oklch(0.55 0.18 25);
-    --destructive-foreground: oklch(0.95 0.01 25);
-
-    /* Borders & rings - Sutil mas visível */
-    --border: oklch(0.25 0.02 220); /* Bordas mais sutis */
-    --input: oklch(0.2 0.02 220); /* Inputs com background próprio */
-    --ring: var(--simplify-cyan);
-
-    /* Charts - Cores mais vibrantes no dark */
-    --chart-1: var(--simplify-cyan);
-    --chart-2: var(--simplify-turquoise);
-    --chart-3: oklch(0.6 0.12 185);
-    --chart-4: oklch(0.82 0.14 90);
-    --chart-5: oklch(0.76 0.15 70);
-
-    /* Sidebar - Diferenciação clara */
-    --sidebar: oklch(0.1 0.02 220); /* Sidebar mais escura que background */
-    --sidebar-foreground: oklch(0.9 0.01 240);
-    --sidebar-primary: var(--simplify-cyan);
-    --sidebar-primary-foreground: oklch(0.1 0.02 220);
-    --sidebar-accent: oklch(0.18 0.02 220); /* Hover states */
-    --sidebar-accent-foreground: oklch(0.9 0.01 240);
-    --sidebar-border: oklch(0.2 0.02 220);
-    --sidebar-ring: var(--simplify-cyan);
-
-    /* Estados especiais */
-    --hover: oklch(0.18 0.02 220); /* Estados de hover */
-    --active: oklch(0.22 0.02 220); /* Estados ativos */
-    --selected: oklch(0.25 0.02 220); /* Elementos selecionados */
+    /* Sidebar - DARK MODE */
+    --sidebar: var(--color-primary-dark);
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: var(--color-accent-light);
+    --sidebar-primary-foreground: var(--color-primary-dark);
+    --sidebar-accent: var(--color-primary-darker);
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #1e3a4f;
+    --sidebar-ring: var(--color-accent-light);
 }
 
+/* -------------------------------------------------------------------------- */
+/* BASE APPLICATION                                                           */
+/* -------------------------------------------------------------------------- */
 @layer base {
     * {
         @apply border-border;
     }
 
-    body {
-        @apply bg-background text-foreground antialiased;
+    html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        /* Ensure Aptos font is available on html level */
+        font-family: 'Aptos', var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     }
 
-    /* Melhorias específicas para tema dark */
-    .dark {
-        /* Gradiente sutil no background principal */
-        body {
-            background: linear-gradient(135deg, oklch(0.12 0.02 220) 0%, oklch(0.14 0.02 220) 100%);
-        }
+    body {
+        @apply bg-background text-foreground;
+        /* Explicitly set Aptos - do not rely on Tailwind's font-sans class */
+        font-family:
+            'Aptos', var(--font-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji' !important;
+        font-weight: 400;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
 
-        /* Cards com elevação sutil */
-        .card,
-        [data-card] {
-            background: linear-gradient(135deg, oklch(0.16 0.02 220) 0%, oklch(0.18 0.02 220) 100%);
-            box-shadow:
-                0 1px 3px oklch(0.05 0.02 220 / 0.3),
-                0 1px 2px oklch(0.05 0.02 220 / 0.2);
-        }
-
-        /* Sidebar com profundidade */
-        .sidebar,
-        [data-sidebar] {
-            background: linear-gradient(180deg, oklch(0.1 0.02 220) 0%, oklch(0.12 0.02 220) 100%);
-            box-shadow:
-                2px 0 8px oklch(0.05 0.02 220 / 0.4),
-                1px 0 4px oklch(0.05 0.02 220 / 0.2);
-        }
-
-        /* Inputs com background diferenciado */
-        input,
-        textarea,
-        select {
-            background: oklch(0.2 0.02 220);
-            border-color: oklch(0.25 0.02 220);
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            background: oklch(0.22 0.02 220);
-            border-color: var(--simplify-cyan);
-            box-shadow: 0 0 0 2px oklch(0.78 0.18 200 / 0.2);
-        }
-
-        /* Botões com estados visuais melhorados */
-        button[data-variant='outline'] {
-            background: oklch(0.18 0.02 220);
-            border-color: oklch(0.25 0.02 220);
-        }
-
-        button[data-variant='outline']:hover {
-            background: oklch(0.22 0.02 220);
-            border-color: oklch(0.3 0.02 220);
-        }
-
-        /* Tabelas com separação clara */
-        table {
-            background: oklch(0.16 0.02 220);
-        }
-
-        th {
-            background: oklch(0.18 0.02 220);
-            border-bottom-color: oklch(0.25 0.02 220);
-        }
-
-        td {
-            border-bottom-color: oklch(0.2 0.02 220);
-        }
-
-        tr:hover {
-            background: oklch(0.2 0.02 220);
-        }
-
-        /* Modais e popovers com elevação */
-        [role='dialog'],
-        [data-popover] {
-            background: oklch(0.14 0.02 220);
-            box-shadow:
-                0 25px 50px oklch(0.05 0.02 220 / 0.5),
-                0 10px 20px oklch(0.05 0.02 220 / 0.3);
-        }
-
-        /* Scrollbars customizadas */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: oklch(0.16 0.02 220);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: oklch(0.3 0.02 220);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: oklch(0.4 0.02 220);
-        }
+    /* Override Tailwind's font-sans utility to ensure Aptos is used */
+    .font-sans {
+        font-family:
+            'Aptos', var(--font-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji' !important;
     }
 }
 
+/* Override Radix UI Themes components to use Aptos - using universal selector with maximum specificity */
+/* Títulos, subtítulos e table headers são tratados separadamente abaixo */
+html body [data-radix-theme] {
+    font-family:
+        'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+}
+
+/* IMPORTANTE: Garantir que table headers NÃO sejam afetados pela regra universal acima */
+/* Máxima especificidade para sobrescrever qualquer regra anterior */
+html body [data-radix-theme] .rt-TableHeader *,
+html body [data-radix-theme] .rt-TableHeader .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableHeader .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableHeader .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRowHeaderCell,
+html body .rt-TableHeader .rt-TableColumnHeaderCell,
+html body .rt-TableHeader .rt-TableRowHeaderCell,
+.rt-TableHeader .rt-TableColumnHeaderCell,
+.rt-TableHeader .rt-TableRowHeaderCell {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600 !important;
+}
+
+/* Target all Radix UI component classes with maximum specificity */
+/* UI components usam Aptos (fonte principal para menus e navegação) */
+/* Excluir table headers que usam Montserrat - tratados separadamente abaixo */
+html body [data-radix-theme] .rt-Text,
+html body [data-radix-theme] .rt-Button,
+html body [data-radix-theme] .rt-TableRoot,
+html body [data-radix-theme] .rt-TableBody,
+html body [data-radix-theme] .rt-SelectRoot,
+html body [data-radix-theme] .rt-SelectTrigger,
+html body [data-radix-theme] .rt-DialogContent,
+html body [data-radix-theme] .rt-Card,
+html body [data-radix-theme] .rt-Label,
+html body [data-radix-theme] .rt-Input,
+html body [data-radix-theme] .rt-TextArea,
+html body [data-radix-theme] .rt-Separator,
+html body [data-radix-theme] .rt-Badge,
+html body [data-radix-theme] .rt-Link {
+    font-family:
+        'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+}
+
+/* Títulos do Radix UI usam Montserrat - máxima especificidade */
+html body [data-radix-theme] .rt-Heading,
+html body [data-radix-theme] h1,
+html body [data-radix-theme] h2,
+html body [data-radix-theme] h3,
+html body [data-radix-theme] .app-title,
+html body [data-radix-theme] [data-slot='dialog-title'],
+html body [data-radix-theme] .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableRowHeaderCell {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Subtítulos e textos de apoio do Radix UI usam Merriweather Sans */
+html body [data-radix-theme] h4,
+html body [data-radix-theme] h5,
+html body [data-radix-theme] h6,
+html body [data-radix-theme] .app-subtitle,
+html body [data-radix-theme] [data-slot='dialog-description'],
+html body [data-radix-theme] [data-slot='card-description'],
+html body [data-radix-theme] .text-muted-foreground,
+html body [data-radix-theme] .rt-Text[data-size='2'],
+html body [data-radix-theme] .rt-Text[color='gray'] {
+    font-family: 'Merriweather Sans', sans-serif !important;
+}
+
 .rt-reset.rt-BaseTabListTrigger.rt-TabsTrigger .rt-BaseTabListTriggerInner.rt-TabsTriggerInner {
-    @apply hover:bg-accent hover:text-accent-foreground w-full cursor-pointer justify-start rounded-md px-3 py-1.5 font-medium;
+    @apply hover:bg-accent hover:text-accent-foreground w-full cursor-pointer justify-start rounded-md px-3 py-1.5 font-medium transition-colors;
+}
+
+/* Custom styles for Radix UI Table to use the application's theme */
+.rt-TableRoot {
+    --table-border-color: var(--border);
+    --table-header-background: var(--muted);
+    --table-header-text: var(--muted-foreground);
+    --table-body-background: var(--card);
+    --table-body-text: var(--card-foreground);
+    --table-row-hover: var(--accent);
+    --table-row-hover-opacity: 0.1;
+}
+
+.rt-TableRoot[data-variant='surface'] {
+    background-color: var(--card);
+    border: 1px solid var(--table-border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.rt-TableHeader {
+    background-color: var(--table-header-background);
+}
+
+.rt-TableColumnHeaderCell,
+.rt-TableRowHeaderCell {
+    color: var(--table-header-text);
+}
+
+.rt-TableBody {
+    background-color: var(--table-body-background);
+}
+
+.rt-TableCell {
+    color: var(--table-body-text);
+}
+
+.rt-TableRow:hover {
+    background-color: color-mix(in srgb, var(--table-row-hover) var(--table-row-hover-opacity), transparent);
+}
+
+/* Application typography classes */
+/* Títulos e indicadores-chave - Montserrat - máxima especificidade */
+html body h1,
+html body h2,
+html body h3,
+html body .app-title,
+html body [data-slot='dialog-title'],
+html body [data-slot='card-title'],
+html body [data-radix-theme] h1,
+html body [data-radix-theme] h2,
+html body [data-radix-theme] h3,
+html body [data-radix-theme] .app-title,
+html body [data-radix-theme] [data-slot='dialog-title'],
+html body [data-radix-theme] [data-slot='card-title'],
+html body [data-radix-theme] .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableRowHeaderCell,
+.rt-TableColumnHeaderCell,
+.rt-TableRowHeaderCell,
+.rt-TableHeader .rt-TableColumnHeaderCell,
+.rt-TableHeader .rt-TableRowHeaderCell,
+.rt-TableRoot .rt-TableColumnHeaderCell,
+.rt-TableRoot .rt-TableRowHeaderCell {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 800;
+    /* Extra bold disponível em Montserrat */
+}
+
+/* Ajustar peso para títulos menores (h3, table headers, subtítulos de página) quando necessário */
+html body h3,
+html body [data-radix-theme] h3,
+html body [data-radix-theme] .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableHeader .rt-TableRowHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableColumnHeaderCell,
+html body [data-radix-theme] .rt-TableRoot .rt-TableRowHeaderCell,
+html body h2.text-sm.font-semibold,
+.rt-TableColumnHeaderCell,
+.rt-TableRowHeaderCell,
+.rt-TableHeader .rt-TableColumnHeaderCell,
+.rt-TableHeader .rt-TableRowHeaderCell,
+.rt-TableRoot .rt-TableColumnHeaderCell,
+.rt-TableRoot .rt-TableRowHeaderCell {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600;
+    /* Semibold para títulos menores e cabeçalhos de tabela */
+}
+
+/* Subtítulos e textos de apoio - Merriweather Sans - máxima especificidade */
+html body h4,
+html body h5,
+html body h6,
+html body .app-subtitle,
+html body [data-slot='dialog-description'],
+html body [data-slot='card-description'],
+html body [data-radix-theme] h4,
+html body [data-radix-theme] h5,
+html body [data-radix-theme] h6,
+html body [data-radix-theme] .app-subtitle,
+html body [data-radix-theme] [data-slot='dialog-description'],
+html body [data-radix-theme] [data-slot='card-description'] {
+    font-family: 'Merriweather Sans', sans-serif !important;
+    font-weight: 400;
+    /* Regular weight disponível */
+}
+
+/* Textos de corpo e UI - Aptos */
+p,
+.app-text {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-weight: 400;
+    /* Regular weight disponível */
+}
+
+/* Classes utilitárias para aplicação de fontes */
+
+/* Montserrat para títulos (usar quando necessário forçar título) */
+.font-title {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Merriweather Sans para textos de apoio (subtitle, description, help text) */
+.font-support {
+    font-family: 'Merriweather Sans', sans-serif !important;
+}
+
+/* Aplicar Merriweather Sans automaticamente em elementos de texto de apoio */
+.text-muted-foreground,
+[data-slot='dialog-description'],
+[data-slot='card-description'],
+.subtitle,
+.description,
+.help-text,
+blockquote,
+footer,
+.text-xs.text-muted-foreground,
+.text-sm.text-muted-foreground,
+.text-sm.text-muted-foreground.font-medium {
+    font-family: 'Merriweather Sans', sans-serif !important;
+}
+
+/* Garantir que labels pequenos em cards também usem Merriweather Sans */
+[data-slot='card-content'] .text-sm.font-medium.text-muted-foreground,
+[data-slot='card-content'] p.text-sm.font-medium.text-muted-foreground {
+    font-family: 'Merriweather Sans', sans-serif !important;
+}
+
+/* Garantir que CardTitle use Montserrat */
+[data-slot='card-title'] {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600;
+}
+
+/* Labels e Badges - UI elements, usam Aptos */
+[data-slot='label'],
+[data-slot='badge'],
+label[data-slot='label'],
+span[data-slot='badge'] {
+    font-family:
+        'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+}
+
+/* Garantir que table cells usem Aptos (conteúdo de dados) */
+.rt-TableCell,
+html body [data-radix-theme] .rt-TableCell {
+    font-family:
+        'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+}
+
+/* InfoSection - títulos usam Montserrat, conteúdo usa Merriweather Sans */
+div[class*='space-y-2'] h3.text-sm.font-semibold,
+.InfoSection h3,
+[class*='InfoSection'] h3 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600;
+}
+
+/* Listas e textos de feature - conteúdo usa Aptos, badges usam Aptos */
+ul[class*='space-y-2'] span.text-sm,
+ul li span.text-sm {
+    font-family:
+        'Aptos', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+}
+
+/* Custom Scrollbar Styles */
+.custom-scrollbar {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.4);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.6);
+    background-clip: padding-box;
+}
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar {
+    scrollbar-color: rgba(229, 231, 235, 0.4) transparent;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(229, 231, 235, 0.3);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(229, 231, 235, 0.5);
+}
+
+/* Global scrollbar for dialogs and modals in dark mode */
+.dark [data-slot='dialog-content'],
+.dark [data-slot='dialog-content'] .custom-scrollbar {
+    scrollbar-color: rgba(229, 231, 235, 0.4) transparent;
+}
+
+.dark [data-slot='dialog-content']::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.dark [data-slot='dialog-content']::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 5px;
+}
+
+.dark [data-slot='dialog-content']::-webkit-scrollbar-thumb {
+    background: rgba(229, 231, 235, 0.3);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.2s ease;
+}
+
+.dark [data-slot='dialog-content']::-webkit-scrollbar-thumb:hover {
+    background: rgba(229, 231, 235, 0.5);
+    background-clip: padding-box;
+}
+
+/* iOS Safari: prevent auto-zoom on form fields */
+@supports (-webkit-touch-callout: none) {
+    .ios-input-16 input,
+    .ios-input-16 select,
+    .ios-input-16 textarea {
+        font-size: 16px !important;
+    }
 }
