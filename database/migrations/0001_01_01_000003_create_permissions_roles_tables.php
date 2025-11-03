@@ -29,8 +29,10 @@ return new class () extends Migration {
         });
 
         Schema::create('permission_user', function(Blueprint $table): void {
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('permission_id')->constrained();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('permission_id')->constrained()->onDelete('cascade');
+            $table->json('meta')->nullable();
+            $table->timestamps();
             $table->primary(['user_id', 'permission_id']);
         });
     }

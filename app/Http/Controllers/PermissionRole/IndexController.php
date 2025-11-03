@@ -3,29 +3,50 @@
 namespace App\Http\Controllers\PermissionRole;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Permission;
-use App\Models\Role;
+use App\Services\RoleFilterService;
+use Illuminate\Http\Request;
 
 class IndexController extends Controller
 {
-    public function __invoke()
-    {
-        $roles = Role::with(['permissions', 'users'])->get()->mapWithKeys(function($role) {
-            return [
+    public function __construct(
+        private readonly RoleFilterService $roleFilterService
+    ) {
+    }
 
-                $role->name => [
-                    'id'          => $role->id,
-                    'label'       => $role->label ?? $role->name,
-                    'permissions' => $role->permissions->pluck('label', 'name'),
-                    'users'       => UserResource::collection($role->users->keyBy->id),
-                ],
-            ];
-        });
+    public function __invoke(Request $request)
+    {
+        $this->authorize('manage_roles');
+
+        // Filtra roles visíveis baseado no usuário atual da sessão
+        // Usa getVisibleRolesForCurrentSession() para fornecer UX realista durante impersonação
+        $visibleRoles = $this->roleFilterService->getVisibleRolesForCurrentSession($request->user());
+
+        // Para atribuição de roles, usa roles atribuíveis (com prioridade menor)
+        $assignableRoles = $this->roleFilterService->getAssignableRolesForCurrentSession($request->user());
+
+        $roles = $visibleRoles
+            ->load(['permissions', 'users'])
+            ->mapWithKeys(function($role) {
+                return [
+                    $role->name => [
+                        'id'          => $role->id,
+                        'label'       => $role->label ?? $role->name,
+                        'permissions' => $role->permissions->pluck('label', 'name'),
+                        'users'       => UserResource::collection($role->users->keyBy->id),
+                    ],
+                ];
+            });
+
+        // Prepara roles atribuíveis para o componente AssignRoleUser usando RoleResource
+        $assignableRolesArray = RoleResource::toArrayCollection($assignableRoles, $request);
 
         return inertia('permission-role/roles', [
-            'roles'       => $roles,
-            'permissions' => Permission::all(),
+            'roles'           => $roles,
+            'assignableRoles' => $assignableRolesArray,
+            'permissions'     => Permission::all(),
         ]);
     }
 }

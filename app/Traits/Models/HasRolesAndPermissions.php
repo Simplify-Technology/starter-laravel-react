@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace App\Traits\Models;
 
 use App\Enum\Permissions;
 use App\Enum\Roles;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Cache;
 
 trait HasRolesAndPermissions
@@ -68,17 +73,36 @@ trait HasRolesAndPermissions
         $this->refreshPermissionsCache();
     }
 
-    public function givePermissionTo(string $permission): void
+    public function givePermissionTo(Permissions|string $permission, array $meta = []): void
     {
-        $permission = Permission::firstOrCreate(['name' => $permission]);
-        $this->permissions()->syncWithoutDetaching([$permission->id]);
+        $permissionValue = $permission instanceof Permissions ? $permission->value : $permission;
+        $permissionModel = Permission::firstOrCreate(['name' => $permissionValue]);
+
+        $existing = $this->permissions()
+            ->where('permission_id', $permissionModel->id)
+            ->exists();
+
+        if ($existing) {
+            $this->permissions()->updateExistingPivot($permissionModel->id, [
+                'meta'       => !empty($meta) ? json_encode($meta) : null,
+                'updated_at' => now(),
+            ]);
+        } else {
+            $this->permissions()->attach($permissionModel->id, [
+                'meta'       => !empty($meta) ? json_encode($meta) : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         $this->refreshPermissionsCache();
     }
 
-    public function permissions()
+    public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->belongsToMany(Permission::class)
+            ->withPivot('meta', 'created_at', 'updated_at')
+            ->withTimestamps();
     }
 
     public function revokePermissionTo(string $permission): void
@@ -91,8 +115,78 @@ trait HasRolesAndPermissions
         }
     }
 
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function getPermissionMeta(Permissions|string $permission): ?array
+    {
+        $permissionValue = $permission instanceof Permissions ? $permission->value : $permission;
+
+        $permissionModel = $this->permissions()
+            ->where('name', $permissionValue)
+            ->first();
+
+        if (!$permissionModel || !$permissionModel->pivot->meta) {
+            return null;
+        }
+
+        return json_decode($permissionModel->pivot->meta, true);
+    }
+
+    public function canImpersonateAny(): bool
+    {
+        // SUPER_USER can always impersonate anyone
+        if ($this->hasRole(Roles::SUPER_USER)) {
+            return true;
+        }
+
+        $meta = $this->getPermissionMeta(Permissions::IMPERSONATE_USERS);
+
+        return $meta['can_impersonate_any'] ?? false;
+    }
+
+    public function canImpersonate(User $targetUser): bool
+    {
+        if ($this->id === $targetUser->id) {
+            return false;
+        }
+
+        if (!$targetUser->is_active) {
+            return false;
+        }
+
+        if (!$this->hasPermissionTo(Permissions::IMPERSONATE_USERS)) {
+            return false;
+        }
+
+        if ($this->canImpersonateAny()) {
+            return true;
+        }
+
+        $myPriority     = $this->role?->getPriority()       ?? 0;
+        $targetPriority = $targetUser->role?->getPriority() ?? 0;
+
+        return $targetPriority < $myPriority;
+    }
+
+    public function getCustomPermissionsCount(): int
+    {
+        return $this->permissions()->count();
+    }
+
+    public function getCustomPermissionsList(): array
+    {
+        return $this->permissions()
+            ->get()
+            ->map(function($permission) {
+                return [
+                    'name'  => $permission->name,
+                    'label' => $permission->label,
+                    'meta'  => $permission->pivot->meta ? json_decode($permission->pivot->meta, true) : null,
+                ];
+            })
+            ->toArray();
     }
 }

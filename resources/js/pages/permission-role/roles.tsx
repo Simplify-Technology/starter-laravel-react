@@ -10,6 +10,7 @@ import { Box, CheckboxCards, Button as DropdownButton, DropdownMenu, Flex, Spinn
 import { Ellipsis, UserCog, UserX } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { usePermissions } from '@/hooks/use-permissions';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,11 +21,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface PermissionRoleProps {
     roles: Role[];
+    assignableRoles?: Role[];
     permissions: Permission[];
 }
 
-export default function Roles({ permissions, roles }: PermissionRoleProps) {
+export default function Roles({ permissions, roles, assignableRoles = [] }: PermissionRoleProps) {
     const { auth } = usePage<SharedData>().props;
+    const { hasPermission } = usePermissions();
+    const canAssignRoles = hasPermission('assign_roles');
     const [isAssignRoleOpen, setAssignRoleOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -163,22 +167,28 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                                                         <DropdownMenu.Content size="2">
                                                             <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
                                                             <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
-                                                            <DropdownMenu.Separator />
-                                                            <DropdownMenu.Item
-                                                                onClick={() => {
-                                                                    setSelectedUser(user);
-                                                                    setAssignRoleOpen(true);
-                                                                }}
-                                                                shortcut="⌘ N"
-                                                            >
-                                                                Atribuir Cargo
-                                                            </DropdownMenu.Item>
+                                                            {canAssignRoles && (
+                                                                <>
+                                                                    <DropdownMenu.Separator />
+                                                                    <DropdownMenu.Item
+                                                                        onClick={() => {
+                                                                            setSelectedUser(user);
+                                                                            setAssignRoleOpen(true);
+                                                                        }}
+                                                                        shortcut="⌘ N"
+                                                                    >
+                                                                        Atribuir Cargo
+                                                                    </DropdownMenu.Item>
+                                                                </>
+                                                            )}
 
-                                                            <DropdownMenu.Separator />
-                                                            {auth?.user?.id !== user.id && (
-                                                                <DropdownMenu.Item shortcut="⌘ ⌫" color="red" onClick={() => revokeRole(user.id)}>
-                                                                    Remover Cargo
-                                                                </DropdownMenu.Item>
+                                                            {canAssignRoles && auth?.user?.id !== user.id && (
+                                                                <>
+                                                                    <DropdownMenu.Separator />
+                                                                    <DropdownMenu.Item shortcut="⌘ ⌫" color="red" onClick={() => revokeRole(user.id)}>
+                                                                        Remover Cargo
+                                                                    </DropdownMenu.Item>
+                                                                </>
                                                             )}
                                                         </DropdownMenu.Content>
                                                     </DropdownMenu.Root>
@@ -202,8 +212,9 @@ export default function Roles({ permissions, roles }: PermissionRoleProps) {
                 {isAssignRoleOpen && selectedUser && (
                     <AssignRoleUser
                         currentRole={selectedUser.role?.name}
+                        currentRoleLabel={selectedUser.role?.label}
                         userId={selectedUser.id}
-                        roles={roles}
+                        roles={assignableRoles.length > 0 ? assignableRoles : roles}
                         onClose={() => setAssignRoleOpen(false)}
                     />
                 )}

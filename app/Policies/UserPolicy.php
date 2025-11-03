@@ -27,23 +27,23 @@ class UserPolicy
             return false;
         }
 
+        $isSuperUser = $user->hasRole('super_user');
+
         // Impede que o usuário altere seu próprio status ativo/inativo
         // Isso deve ser feito através do perfil ou por outro administrador
+        // EXCETO: SUPER_USER pode alterar status de qualquer usuário (exceto o seu próprio)
         if ($user->id === $model->id && request()->has('is_active')) {
             return false;
         }
 
-        // Impede alteração de super_user (proteção adicional de segurança)
-        if ($model->hasRole('super_user')) {
-            // Permite apenas que o próprio super_user se atualize, mas não pode alterar is_active
-            if ($user->id !== $model->id) {
-                return false;
-            }
+        // SUPER_USER pode editar qualquer usuário, incluindo outros SUPER_USER
+        if ($isSuperUser) {
+            return true;
+        }
 
-            // Se for o próprio super_user, pode atualizar mas não pode alterar is_active
-            if ($user->id === $model->id && request()->has('is_active')) {
-                return false;
-            }
+        // Outros usuários não podem editar super_user
+        if ($model->hasRole('super_user')) {
+            return false;
         }
 
         return true;
@@ -60,7 +60,12 @@ class UserPolicy
             return false;
         }
 
-        // Impede exclusão de super_user (proteção adicional de segurança)
+        // SUPER_USER pode deletar qualquer usuário, incluindo outros SUPER_USER
+        if ($user->hasRole('super_user')) {
+            return true;
+        }
+
+        // Outros usuários não podem deletar super_user
         if ($model->hasRole('super_user')) {
             return false;
         }
@@ -79,11 +84,26 @@ class UserPolicy
             return false;
         }
 
-        // Impede desativação de super_user (proteção adicional de segurança)
+        // SUPER_USER pode desativar qualquer usuário, incluindo outros SUPER_USER
+        if ($user->hasRole('super_user')) {
+            return true;
+        }
+
+        // Outros usuários não podem desativar super_user
         if ($model->hasRole('super_user')) {
             return false;
         }
 
         return true;
+    }
+
+    public function impersonate(User $user, User $model): bool
+    {
+        return $user->canImpersonate($model);
+    }
+
+    public function managePermissions(User $user): bool
+    {
+        return $user->hasPermissionTo('manage_permissions');
     }
 }
