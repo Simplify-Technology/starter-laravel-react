@@ -26,6 +26,10 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
         Route::put('users/{user}', User\UpdateController::class)->name('users.update');
         Route::delete('users/{user}', User\DestroyController::class)->name('users.destroy');
         Route::patch('users/{user}/toggle-active', User\ToggleActiveController::class)->name('users.toggle-active');
+
+        // User Permissions
+        Route::get('users/{user}/permissions', User\ShowUserPermissionsController::class)->name('users.permissions.show');
+        Route::post('users/{user}/permissions/grant', User\GrantPermissionController::class)->name('users.permissions.grant');
     });
 
     // Impersonate start route (after users routes but specific enough)
