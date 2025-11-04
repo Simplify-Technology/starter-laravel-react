@@ -1,4 +1,5 @@
 import { usePermissions } from '@/hooks/use-permissions';
+import { toastErrorOptions } from '@/lib/toast-config';
 import { Role } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { Button, Dialog, Flex, Select, Text } from '@radix-ui/themes';
@@ -12,7 +13,6 @@ type AssignRoleUserProps = {
     currentRoleLabel?: string;
     onClose: () => void;
 };
-
 
 export default function AssignRoleUser({ userId, roles, onClose, currentRole, currentRoleLabel }: AssignRoleUserProps) {
     const { hasPermission, hasRole } = usePermissions();
@@ -35,7 +35,7 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole, cu
 
     const assignRole = async () => {
         if (!canAssignRoles) {
-            toast.error('Você não tem permissão para atribuir cargos!');
+            toast.error('Você não tem permissão para atribuir cargos!', toastErrorOptions);
             return;
         }
 
@@ -77,10 +77,10 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole, cu
         const rolesArray = Array.isArray(roles)
             ? roles
             : Object.entries(roles).map(([key, role]) => ({
-                name: key,
-                label: role.label || role.name || key,
-                id: (role as Role).id,
-            }));
+                  name: key,
+                  label: role.label || role.name || key,
+                  id: (role as Role).id,
+              }));
 
         // Proteção adicional: Remove SUPER_USER se o usuário não for SUPER_USER
         // (as roles já vêm filtradas do backend, mas isso é uma camada extra de segurança)
@@ -101,9 +101,7 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole, cu
             } else {
                 // Se não encontrou na lista original, tenta buscar na lista completa de roles
                 // (roles pode ser um array ou objeto)
-                const allRolesArray = Array.isArray(roles)
-                    ? roles
-                    : Object.values(roles);
+                const allRolesArray = Array.isArray(roles) ? roles : Object.values(roles);
 
                 const foundRole = allRolesArray.find((role: Role) => {
                     if (typeof role !== 'object' || role === null) return false;
@@ -120,10 +118,12 @@ export default function AssignRoleUser({ userId, roles, onClose, currentRole, cu
                 } else {
                     // Último recurso: cria um objeto temporário
                     // Usa a label fornecida se disponível, senão formata o nome
-                    const label = currentRoleLabel || currentRole
-                        .split('_')
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(' ');
+                    const label =
+                        currentRoleLabel ||
+                        currentRole
+                            .split('_')
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
                     filtered.push({
                         name: currentRole,
                         label: label,

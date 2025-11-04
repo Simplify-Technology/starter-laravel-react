@@ -1,3 +1,4 @@
+import { toastErrorOptions, toastInfoOptions, toastSuccessOptions, toastWarningOptions } from '@/lib/toast-config';
 import { usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
@@ -9,17 +10,21 @@ interface FlashMessages {
     info?: string;
 }
 
+interface WindowWithFlashCleanup extends Window {
+    __flashCleanupInterval?: ReturnType<typeof setInterval>;
+}
+
 // Store global para rastrear flashes já exibidos (persiste entre navegações)
 // Usa Map com timestamp para limpeza automática
 const displayedFlashes = new Map<string, number>();
 
 // Limpa flashes antigos periodicamente (evita memory leak)
 // Usa uma única instância do interval para evitar múltiplos timers
-if (typeof window !== 'undefined' && !(window as any).__flashCleanupInterval) {
-    (window as any).__flashCleanupInterval = setInterval(() => {
+if (typeof window !== 'undefined' && !(window as WindowWithFlashCleanup).__flashCleanupInterval) {
+    (window as WindowWithFlashCleanup).__flashCleanupInterval = setInterval(() => {
         const now = Date.now();
         const maxAge = 10000; // 10 segundos
-        
+
         for (const [key, timestamp] of displayedFlashes.entries()) {
             if (now - timestamp > maxAge) {
                 displayedFlashes.delete(key);
@@ -54,82 +59,21 @@ export function useFlashMessages() {
         const flashKey = `${currentUrl}::${flashContent}`;
 
         // Verifica se já foi exibido antes (globalmente ou nesta instância)
-        const alreadyDisplayed =
-            flashContent === componentRef.current.lastFlash || displayedFlashes.has(flashKey);
+        const alreadyDisplayed = flashContent === componentRef.current.lastFlash || displayedFlashes.has(flashKey);
 
         if (!alreadyDisplayed) {
             // Exibe as notificações
             if (flash.success) {
-                toast.success(flash.success, {
-                    className: 'toast-success',
-                    style: {
-                        background: 'var(--card)',
-                        color: 'var(--foreground)',
-                        border: '1px solid var(--border)',
-                        borderLeft: '4px solid var(--success)',
-                        borderRadius: 'var(--radius)',
-                    },
-                    iconTheme: {
-                        primary: 'var(--success)',
-                        secondary: 'var(--success-foreground)',
-                    },
-                });
+                toast.success(flash.success, toastSuccessOptions);
             }
             if (flash.error) {
-                toast.error(flash.error, {
-                    className: 'toast-error',
-                    style: {
-                        background: 'var(--card)',
-                        color: 'var(--foreground)',
-                        border: '1px solid var(--border)',
-                        borderLeft: '4px solid var(--destructive)',
-                        borderRadius: 'var(--radius)',
-                    },
-                    iconTheme: {
-                        primary: 'var(--destructive)',
-                        secondary: 'var(--destructive-foreground)',
-                    },
-                });
+                toast.error(flash.error, toastErrorOptions);
             }
             if (flash.warning) {
-                toast(flash.warning, {
-                    icon: '⚠️',
-                    className: 'toast-warning',
-                    style: {
-                        background: 'var(--card)',
-                        color: 'var(--foreground)',
-                        border: '1px solid var(--border)',
-                        borderLeft: '4px solid var(--warning)',
-                        borderRadius: 'var(--radius)',
-                        padding: '0.875rem 1rem',
-                        fontSize: '0.875rem',
-                        fontFamily: 'var(--font-sans)',
-                    },
-                    iconTheme: {
-                        primary: 'var(--warning)',
-                        secondary: 'var(--warning-foreground)',
-                    },
-                });
+                toast(flash.warning, toastWarningOptions);
             }
             if (flash.info) {
-                toast(flash.info, {
-                    icon: 'ℹ️',
-                    className: 'toast-info',
-                    style: {
-                        background: 'var(--card)',
-                        color: 'var(--foreground)',
-                        border: '1px solid var(--border)',
-                        borderLeft: '4px solid var(--info)',
-                        borderRadius: 'var(--radius)',
-                        padding: '0.875rem 1rem',
-                        fontSize: '0.875rem',
-                        fontFamily: 'var(--font-sans)',
-                    },
-                    iconTheme: {
-                        primary: 'var(--info)',
-                        secondary: 'var(--info-foreground)',
-                    },
-                });
+                toast(flash.info, toastInfoOptions);
             }
 
             // Marca como exibido (globalmente e localmente)

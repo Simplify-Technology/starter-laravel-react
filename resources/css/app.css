@@ -596,7 +596,9 @@ ul li span.text-sm {
     color: var(--foreground) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius) !important;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+    box-shadow:
+        0 10px 15px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
     font-family: var(--font-sans) !important;
     font-size: 0.875rem !important;
     font-weight: 400 !important;
@@ -613,7 +615,7 @@ ul li span.text-sm {
     background: var(--card) !important;
 }
 
-.toast-success [class*="toast-icon"],
+.toast-success [class*='toast-icon'],
 .toast-success [data-icon] {
     color: var(--success) !important;
 }
@@ -624,7 +626,7 @@ ul li span.text-sm {
     background: var(--card) !important;
 }
 
-.toast-error [class*="toast-icon"],
+.toast-error [class*='toast-icon'],
 .toast-error [data-icon] {
     color: var(--destructive) !important;
 }
@@ -635,7 +637,7 @@ ul li span.text-sm {
     background: var(--card) !important;
 }
 
-.toast-warning [class*="toast-icon"],
+.toast-warning [class*='toast-icon'],
 .toast-warning [data-icon] {
     color: var(--warning) !important;
 }
@@ -646,7 +648,7 @@ ul li span.text-sm {
     background: var(--card) !important;
 }
 
-.toast-info [class*="toast-icon"],
+.toast-info [class*='toast-icon'],
 .toast-info [data-icon] {
     color: var(--info) !important;
 }
@@ -654,7 +656,9 @@ ul li span.text-sm {
 /* Dark mode adjustments */
 .dark .toast-custom {
     background: var(--card) !important;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.2) !important;
+    box-shadow:
+        0 10px 15px -3px rgb(0 0 0 / 0.3),
+        0 4px 6px -4px rgb(0 0 0 / 0.2) !important;
 }
 
 .dark .toast-success,
@@ -665,11 +669,11 @@ ul li span.text-sm {
 }
 
 /* Animation improvements */
-.toast-custom[data-state="entering"] {
+.toast-custom[data-state='entering'] {
     animation: slideInRight 0.3s ease-out;
 }
 
-.toast-custom[data-state="exiting"] {
+.toast-custom[data-state='exiting'] {
     animation: slideOutRight 0.2s ease-in;
 }
 

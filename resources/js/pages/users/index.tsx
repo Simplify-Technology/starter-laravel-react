@@ -6,13 +6,7 @@ import { InfoFeatureList, InfoSection } from '@/components/page-info';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FilterPanel } from '@/components/users/filter-panel';
@@ -49,7 +43,6 @@ import {
     Zap,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import toast from 'react-hot-toast';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuários', href: '/users' }];
 
@@ -498,8 +491,8 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
 
                     {/* Table Content */}
                     <div className="p-3">
-                <Table.Root variant="surface">
-                    <Table.Header>
+                        <Table.Root variant="surface">
+                            <Table.Header>
                                 <Table.Row className="bg-muted/30">
                                     <Table.ColumnHeaderCell className="text-xs font-semibold">
                                         <div className="flex items-center gap-1.5">
@@ -532,11 +525,11 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                         </div>
                                     </Table.ColumnHeaderCell>
                                     <Table.ColumnHeaderCell className="text-end text-xs font-semibold">Ações</Table.ColumnHeaderCell>
-                        </Table.Row>
-                    </Table.Header>
+                                </Table.Row>
+                            </Table.Header>
 
-                    <Table.Body>
-                        {users.length > 0 ? (
+                            <Table.Body>
+                                {users.length > 0 ? (
                                     users.map((user, index) => (
                                         <Table.Row
                                             key={user.id}
@@ -651,7 +644,7 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                                                     {hasPermission('assign_roles') && auth.user.id !== user.id && (
                                                                         <DropdownMenuItem
                                                                             onClick={() => handleRevokeRole(user)}
-                                                                            className="cursor-pointer text-destructive focus:text-destructive"
+                                                                            className="text-destructive focus:text-destructive cursor-pointer"
                                                                         >
                                                                             <UserX className="mr-2 h-4 w-4" />
                                                                             Remover Cargo
@@ -678,7 +671,9 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                                                             onClick={() => handleToggleActive(user)}
                                                                             className={cn(
                                                                                 'cursor-pointer',
-                                                                                user.is_active ? 'text-red-600 focus:text-red-600' : 'text-green-600 focus:text-green-600'
+                                                                                user.is_active
+                                                                                    ? 'text-red-600 focus:text-red-600'
+                                                                                    : 'text-green-600 focus:text-green-600',
                                                                             )}
                                                                         >
                                                                             {user.is_active ? (
@@ -705,7 +700,7 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                                                                     setShowDeleteDialog(true);
                                                                                 }}
                                                                                 disabled={isDeleting}
-                                                                                className="cursor-pointer text-destructive focus:text-destructive disabled:opacity-50"
+                                                                                className="text-destructive focus:text-destructive cursor-pointer disabled:opacity-50"
                                                                             >
                                                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                                                 Excluir
@@ -718,9 +713,9 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                                     </DropdownMenu>
                                                 </div>
                                             </Table.Cell>
-                                </Table.Row>
-                            ))
-                        ) : (
+                                        </Table.Row>
+                                    ))
+                                ) : (
                                     <Table.Row>
                                         <Table.Cell colSpan={6}>
                                             <div className="flex items-center justify-center py-12">
@@ -741,10 +736,10 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                             </div>
                                         </Table.Cell>
                                     </Table.Row>
-                        )}
-                    </Table.Body>
-                </Table.Root>
-            </div>
+                                )}
+                            </Table.Body>
+                        </Table.Root>
+                    </div>
                 </div>
 
                 {/* Pagination */}
@@ -823,7 +818,12 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                     user={{
                         id: selectedUser.id,
                         name: selectedUser.name,
-                        custom_permissions_list: (selectedUser as User & { custom_permissions_list?: Array<{ name: string; label: string; meta?: { can_impersonate_any?: boolean } }> }).custom_permissions_list || [],
+                        custom_permissions_list:
+                            (
+                                selectedUser as User & {
+                                    custom_permissions_list?: Array<{ name: string; label: string; meta?: { can_impersonate_any?: boolean } }>;
+                                }
+                            ).custom_permissions_list || [],
                     }}
                 />
             )}

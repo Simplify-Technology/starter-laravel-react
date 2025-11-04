@@ -2,6 +2,7 @@ import AssignRoleUser from '@/components/assign-role-user';
 import { EmptyState } from '@/components/empty-state';
 import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
+import { usePermissions } from '@/hooks/use-permissions';
 import AppLayout from '@/layouts/app-layout';
 import PermissionsLayout from '@/layouts/permissions/layout';
 import { type BreadcrumbItem, Permission, Role, type SharedData, User } from '@/types';
@@ -10,7 +11,6 @@ import { Box, CheckboxCards, Button as DropdownButton, DropdownMenu, Flex, Spinn
 import { Ellipsis, UserCog, UserX } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { usePermissions } from '@/hooks/use-permissions';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

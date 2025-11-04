@@ -4,8 +4,8 @@ import type { Config } from 'ziggy-js';
 
 export interface Auth {
     user: User;
-    roles: string[] | Role[];  // Array de nomes (string) ou objetos Role
-    permissions: string[] | Permission[];  // Array de nomes (string) ou objetos Permission
+    roles: string[] | Role[]; // Array de nomes (string) ou objetos Role
+    permissions: string[] | Permission[]; // Array de nomes (string) ou objetos Permission
     impersonating?: {
         active?: boolean;
         originalUserName?: string | null;

@@ -5,10 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { usePermissions } from '@/hooks/use-permissions';
 import { Role, User } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { usePermissions } from '@/hooks/use-permissions';
 
 interface UserFormData {
     name: string;
@@ -44,7 +44,7 @@ export default function UserForm({
 }: UserFormProps) {
     const { hasPermission } = usePermissions();
     const canAssignRoles = hasPermission('assign_roles');
-    
+
     const {
         data,
         setData,
