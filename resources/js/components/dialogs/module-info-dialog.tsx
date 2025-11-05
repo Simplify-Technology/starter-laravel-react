@@ -56,7 +56,7 @@ export function ModuleInfoDialog({
                             onClose?.();
                             onOpenChange(false);
                         }}
-                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        className="bg-cyan-600 text-white hover:bg-cyan-700 dark:bg-cyan-600 dark:shadow-lg dark:hover:bg-cyan-700 dark:hover:shadow-xl"
                     >
                         Entendi
                     </Button>

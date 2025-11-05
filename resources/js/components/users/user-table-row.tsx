@@ -41,14 +41,14 @@ export const UserTableRow = React.memo(
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-xs font-semibold text-white shadow-sm transition-transform duration-200 ease-in-out group-hover:scale-105 dark:from-cyan-600 dark:to-blue-700">
                             {getUserInitials(user.name)}
                         </div>
-                        <div className="text-sm font-semibold">{user.name}</div>
+                        <div className="dark:text-foreground text-sm font-semibold">{user.name}</div>
                     </div>
                 </Table.RowHeaderCell>
                 <Table.Cell>
-                    <div className="text-muted-foreground text-xs">{user.email}</div>
+                    <div className="text-muted-foreground dark:text-muted-foreground/80 text-xs">{user.email}</div>
                 </Table.Cell>
                 <Table.Cell className="hidden md:table-cell">
-                    <div className="text-muted-foreground/70 text-xs">{user.mobile || '-'}</div>
+                    <div className="text-muted-foreground dark:text-muted-foreground/80 text-xs">{user.mobile || '-'}</div>
                 </Table.Cell>
                 <Table.Cell>
                     {user.role?.label ? (

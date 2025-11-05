@@ -1,224 +1,259 @@
-import AssignRoleUser from '@/components/assign-role-user';
-import { EmptyState } from '@/components/empty-state';
-import HeadingSmall from '@/components/heading-small';
+import { PermissionCard } from '@/components/permissions/permission-card';
+import { RoleInfoDialog } from '@/components/permissions/role-info-dialog';
+import { RoleUsersTable } from '@/components/permissions/role-users-table';
+import { RolesSidebar } from '@/components/permissions/roles-sidebar';
 import { Button } from '@/components/ui/button';
-import { usePermissions } from '@/hooks/use-permissions';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { usePermissionActions } from '@/hooks/permissions/use-permission-actions';
+import { usePermissionPermissions } from '@/hooks/permissions/use-permission-permissions';
+import { useFlashMessages } from '@/hooks/use-flash-messages';
 import AppLayout from '@/layouts/app-layout';
-import PermissionsLayout from '@/layouts/permissions/layout';
-import { type BreadcrumbItem, Permission, Role, type SharedData, User } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Box, CheckboxCards, Button as DropdownButton, DropdownMenu, Flex, Spinner, Table, Tabs, Text } from '@radix-ui/themes';
-import { Ellipsis, UserCog, UserX } from 'lucide-react';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { BreadcrumbItem } from '@/types';
+import type { PermissionsPageProps } from '@/types/permissions';
+import { Head } from '@inertiajs/react';
+import { Info, Menu, Save, Shield, UserCog, Users } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Gerenciar Permissões',
-        href: '/permission-roles',
+        title: 'Permissões',
+        href: '/permissions/roles',
     },
 ];
 
-interface PermissionRoleProps {
-    roles: Role[];
-    assignableRoles?: Role[];
-    permissions: Permission[];
-}
+export default function Roles({ roles, assignableRoles = [], permissions }: PermissionsPageProps) {
+    useFlashMessages();
 
-export default function Roles({ permissions, roles, assignableRoles = [] }: PermissionRoleProps) {
-    const { auth } = usePage<SharedData>().props;
-    const { hasPermission } = usePermissions();
-    const canAssignRoles = hasPermission('assign_roles');
-    const [isAssignRoleOpen, setAssignRoleOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-    const { data, setData, put, processing } = useForm({
-        rolePermissions: Object.entries(roles).reduce(
+    // Local state
+    const [selectedRole, setSelectedRole] = useState<string>(Object.keys(roles)[0] || '');
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(() => {
+        return Object.entries(roles).reduce(
             (acc, [roleName, roleData]) => {
                 acc[roleName] = Object.keys(roleData.permissions || {});
                 return acc;
             },
             {} as Record<string, string[]>,
-        ),
+        );
     });
 
-    const savePermissions = async (roleName: string) => {
-        await toast.promise(
-            new Promise((resolve, reject) => {
-                put(
-                    route('roles-permissions.update', {
-                        permissions: data.rolePermissions[roleName],
-                        role: roleName,
-                    }),
-                    {
-                        preserveScroll: true,
-                        onSuccess: () => resolve('Permissões atualizadas com sucesso!'),
-                        onError: () => reject('Erro ao atualizar permissões!'),
-                    },
-                );
-            }),
-            {
-                loading: 'Salvando permissões...',
-                success: 'Permissões salvas com sucesso!',
-                error: 'Erro ao salvar permissões. Por favor, tente novamente.',
-            },
-        );
-    };
+    // Hooks
+    const { canAssignRoles } = usePermissionPermissions();
 
-    const revokeRole = async (userId: number) => {
-        await toast.promise(
-            new Promise((resolve, reject) => {
-                router.delete(route('user.revoke-role', userId), {
-                    preserveScroll: true,
-                    onSuccess: () => resolve('Cargo removido com sucesso!'),
-                    onError: () => reject('Erro ao remover o cargo!'),
-                });
-            }),
-            {
-                loading: 'Removendo cargo...',
-                success: 'Cargo removido com sucesso!',
-                error: 'Erro ao remover o cargo. Por favor, tente novamente.',
-            },
-        );
-    };
+    const actions = usePermissionActions({
+        onSaveSuccess: () => {
+            // Toast já é mostrado pelo hook
+        },
+    });
+
+    // Handlers
+    const handlePermissionToggle = useCallback((roleName: string, permissionName: string, checked: boolean) => {
+        setRolePermissions((prev) => {
+            const current = prev[roleName] || [];
+            if (checked) {
+                return {
+                    ...prev,
+                    [roleName]: [...current, permissionName],
+                };
+            } else {
+                return {
+                    ...prev,
+                    [roleName]: current.filter((p) => p !== permissionName),
+                };
+            }
+        });
+    }, []);
+
+    const handleSavePermissions = useCallback(
+        async (roleName: string) => {
+            await actions.onSavePermissions(roleName, rolePermissions[roleName] || []);
+        },
+        [actions, rolePermissions],
+    );
+
+    const handleRevokeRole = useCallback(
+        (user: { id: number }) => {
+            actions.onRevokeRole(user.id);
+        },
+        [actions],
+    );
+
+    const handleRoleSelect = useCallback((roleName: string) => {
+        setSelectedRole(roleName);
+        setSidebarOpen(false); // Fecha o menu mobile após seleção
+    }, []);
+
+    // Memoizations
+    const rolesEntries = useMemo(() => Object.entries(roles), [roles]);
+    const selectedRoleData = useMemo(() => roles[selectedRole], [roles, selectedRole]);
+
+    // Calculate stats
+    const totalRoles = useMemo(() => rolesEntries.length, [rolesEntries]);
+    const totalPermissions = useMemo(() => permissions.length, [permissions]);
+
+    if (!selectedRoleData) {
+        return null;
+    }
+
+    const usersArray = Array.isArray(selectedRoleData.users) ? selectedRoleData.users : Object.values(selectedRoleData.users || {});
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gerenciar Permissões" />
-
-            <PermissionsLayout roles={roles}>
-                {Object.entries(roles).map(([roleName, roleData]) => (
-                    <Tabs.Content
-                        value={roleName}
-                        key={roleName}
-                        className={'flex w-full grow flex-col space-y-8 gap-x-8 lg:justify-between xl:flex-row xl:space-y-0'}
-                    >
-                        <Flex direction={'column'}>
-                            <HeadingSmall
-                                title="Permissões vinculadas"
-                                description={`Essas são as permissões vinculadas à função de ${roleData.label}.`}
-                            />
-
-                            <Box width={'100%'} mt={'6'}>
-                                <CheckboxCards.Root
-                                    columns={{ initial: '1', sm: '2', xl: '3' }}
-                                    value={data.rolePermissions[roleName]}
-                                    onValueChange={(newValues) =>
-                                        setData('rolePermissions', {
-                                            ...data.rolePermissions,
-                                            [roleName]: newValues,
-                                        })
-                                    }
-                                >
-                                    {permissions.map((permission) => (
-                                        <CheckboxCards.Item className="grow" key={permission.name} value={permission.name}>
-                                            <Flex direction="column">
-                                                <Text weight="bold" className={'min-w-max'}>
-                                                    {permission.label}
-                                                </Text>
-                                            </Flex>
-                                        </CheckboxCards.Item>
-                                    ))}
-                                </CheckboxCards.Root>
-                            </Box>
-
-                            <Button
-                                className={'mt-4 max-w-max cursor-pointer'}
-                                variant={'secondary'}
-                                onClick={() => savePermissions(roleName)}
-                                disabled={processing}
-                            >
-                                {processing ? <Spinner mr={'2'} /> : null}
-                                {processing ? 'Salvando...' : 'Salvar Permissões'}
+            <div className="flex h-full flex-1 flex-col gap-3 p-3 sm:p-4 md:gap-4 md:p-6">
+                {/* Mobile Menu Button */}
+                <div className="flex items-center gap-2 lg:hidden">
+                    <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full justify-start gap-2 sm:w-auto">
+                                <Menu className="h-4 w-4 shrink-0" />
+                                <span className="font-medium">Funções</span>
+                                <span className="text-muted-foreground truncate text-xs">• {selectedRoleData.label}</span>
                             </Button>
-                        </Flex>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-80 p-0 sm:max-w-sm">
+                            <SheetHeader className="sr-only">
+                                <SheetTitle>Selecionar Função</SheetTitle>
+                            </SheetHeader>
+                            <div className="h-full overflow-y-auto">
+                                <RolesSidebar roles={roles} selectedRole={selectedRole} onSelectRole={handleRoleSelect} totalRoles={totalRoles} />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
 
-                        <Flex direction={'column'} className={'w-full flex-1'}>
-                            <HeadingSmall
-                                title="Usuários com essa função"
-                                description={`Esses são os usuários que possuem a função de ${roleData.label}.`}
-                            />
+                {/* Main Content */}
+                <div className="flex flex-1 flex-col gap-3 overflow-hidden lg:flex-row lg:gap-4">
+                    {/* Sidebar - Roles Navigation (Desktop) */}
+                    <div className="hidden lg:block">
+                        <RolesSidebar roles={roles} selectedRole={selectedRole} onSelectRole={setSelectedRole} totalRoles={totalRoles} />
+                    </div>
 
-                            <Table.Root variant="surface" mt={'6'}>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.ColumnHeaderCell>Nome</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>
-                                            <UserCog className={'h-5 w-5'} />
-                                        </Table.ColumnHeaderCell>
-                                    </Table.Row>
-                                </Table.Header>
+                    {/* Main Content Area */}
+                    <div className="bg-card border-border/40 flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg border shadow-sm">
+                        {/* Permissions Header */}
+                        <div className="bg-muted/20 border-border/30 border-b backdrop-blur-sm">
+                            <div className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                    <Shield className="h-4 w-4 shrink-0 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                    <h2 className="dark:text-foreground text-base font-semibold tracking-tight">Permissões</h2>
+                                    <span className="text-muted-foreground/80 dark:text-muted-foreground/70 text-xs font-medium whitespace-nowrap">
+                                        • {totalPermissions} {totalPermissions === 1 ? 'permissão' : 'permissões'}
+                                    </span>
+                                    <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
+                                        <DialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 shrink-0 transition-all duration-200 ease-in-out hover:scale-105 hover:bg-cyan-50 hover:text-cyan-700 active:scale-95 dark:hover:bg-cyan-950/20 dark:hover:text-cyan-400"
+                                                aria-label="Informações sobre o módulo de permissões"
+                                            >
+                                                <Info className="text-muted-foreground dark:text-muted-foreground/80 h-4 w-4 transition-colors duration-200" />
+                                            </Button>
+                                        </DialogTrigger>
+                                    </Dialog>
+                                    <RoleInfoDialog open={showInfoDialog} onOpenChange={setShowInfoDialog} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                            {/* Role Header */}
+                            <div className="mb-6">
+                                <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <UserCog className="h-5 w-5 shrink-0 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                            <h2 className="dark:text-foreground truncate text-lg font-semibold sm:text-xl">
+                                                {selectedRoleData.label}
+                                            </h2>
+                                        </div>
+                                        <div className="mt-1 flex flex-wrap items-center gap-2 sm:gap-3">
+                                            <p className="text-muted-foreground dark:text-muted-foreground/70 text-xs sm:text-sm">
+                                                Gerencie as permissões e usuários desta função
+                                            </p>
+                                            <span className="text-muted-foreground dark:text-muted-foreground/50 hidden text-xs sm:inline">•</span>
+                                            <span className="text-muted-foreground dark:text-muted-foreground/70 text-xs">
+                                                {Object.keys(selectedRoleData.permissions || {}).length}{' '}
+                                                {Object.keys(selectedRoleData.permissions || {}).length === 1 ? 'permissão' : 'permissões'} vinculada
+                                                {Object.keys(selectedRoleData.permissions || {}).length === 1 ? '' : 's'}
+                                            </span>
+                                            <span className="text-muted-foreground dark:text-muted-foreground/50 hidden text-xs sm:inline">•</span>
+                                            <span className="text-muted-foreground dark:text-muted-foreground/70 text-xs">
+                                                {usersArray.length} {usersArray.length === 1 ? 'usuário' : 'usuários'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleSavePermissions(selectedRole)}
+                                        disabled={actions.isSaving}
+                                        size="sm"
+                                        className="h-8 w-full shrink-0 gap-1.5 bg-cyan-600 text-white transition-all duration-200 ease-in-out hover:scale-105 hover:bg-cyan-700 active:scale-95 sm:w-auto dark:bg-cyan-600 dark:text-white dark:shadow-lg dark:hover:bg-cyan-700 dark:hover:shadow-xl"
+                                    >
+                                        {actions.isSaving ? (
+                                            <>
+                                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                                Salvando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="h-4 w-4" />
+                                                Salvar Permissões
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                                <Separator className="mt-4" />
+                            </div>
 
-                                <Table.Body>
-                                    {roleData.users && roleData.users.length > 0 ? (
-                                        roleData.users.map((user) => (
-                                            <Table.Row key={user.id}>
-                                                <Table.RowHeaderCell>{user.name} </Table.RowHeaderCell>
-                                                <Table.Cell>{user.email}</Table.Cell>
-                                                <Table.Cell>
-                                                    <DropdownMenu.Root>
-                                                        <DropdownMenu.Trigger>
-                                                            <DropdownButton color={'cyan'} variant={'ghost'} size={'1'}>
-                                                                <Ellipsis className={'h-4 w-4'} />
-                                                                {/*<DropdownMenu.TriggerIcon />*/}
-                                                            </DropdownButton>
-                                                        </DropdownMenu.Trigger>
-                                                        <DropdownMenu.Content size="2">
-                                                            <DropdownMenu.Item shortcut="⌘ E">Detalhes</DropdownMenu.Item>
-                                                            <DropdownMenu.Item shortcut="⌘ D">Adicionar Permissão</DropdownMenu.Item>
-                                                            {canAssignRoles && (
-                                                                <>
-                                                                    <DropdownMenu.Separator />
-                                                                    <DropdownMenu.Item
-                                                                        onClick={() => {
-                                                                            setSelectedUser(user);
-                                                                            setAssignRoleOpen(true);
-                                                                        }}
-                                                                        shortcut="⌘ N"
-                                                                    >
-                                                                        Atribuir Cargo
-                                                                    </DropdownMenu.Item>
-                                                                </>
-                                                            )}
-
-                                                            {canAssignRoles && auth?.user?.id !== user.id && (
-                                                                <>
-                                                                    <DropdownMenu.Separator />
-                                                                    <DropdownMenu.Item shortcut="⌘ ⌫" color="red" onClick={() => revokeRole(user.id)}>
-                                                                        Remover Cargo
-                                                                    </DropdownMenu.Item>
-                                                                </>
-                                                            )}
-                                                        </DropdownMenu.Content>
-                                                    </DropdownMenu.Root>
-                                                </Table.Cell>
-                                            </Table.Row>
-                                        ))
-                                    ) : (
-                                        <EmptyState
-                                            icon={UserX}
-                                            type={'row'}
-                                            title="Nenhum usuário encontrado"
-                                            description="Nenhum usuário foi encontrado com essa função."
+                            {/* Permissions Section */}
+                            <div className="mb-8">
+                                <div className="mb-4">
+                                    <div className="mb-2 flex items-center gap-2">
+                                        <Shield className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                        <h3 className="dark:text-foreground text-base font-semibold">Permissões Disponíveis</h3>
+                                    </div>
+                                    <p className="text-muted-foreground dark:text-muted-foreground/70 text-sm">
+                                        Selecione as permissões que esta função deve possuir
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                    {permissions.map((permission) => (
+                                        <PermissionCard
+                                            key={permission.name}
+                                            permission={permission}
+                                            isChecked={(rolePermissions[selectedRole] || []).includes(permission.name)}
+                                            onToggle={(permissionName, checked) => handlePermissionToggle(selectedRole, permissionName, checked)}
                                         />
-                                    )}
-                                </Table.Body>
-                            </Table.Root>
-                        </Flex>
-                    </Tabs.Content>
-                ))}
+                                    ))}
+                                </div>
+                            </div>
 
-                {isAssignRoleOpen && selectedUser && (
-                    <AssignRoleUser
-                        currentRole={selectedUser.role?.name}
-                        currentRoleLabel={selectedUser.role?.label}
-                        userId={selectedUser.id}
-                        roles={assignableRoles.length > 0 ? assignableRoles : roles}
-                        onClose={() => setAssignRoleOpen(false)}
-                    />
-                )}
-            </PermissionsLayout>
+                            {/* Users Section */}
+                            <div>
+                                <div className="mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                        <h3 className="dark:text-foreground text-base font-semibold">Usuários</h3>
+                                    </div>
+                                    <p className="text-muted-foreground dark:text-muted-foreground/70 mt-1 text-sm">
+                                        Usuários que possuem esta função
+                                    </p>
+                                </div>
+                                <RoleUsersTable
+                                    users={usersArray}
+                                    roleLabel={selectedRoleData.label}
+                                    assignableRoles={assignableRoles}
+                                    onRevokeRole={handleRevokeRole}
+                                    canAssignRoles={canAssignRoles()}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </AppLayout>
     );
 }

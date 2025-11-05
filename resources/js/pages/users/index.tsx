@@ -21,7 +21,7 @@ import { buildPaginationParams } from '@/utils/data-table/query-params';
 import { getUserInitials } from '@/utils/users/user-helpers';
 import { Head, Link, router } from '@inertiajs/react';
 import { Table } from '@radix-ui/themes';
-import { CheckCircle, Info, Mail, Phone, Plus, Shield, User2, UserPlus, UserX } from 'lucide-react';
+import { CheckCircle, Info, Mail, Phone, Plus, Settings, Shield, User2, UserPlus, UserX } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuários', href: '/users' }];
@@ -187,7 +187,7 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                 <Link href={route('users.create')}>
                                     <Button
                                         size="sm"
-                                        className="dark:bg-primary dark:hover:bg-primary/80 h-8 gap-1.5 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 dark:border-0 dark:text-white dark:shadow-lg dark:hover:shadow-xl"
+                                        className="h-8 gap-1.5 bg-cyan-600 text-white transition-all duration-200 ease-in-out hover:scale-105 hover:bg-cyan-700 active:scale-95 dark:bg-cyan-600 dark:text-white dark:shadow-lg dark:hover:bg-cyan-700 dark:hover:shadow-xl"
                                     >
                                         <Plus className="h-4 w-4 transition-transform duration-200" />
                                         Novo Usuário
@@ -223,13 +223,18 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                                 className={`text-sm font-semibold ${column.key === 'mobile' ? 'hidden md:table-cell' : ''}`}
                                             >
                                                 <div className="flex items-center gap-1.5">
-                                                    <Icon className="h-4 w-4 text-blue-600 dark:text-blue-500" />
+                                                    <Icon className="h-4 w-4 text-cyan-600 dark:text-cyan-500" />
                                                     {column.label}
                                                 </div>
                                             </Table.ColumnHeaderCell>
                                         );
                                     })}
-                                    <Table.ColumnHeaderCell className="text-end text-sm font-semibold">Ações</Table.ColumnHeaderCell>
+                                    <Table.ColumnHeaderCell className="text-end text-sm font-semibold">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <Settings className="h-4 w-4 text-cyan-600 dark:text-cyan-500" />
+                                            Ações
+                                        </div>
+                                    </Table.ColumnHeaderCell>
                                 </Table.Row>
                             </Table.Header>
 
