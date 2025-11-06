@@ -127,7 +127,7 @@ export default function UserForm({
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     {/* Nome */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="name" className="text-foreground text-sm font-medium">
                             Nome
                             <span className="text-destructive/70 ml-1">*</span>
                         </Label>
@@ -146,7 +146,7 @@ export default function UserForm({
 
                     {/* Email */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="email" className="text-foreground text-sm font-medium">
                             Email
                             <span className="text-destructive/70 ml-1">*</span>
                         </Label>
@@ -166,7 +166,7 @@ export default function UserForm({
 
                     {/* CPF/CNPJ */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="cpf_cnpj" className="text-foreground text-sm font-medium">
                             CPF/CNPJ
                             <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
                         </Label>
@@ -188,7 +188,7 @@ export default function UserForm({
                     {/* Cargo - Só aparece se o usuário tiver permissão assign_roles */}
                     {canAssignRoles && (
                         <div className="space-y-1.5">
-                            <Label htmlFor="role_id" className="text-sm font-medium text-foreground">
+                            <Label htmlFor="role_id" className="text-foreground text-sm font-medium">
                                 Cargo
                                 <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
                             </Label>
@@ -228,7 +228,7 @@ export default function UserForm({
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     {/* Telefone */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="phone" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="phone" className="text-foreground text-sm font-medium">
                             Telefone
                             <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
                         </Label>
@@ -250,7 +250,7 @@ export default function UserForm({
 
                     {/* Celular */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="mobile" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="mobile" className="text-foreground text-sm font-medium">
                             Celular
                             <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
                         </Label>
@@ -277,7 +277,7 @@ export default function UserForm({
                 <Separator className="my-1" />
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div className="space-y-1.5">
-                        <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="password" className="text-foreground text-sm font-medium">
                             {user ? 'Nova Senha' : 'Senha'}
                             {!user && <span className="text-destructive/70 ml-1">*</span>}
                             {user && <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>}
@@ -293,15 +293,11 @@ export default function UserForm({
                             className="transition-all duration-200"
                         />
                         <InputError message={errors.password} />
-                        {user && (
-                            <p className="text-muted-foreground/70 text-xs leading-relaxed">
-                                Deixe em branco para manter a senha atual
-                            </p>
-                        )}
+                        {user && <p className="text-muted-foreground/70 text-xs leading-relaxed">Deixe em branco para manter a senha atual</p>}
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="password_confirmation" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="password_confirmation" className="text-foreground text-sm font-medium">
                             {user ? 'Confirmar Nova Senha' : 'Confirmar Senha'}
                             {!user && <span className="text-destructive/70 ml-1">*</span>}
                             {user && <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>}
@@ -326,27 +322,25 @@ export default function UserForm({
                 <Separator className="my-1" />
                 <div className="space-y-5">
                     {/* Status Ativo */}
-                    <div className="flex items-start space-x-3 rounded-md border border-border/40 bg-muted/20 dark:bg-muted/30 p-4 transition-colors duration-200">
+                    <div className="border-border/40 bg-muted/20 dark:bg-muted/30 flex items-start space-x-3 rounded-md border p-4 transition-colors duration-200">
                         <Checkbox
                             id="is_active"
                             checked={data.is_active}
                             onCheckedChange={(checked) => setData('is_active', checked === true)}
-                            className="mt-0.5 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600 dark:data-[state=checked]:bg-cyan-500 dark:data-[state=checked]:border-cyan-500"
+                            className="mt-0.5 data-[state=checked]:border-cyan-600 data-[state=checked]:bg-cyan-600 dark:data-[state=checked]:border-cyan-500 dark:data-[state=checked]:bg-cyan-500"
                         />
-                        <div className="space-y-0.5 flex-1">
-                            <Label htmlFor="is_active" className="cursor-pointer text-sm font-medium text-foreground">
+                        <div className="flex-1 space-y-0.5">
+                            <Label htmlFor="is_active" className="text-foreground cursor-pointer text-sm font-medium">
                                 Usuário ativo
                             </Label>
-                            <p className="text-muted-foreground/70 text-xs leading-relaxed">
-                                Usuários inativos não podem fazer login no sistema
-                            </p>
+                            <p className="text-muted-foreground/70 text-xs leading-relaxed">Usuários inativos não podem fazer login no sistema</p>
                         </div>
                         <InputError message={errors.is_active} />
                     </div>
 
                     {/* Notas */}
                     <div className="space-y-1.5">
-                        <Label htmlFor="user_notes" className="text-sm font-medium text-foreground">
+                        <Label htmlFor="user_notes" className="text-foreground text-sm font-medium">
                             Notas
                             <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
                         </Label>
@@ -357,7 +351,7 @@ export default function UserForm({
                             placeholder="Informações adicionais sobre o usuário..."
                             rows={4}
                             aria-invalid={errors.user_notes ? true : undefined}
-                            className="transition-all duration-200 resize-none"
+                            className="resize-none transition-all duration-200"
                         />
                         <InputError message={errors.user_notes} />
                         <p className="text-muted-foreground/70 text-xs leading-relaxed">

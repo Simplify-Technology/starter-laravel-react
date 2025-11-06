@@ -29,11 +29,11 @@ export default function Edit({ user, roles }: EditUserProps) {
             <div className="flex h-full flex-1 flex-col gap-3 p-4 md:gap-4 md:p-6">
                 <div className="bg-card border-border/40 overflow-hidden rounded-lg border shadow-sm">
                     {/* Header */}
-                    <div className="bg-muted/20 border-border/30 border-b backdrop-blur-sm rounded-t-lg">
+                    <div className="bg-muted/20 border-border/30 rounded-t-lg border-b backdrop-blur-sm">
                         <div className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
                                 <User2 className="h-4 w-4 shrink-0 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
-                                <h2 className="text-base font-semibold tracking-tight truncate">Editar Usuário: {user.name}</h2>
+                                <h2 className="truncate text-base font-semibold tracking-tight">Editar Usuário: {user.name}</h2>
                                 <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
                                     <DialogTrigger asChild>
                                         <Button
@@ -55,9 +55,7 @@ export default function Edit({ user, roles }: EditUserProps) {
                     {/* Form Content */}
                     <div className="p-4 sm:p-6">
                         <div className="max-w-3xl">
-                            <p className="text-muted-foreground mb-6 text-sm">
-                                Atualize as informações do usuário abaixo.
-                            </p>
+                            <p className="text-muted-foreground mb-6 text-sm">Atualize as informações do usuário abaixo.</p>
                             <UserForm user={user} roles={roles} routeName="users.update" />
                         </div>
                     </div>

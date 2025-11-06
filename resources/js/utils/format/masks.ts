@@ -40,12 +40,12 @@ export function applyCnpjMask(value: string): string {
  */
 export function applyCpfCnpjMask(value: string): string {
     const numbers = removeNonNumeric(value);
-    
+
     // Se tiver 11 dígitos ou menos, aplica máscara de CPF
     if (numbers.length <= 11) {
         return applyCpfMask(value);
     }
-    
+
     // Se tiver mais de 11 dígitos, aplica máscara de CNPJ
     return applyCnpjMask(value);
 }
@@ -83,4 +83,3 @@ export function applyMobileMask(value: string): string {
 export function removeMask(value: string): string {
     return removeNonNumeric(value);
 }
-

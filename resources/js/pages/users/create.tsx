@@ -28,7 +28,7 @@ export default function Create({ roles }: CreateUserProps) {
             <div className="flex h-full flex-1 flex-col gap-3 p-4 md:gap-4 md:p-6">
                 <div className="bg-card border-border/40 overflow-hidden rounded-lg border shadow-sm">
                     {/* Header */}
-                    <div className="bg-muted/20 border-border/30 border-b backdrop-blur-sm rounded-t-lg">
+                    <div className="bg-muted/20 border-border/30 rounded-t-lg border-b backdrop-blur-sm">
                         <div className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex min-w-0 flex-wrap items-center gap-2">
                                 <UserPlus className="h-4 w-4 shrink-0 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
@@ -54,9 +54,7 @@ export default function Create({ roles }: CreateUserProps) {
                     {/* Form Content */}
                     <div className="p-4 sm:p-6">
                         <div className="max-w-3xl">
-                            <p className="text-muted-foreground mb-6 text-sm">
-                                Preencha os dados abaixo para criar um novo usuário no sistema.
-                            </p>
+                            <p className="text-muted-foreground mb-6 text-sm">Preencha os dados abaixo para criar um novo usuário no sistema.</p>
                             <UserForm roles={roles} routeName="users.store" />
                         </div>
                     </div>
