@@ -4,9 +4,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Role, User } from '@/types';
+import { applyCpfCnpjMask, applyMobileMask, applyPhoneMask } from '@/utils/format/masks';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
@@ -45,6 +47,11 @@ export default function UserForm({
     const { hasPermission } = usePermissions();
     const canAssignRoles = hasPermission('assign_roles');
 
+    // Aplicar máscaras nos dados iniciais se vierem do backend
+    const initialCpfCnpj = user?.cpf_cnpj ? applyCpfCnpjMask(user.cpf_cnpj) : '';
+    const initialPhone = user?.phone ? applyPhoneMask(user.phone) : '';
+    const initialMobile = user?.mobile ? applyMobileMask(user.mobile) : '';
+
     const {
         data,
         setData,
@@ -55,9 +62,9 @@ export default function UserForm({
     } = useForm<UserFormData>({
         name: user?.name || '',
         email: user?.email || '',
-        cpf_cnpj: user?.cpf_cnpj || '',
-        phone: user?.phone || '',
-        mobile: user?.mobile || '',
+        cpf_cnpj: initialCpfCnpj,
+        phone: initialPhone,
+        mobile: initialMobile,
         password: '',
         password_confirmation: '',
         role_id: user?.role?.id || null,
@@ -114,180 +121,269 @@ export default function UserForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Nome */}
-                <div className="grid gap-2">
-                    <Label htmlFor="name">
-                        Nome <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="name"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                        autoComplete="name"
-                        placeholder="Nome completo"
-                        aria-invalid={errors.name ? true : undefined}
-                    />
-                    <InputError message={errors.name} />
-                </div>
-
-                {/* Email */}
-                <div className="grid gap-2">
-                    <Label htmlFor="email">
-                        Email <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                        autoComplete="username"
-                        placeholder="email@exemplo.com"
-                        aria-invalid={errors.email ? true : undefined}
-                    />
-                    <InputError message={errors.email} />
-                </div>
-
-                {/* CPF/CNPJ */}
-                <div className="grid gap-2">
-                    <Label htmlFor="cpf_cnpj">CPF/CNPJ</Label>
-                    <Input
-                        id="cpf_cnpj"
-                        value={data.cpf_cnpj}
-                        onChange={(e) => setData('cpf_cnpj', e.target.value)}
-                        placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                        aria-invalid={errors.cpf_cnpj ? true : undefined}
-                    />
-                    <InputError message={errors.cpf_cnpj} />
-                </div>
-
-                {/* Telefone */}
-                <div className="grid gap-2">
-                    <Label htmlFor="phone">Telefone</Label>
-                    <Input
-                        id="phone"
-                        type="tel"
-                        value={data.phone}
-                        onChange={(e) => setData('phone', e.target.value)}
-                        placeholder="(00) 0000-0000"
-                        aria-invalid={errors.phone ? true : undefined}
-                    />
-                    <InputError message={errors.phone} />
-                </div>
-
-                {/* Celular */}
-                <div className="grid gap-2">
-                    <Label htmlFor="mobile">Celular</Label>
-                    <Input
-                        id="mobile"
-                        type="tel"
-                        value={data.mobile}
-                        onChange={(e) => setData('mobile', e.target.value)}
-                        placeholder="(00) 00000-0000"
-                        aria-invalid={errors.mobile ? true : undefined}
-                    />
-                    <InputError message={errors.mobile} />
-                </div>
-
-                {/* Cargo - Só aparece se o usuário tiver permissão assign_roles */}
-                {canAssignRoles && (
-                    <div className="grid gap-2">
-                        <Label htmlFor="role_id">Cargo</Label>
-                        <Select
-                            value={data.role_id ? data.role_id.toString() : 'none'}
-                            onValueChange={(value) => {
-                                // Se value é 'none', seta null, senão converte para number
-                                setData('role_id', value === 'none' ? null : Number(value));
-                            }}
-                        >
-                            <SelectTrigger id="role_id" aria-invalid={errors.role_id ? true : undefined}>
-                                <SelectValue placeholder="Selecione um cargo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">Sem cargo</SelectItem>
-                                {Array.isArray(roles) && roles.length > 0
-                                    ? roles.map((role) => {
-                                          const roleId = role.id || role.name;
-                                          return (
-                                              <SelectItem key={roleId} value={roleId.toString()}>
-                                                  {role.label || role.name}
-                                              </SelectItem>
-                                          );
-                                      })
-                                    : null}
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.role_id} />
+        <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Informações Básicas */}
+            <div className="space-y-5">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {/* Nome */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                            Nome
+                            <span className="text-destructive/70 ml-1">*</span>
+                        </Label>
+                        <Input
+                            id="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                            autoComplete="name"
+                            placeholder="Nome completo"
+                            aria-invalid={errors.name ? true : undefined}
+                            className="transition-all duration-200"
+                        />
+                        <InputError message={errors.name} />
                     </div>
-                )}
+
+                    {/* Email */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                            Email
+                            <span className="text-destructive/70 ml-1">*</span>
+                        </Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                            autoComplete="username"
+                            placeholder="email@exemplo.com"
+                            aria-invalid={errors.email ? true : undefined}
+                            className="transition-all duration-200"
+                        />
+                        <InputError message={errors.email} />
+                    </div>
+
+                    {/* CPF/CNPJ */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-foreground">
+                            CPF/CNPJ
+                            <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
+                        </Label>
+                        <Input
+                            id="cpf_cnpj"
+                            value={data.cpf_cnpj || ''}
+                            onChange={(e) => {
+                                const masked = applyCpfCnpjMask(e.target.value);
+                                setData('cpf_cnpj', masked);
+                            }}
+                            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                            aria-invalid={errors.cpf_cnpj ? true : undefined}
+                            className="transition-all duration-200"
+                            maxLength={18}
+                        />
+                        <InputError message={errors.cpf_cnpj} />
+                    </div>
+
+                    {/* Cargo - Só aparece se o usuário tiver permissão assign_roles */}
+                    {canAssignRoles && (
+                        <div className="space-y-1.5">
+                            <Label htmlFor="role_id" className="text-sm font-medium text-foreground">
+                                Cargo
+                                <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
+                            </Label>
+                            <Select
+                                value={data.role_id ? data.role_id.toString() : 'none'}
+                                onValueChange={(value) => {
+                                    // Se value é 'none', seta null, senão converte para number
+                                    setData('role_id', value === 'none' ? null : Number(value));
+                                }}
+                            >
+                                <SelectTrigger id="role_id" aria-invalid={errors.role_id ? true : undefined} className="transition-all duration-200">
+                                    <SelectValue placeholder="Selecione um cargo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Sem cargo</SelectItem>
+                                    {Array.isArray(roles) && roles.length > 0
+                                        ? roles.map((role) => {
+                                              const roleId = role.id || role.name;
+                                              return (
+                                                  <SelectItem key={roleId} value={roleId.toString()}>
+                                                      {role.label || role.name}
+                                                  </SelectItem>
+                                              );
+                                          })
+                                        : null}
+                                </SelectContent>
+                            </Select>
+                            <InputError message={errors.role_id} />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Informações de Contato */}
+            <div className="space-y-5">
+                <Separator className="my-1" />
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {/* Telefone */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="phone" className="text-sm font-medium text-foreground">
+                            Telefone
+                            <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
+                        </Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            value={data.phone || ''}
+                            onChange={(e) => {
+                                const masked = applyPhoneMask(e.target.value);
+                                setData('phone', masked);
+                            }}
+                            placeholder="(00) 0000-0000"
+                            aria-invalid={errors.phone ? true : undefined}
+                            className="transition-all duration-200"
+                            maxLength={14}
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+
+                    {/* Celular */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="mobile" className="text-sm font-medium text-foreground">
+                            Celular
+                            <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
+                        </Label>
+                        <Input
+                            id="mobile"
+                            type="tel"
+                            value={data.mobile || ''}
+                            onChange={(e) => {
+                                const masked = applyMobileMask(e.target.value);
+                                setData('mobile', masked);
+                            }}
+                            placeholder="(00) 00000-0000"
+                            aria-invalid={errors.mobile ? true : undefined}
+                            className="transition-all duration-200"
+                            maxLength={15}
+                        />
+                        <InputError message={errors.mobile} />
+                    </div>
+                </div>
             </div>
 
             {/* Senha */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="grid gap-2">
-                    <Label htmlFor="password">
-                        {user ? 'Nova Senha' : 'Senha'} {!user && <span className="text-destructive">*</span>}
-                    </Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
-                        autoComplete="new-password"
-                        placeholder={user ? 'Deixe em branco para manter a atual' : 'Mínimo 8 caracteres'}
-                        aria-invalid={errors.password ? true : undefined}
-                    />
-                    <InputError message={errors.password} />
-                    {user && <p className="text-muted-foreground text-xs">Deixe em branco para manter a senha atual</p>}
-                </div>
+            <div className="space-y-5">
+                <Separator className="my-1" />
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                            {user ? 'Nova Senha' : 'Senha'}
+                            {!user && <span className="text-destructive/70 ml-1">*</span>}
+                            {user && <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>}
+                        </Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            autoComplete="new-password"
+                            placeholder={user ? 'Deixe em branco para manter a atual' : 'Mínimo 8 caracteres'}
+                            aria-invalid={errors.password ? true : undefined}
+                            className="transition-all duration-200"
+                        />
+                        <InputError message={errors.password} />
+                        {user && (
+                            <p className="text-muted-foreground/70 text-xs leading-relaxed">
+                                Deixe em branco para manter a senha atual
+                            </p>
+                        )}
+                    </div>
 
-                <div className="grid gap-2">
-                    <Label htmlFor="password_confirmation">
-                        {user ? 'Confirmar Nova Senha' : 'Confirmar Senha'} {!user && <span className="text-destructive">*</span>}
-                    </Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        value={data.password_confirmation}
-                        onChange={(e) => setData('password_confirmation', e.target.value)}
-                        autoComplete="new-password"
-                        placeholder="Confirme a senha"
-                        aria-invalid={errors.password_confirmation ? true : undefined}
-                    />
-                    <InputError message={errors.password_confirmation} />
+                    <div className="space-y-1.5">
+                        <Label htmlFor="password_confirmation" className="text-sm font-medium text-foreground">
+                            {user ? 'Confirmar Nova Senha' : 'Confirmar Senha'}
+                            {!user && <span className="text-destructive/70 ml-1">*</span>}
+                            {user && <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>}
+                        </Label>
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            value={data.password_confirmation}
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            autoComplete="new-password"
+                            placeholder="Confirme a senha"
+                            aria-invalid={errors.password_confirmation ? true : undefined}
+                            className="transition-all duration-200"
+                        />
+                        <InputError message={errors.password_confirmation} />
+                    </div>
                 </div>
             </div>
 
-            {/* Status Ativo */}
-            <div className="flex items-center space-x-2">
-                <Checkbox id="is_active" checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked === true)} />
-                <Label htmlFor="is_active" className="cursor-pointer text-sm font-normal">
-                    Usuário ativo
-                </Label>
-                <InputError message={errors.is_active} />
-            </div>
+            {/* Status e Configurações */}
+            <div className="space-y-5">
+                <Separator className="my-1" />
+                <div className="space-y-5">
+                    {/* Status Ativo */}
+                    <div className="flex items-start space-x-3 rounded-md border border-border/40 bg-muted/20 dark:bg-muted/30 p-4 transition-colors duration-200">
+                        <Checkbox
+                            id="is_active"
+                            checked={data.is_active}
+                            onCheckedChange={(checked) => setData('is_active', checked === true)}
+                            className="mt-0.5 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600 dark:data-[state=checked]:bg-cyan-500 dark:data-[state=checked]:border-cyan-500"
+                        />
+                        <div className="space-y-0.5 flex-1">
+                            <Label htmlFor="is_active" className="cursor-pointer text-sm font-medium text-foreground">
+                                Usuário ativo
+                            </Label>
+                            <p className="text-muted-foreground/70 text-xs leading-relaxed">
+                                Usuários inativos não podem fazer login no sistema
+                            </p>
+                        </div>
+                        <InputError message={errors.is_active} />
+                    </div>
 
-            {/* Notas */}
-            <div className="grid gap-2">
-                <Label htmlFor="user_notes">Notas</Label>
-                <Textarea
-                    id="user_notes"
-                    value={data.user_notes}
-                    onChange={(e) => setData('user_notes', e.target.value)}
-                    placeholder="Informações adicionais sobre o usuário..."
-                    rows={4}
-                    aria-invalid={errors.user_notes ? true : undefined}
-                />
-                <InputError message={errors.user_notes} />
+                    {/* Notas */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="user_notes" className="text-sm font-medium text-foreground">
+                            Notas
+                            <span className="text-muted-foreground/60 ml-1.5 text-xs font-normal">(opcional)</span>
+                        </Label>
+                        <Textarea
+                            id="user_notes"
+                            value={data.user_notes}
+                            onChange={(e) => setData('user_notes', e.target.value)}
+                            placeholder="Informações adicionais sobre o usuário..."
+                            rows={4}
+                            aria-invalid={errors.user_notes ? true : undefined}
+                            className="transition-all duration-200 resize-none"
+                        />
+                        <InputError message={errors.user_notes} />
+                        <p className="text-muted-foreground/70 text-xs leading-relaxed">
+                            Use este campo para registrar observações, lembretes ou informações relevantes sobre o usuário
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Botões */}
-            <div className="flex items-center gap-4">
-                <Button type="submit" disabled={processing}>
-                    {processing ? 'Salvando...' : user ? 'Atualizar Usuário' : 'Criar Usuário'}
+            <div className="flex items-center gap-4 pt-2">
+                <Button
+                    type="submit"
+                    disabled={processing}
+                    className="bg-cyan-600 text-white transition-all duration-200 ease-in-out hover:scale-105 hover:bg-cyan-700 active:scale-95 dark:bg-cyan-600 dark:text-white dark:shadow-lg dark:hover:bg-cyan-700 dark:hover:shadow-xl"
+                >
+                    {processing ? (
+                        <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            Salvando...
+                        </>
+                    ) : user ? (
+                        'Atualizar Usuário'
+                    ) : (
+                        'Criar Usuário'
+                    )}
                 </Button>
             </div>
         </form>

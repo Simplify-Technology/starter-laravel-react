@@ -1,9 +1,13 @@
-import HeadingSmall from '@/components/heading-small';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UserForm from '@/components/user-form';
+import { UserInfoDialog } from '@/components/users/user-info-dialog';
 import { useFlashMessages } from '@/hooks/use-flash-messages';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, Role, User } from '@/types';
 import { Head } from '@inertiajs/react';
+import { Info, User2 } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Usuários', href: '/users' },
@@ -17,14 +21,46 @@ type EditUserProps = {
 
 export default function Edit({ user, roles }: EditUserProps) {
     useFlashMessages();
+    const [showInfoDialog, setShowInfoDialog] = useState(false);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar Usuário - ${user.name}`} />
-            <div className="flex flex-1 flex-col gap-4 rounded-xl p-4">
-                <HeadingSmall title={`Editar Usuário: ${user.name}`} description="Atualize as informações do usuário abaixo." />
-                <div className="bg-card rounded-lg border p-6">
-                    <UserForm user={user} roles={roles} routeName="users.update" />
+            <div className="flex h-full flex-1 flex-col gap-3 p-4 md:gap-4 md:p-6">
+                <div className="bg-card border-border/40 overflow-hidden rounded-lg border shadow-sm">
+                    {/* Header */}
+                    <div className="bg-muted/20 border-border/30 border-b backdrop-blur-sm rounded-t-lg">
+                        <div className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                <User2 className="h-4 w-4 shrink-0 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                <h2 className="text-base font-semibold tracking-tight truncate">Editar Usuário: {user.name}</h2>
+                                <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 shrink-0 transition-all duration-200 ease-in-out hover:scale-105 hover:bg-cyan-50 hover:text-cyan-700 active:scale-95 dark:hover:bg-cyan-950/20 dark:hover:text-cyan-400"
+                                            aria-label="Informações sobre edição de usuários"
+                                        >
+                                            <Info className="text-muted-foreground dark:text-muted-foreground/80 h-4 w-4 transition-colors duration-200" />
+                                        </Button>
+                                    </DialogTrigger>
+                                </Dialog>
+                                <UserInfoDialog open={showInfoDialog} onOpenChange={setShowInfoDialog} />
+                                <span className="text-muted-foreground/80 text-xs font-medium">• Atualização</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Form Content */}
+                    <div className="p-4 sm:p-6">
+                        <div className="max-w-3xl">
+                            <p className="text-muted-foreground mb-6 text-sm">
+                                Atualize as informações do usuário abaixo.
+                            </p>
+                            <UserForm user={user} roles={roles} routeName="users.update" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </AppLayout>
