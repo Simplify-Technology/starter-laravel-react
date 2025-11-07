@@ -65,6 +65,7 @@ export function useUserFilters({ initialFilters = {}, routeName, debounceMs = SE
             const existingFilters: UserFilterParams = {
                 role_id: initialFilters.role_id,
                 is_active: initialFilters.is_active,
+                has_individual_permissions: initialFilters.has_individual_permissions,
                 sort_by: initialFilters.sort_by,
                 sort_order: initialFilters.sort_order,
             };
@@ -93,6 +94,7 @@ export function useUserFilters({ initialFilters = {}, routeName, debounceMs = SE
                 search: initialFilters.search,
                 role_id: initialFilters.role_id,
                 is_active: initialFilters.is_active,
+                has_individual_permissions: initialFilters.has_individual_permissions,
                 sort_by: initialFilters.sort_by,
                 sort_order: initialFilters.sort_order,
             };

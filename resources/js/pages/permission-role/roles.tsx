@@ -158,6 +158,18 @@ export default function Roles({ roles, assignableRoles = [], permissions }: Perm
                                     <RoleInfoDialog open={showInfoDialog} onOpenChange={setShowInfoDialog} />
                                 </div>
                             </div>
+                            {/* Tabs Navigation */}
+                            <div className="border-border/30 flex items-center gap-1 border-t px-3 pt-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 gap-1.5 rounded-b-none border-b-2 border-cyan-600 px-3 text-xs font-medium text-cyan-600 transition-all duration-200 dark:border-cyan-500 dark:text-cyan-400"
+                                    data-active
+                                >
+                                    <Shield className="h-3.5 w-3.5" />
+                                    Roles
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                             {/* Role Header */}

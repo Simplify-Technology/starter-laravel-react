@@ -61,8 +61,7 @@ export function UserDetailsDialog({ open, onOpenChange, user, canManagePermissio
     };
 
     const handleManagePermissions = () => {
-        // This would open another dialog or navigate to permissions page
-        router.visit(route('permissions.individual'));
+        router.visit(route('users.permissions.show', user.id));
     };
 
     return (

@@ -6,7 +6,7 @@ import type { UserTableRowProps } from '@/types/users';
 import { TABLE_ROW_HOVER_CLASSES } from '@/utils/users/constants';
 import { Link } from '@inertiajs/react';
 import { Table } from '@radix-ui/themes';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Shield } from 'lucide-react';
 import React from 'react';
 import { UserActionsMenu } from './user-actions-menu';
 
@@ -51,13 +51,32 @@ export const UserTableRow = React.memo(
                     <div className="text-muted-foreground dark:text-muted-foreground/80 text-xs">{user.mobile || '-'}</div>
                 </Table.Cell>
                 <Table.Cell>
-                    {user.role?.label ? (
-                        <Badge variant="secondary" className="bg-muted/50 text-muted-foreground border-0 text-xs font-medium">
-                            {user.role.label}
-                        </Badge>
-                    ) : (
-                        <span className="text-muted-foreground/60 text-xs">-</span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {user.role?.label ? (
+                            <Badge variant="secondary" className="bg-muted/50 text-muted-foreground border-0 text-xs font-medium">
+                                {user.role.label}
+                            </Badge>
+                        ) : (
+                            <span className="text-muted-foreground/60 text-xs">-</span>
+                        )}
+                        {user.custom_permissions_count && user.custom_permissions_count > 0 && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Badge
+                                        variant="outline"
+                                        className="border-cyan-500/50 bg-cyan-50/50 text-xs dark:border-cyan-500/40 dark:bg-cyan-950/20"
+                                    >
+                                        <Shield className="mr-1 h-3 w-3" />
+                                        {user.custom_permissions_count}
+                                    </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {user.custom_permissions_count}{' '}
+                                    {user.custom_permissions_count === 1 ? 'permissão individual' : 'permissões individuais'}
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                    </div>
                 </Table.Cell>
                 <Table.Cell>
                     {user.is_active ? (
@@ -132,6 +151,7 @@ export const UserTableRow = React.memo(
             prevProps.user.is_active === nextProps.user.is_active &&
             prevProps.user.role?.id === nextProps.user.role?.id &&
             prevProps.user.role?.label === nextProps.user.role?.label &&
+            (prevProps.user.custom_permissions_count ?? 0) === (nextProps.user.custom_permissions_count ?? 0) &&
             prevProps.index === nextProps.index &&
             prevProps.canEdit === nextProps.canEdit &&
             prevProps.canManagePermissions === nextProps.canManagePermissions &&

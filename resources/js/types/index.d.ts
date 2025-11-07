@@ -54,6 +54,14 @@ export interface User {
     email_verified_at: string | null;
     role?: Role | null;
     permissions?: Permission[];
+    custom_permissions_count?: number;
+    custom_permissions_list?: Array<{
+        name: string;
+        label: string;
+        meta?: {
+            can_impersonate_any?: boolean;
+        };
+    }>;
     created_at: string;
     updated_at: string;
 

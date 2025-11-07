@@ -18,13 +18,15 @@ final class RevokePermissionController extends Controller
     ) {
     }
 
-    public function __invoke(User $user, Permission $permission): RedirectResponse
+    public function __invoke(User $user, string $permission): RedirectResponse
     {
         Gate::authorize('managePermissions', $user);
 
+        $permissionModel = Permission::where('name', $permission)->firstOrFail();
+
         $this->permissionManagementService->revokePermissionFromUser(
             user: $user,
-            permissionName: $permission->name
+            permissionName: $permissionModel->name
         );
 
         return back()->with('success', 'Permissão revogada com sucesso.');

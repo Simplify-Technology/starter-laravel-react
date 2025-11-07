@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
         // User Permissions
         Route::get('users/{user}/permissions', User\ShowUserPermissionsController::class)->name('users.permissions.show');
         Route::post('users/{user}/permissions/grant', User\GrantPermissionController::class)->name('users.permissions.grant');
+        Route::delete('users/{user}/permissions/{permission}', User\RevokePermissionController::class)->name('users.permissions.revoke');
     });
 
     // Impersonate start route (after users routes but specific enough)
@@ -58,11 +59,6 @@ Route::middleware(['auth', 'verified'])->group(function(): void {
     Route::post('/users/{user}/sync-permissions', PermissionRole\SyncPermissionsController::class)
         ->middleware('can:manage_users')
         ->name('user.sync-permissions');
-
-    // Individual permissions page
-    Route::get('/permissions/individual', PermissionRole\IndividualPermissionsController::class)
-        ->middleware('can:manage_users')
-        ->name('permissions.individual');
     // endregion
 });
 

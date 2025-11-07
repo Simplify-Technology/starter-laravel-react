@@ -21,7 +21,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Permissões',
-        url: '/permissions',
+        url: '/permissions/roles',
         icon: Shield,
         permission: 'manage_roles',
     },

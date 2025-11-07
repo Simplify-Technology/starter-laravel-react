@@ -3,7 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { cn } from '@/lib/utils';
 import type { UserActionsMenuProps } from '@/types/users';
 import { Link } from '@inertiajs/react';
-import { Edit, Eye, MoreHorizontal, Plus, Trash2, UserCheck, UserCog, UserX } from 'lucide-react';
+import { Edit, Eye, MoreHorizontal, Settings, Trash2, UserCheck, UserCog, UserX } from 'lucide-react';
 
 /**
  * Componente de menu de ações para usuários
@@ -16,7 +16,6 @@ export function UserActionsMenu({
     onImpersonate,
     onAssignRole,
     onRevokeRole,
-    onAddPermission,
     canDelete,
     canEdit,
     canImpersonate,
@@ -64,9 +63,11 @@ export function UserActionsMenu({
                         )}
 
                         {canManagePermissions && (
-                            <DropdownMenuItem onClick={() => onAddPermission?.(user)} className="cursor-pointer">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Adicionar Permissão
+                            <DropdownMenuItem asChild>
+                                <Link href={route('users.permissions.show', user.id)} className="cursor-pointer">
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    Gerenciar Permissões
+                                </Link>
                             </DropdownMenuItem>
                         )}
 

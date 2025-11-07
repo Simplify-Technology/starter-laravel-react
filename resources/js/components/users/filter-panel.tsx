@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Role } from '@/types';
@@ -9,6 +10,7 @@ export type UserFilterParams = {
     search?: string;
     role_id?: string | number;
     is_active?: boolean | string;
+    has_individual_permissions?: boolean | string;
     sort_by?: string;
     sort_order?: string;
 };
@@ -29,13 +31,7 @@ export function FilterPanel({
     onFilterChange,
     onClearFilters,
     onClearSingleFilter = (key) => {
-        if (key === 'role_id') {
-            onFilterChange(key, undefined);
-        } else if (key === 'is_active') {
-            onFilterChange(key, undefined);
-        } else {
-            onFilterChange(key, undefined);
-        }
+        onFilterChange(key, undefined);
     },
 }: FilterPanelProps) {
     const renderFilterField = (label: ReactNode, key: string, children: ReactNode) => {
@@ -44,7 +40,9 @@ export function FilterPanel({
                 ? filters.role_id !== undefined && filters.role_id !== 'all'
                 : key === 'is_active'
                   ? filters.is_active !== undefined && filters.is_active !== 'all'
-                  : !!filters[key as keyof UserFilterParams];
+                  : key === 'has_individual_permissions'
+                    ? filters.has_individual_permissions === true || filters.has_individual_permissions === 'true'
+                    : !!filters[key as keyof UserFilterParams];
 
         return (
             <div className="space-y-2">
@@ -68,7 +66,11 @@ export function FilterPanel({
         );
     };
 
-    const hasAnyFilter = filters.role_id !== undefined || filters.is_active !== undefined || filters.search !== undefined;
+    const hasAnyFilter =
+        filters.role_id !== undefined ||
+        filters.is_active !== undefined ||
+        filters.has_individual_permissions !== undefined ||
+        filters.search !== undefined;
 
     return (
         <div className="bg-muted/30 border-t p-3">
@@ -126,6 +128,26 @@ export function FilterPanel({
                             <SelectItem value="inactive">Inativos</SelectItem>
                         </SelectContent>
                     </Select>,
+                )}
+
+                {/* Individual Permissions Filter */}
+                {renderFilterField(
+                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                        <Shield className="h-4 w-4 text-cyan-600" />
+                        Permissões Individuais
+                    </div>,
+                    'has_individual_permissions',
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="has_individual_permissions"
+                            checked={filters.has_individual_permissions === true || filters.has_individual_permissions === 'true'}
+                            onCheckedChange={(checked) => onFilterChange('has_individual_permissions', checked ? true : undefined)}
+                            aria-label="Apenas com permissões individuais"
+                        />
+                        <Label htmlFor="has_individual_permissions" className="cursor-pointer text-sm font-normal">
+                            Apenas com permissões individuais
+                        </Label>
+                    </div>,
                 )}
             </div>
 

@@ -15,6 +15,7 @@ export type UserFilterParams = {
     search?: string;
     role_id?: number | string;
     is_active?: boolean | string;
+    has_individual_permissions?: boolean | string;
     sort_by?: string;
     sort_order?: 'asc' | 'desc';
     page?: number;

@@ -49,6 +49,15 @@ final class IndexController extends Controller
             $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
         }
 
+        // Filtro por permissões individuais
+        if ($request->filled('has_individual_permissions')) {
+            $hasPermissions = filter_var($request->has_individual_permissions, FILTER_VALIDATE_BOOLEAN);
+
+            if ($hasPermissions) {
+                $query->has('permissions');
+            }
+        }
+
         // Ordenação
         $sortBy    = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
@@ -112,6 +121,14 @@ final class IndexController extends Controller
 
             if ($isActive !== null) {
                 $filters['is_active'] = $isActive;
+            }
+        }
+
+        if ($request->filled('has_individual_permissions')) {
+            $hasPermissions = filter_var($request->has_individual_permissions, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            if ($hasPermissions !== null) {
+                $filters['has_individual_permissions'] = $hasPermissions;
             }
         }
 
