@@ -15,7 +15,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Usuários',
-        url: '/users',
+        url: '/users/*',
         icon: Users,
         permission: 'manage_users',
     },

@@ -180,85 +180,93 @@ export default function UserPermissions({ user, all_permissions }: UserPermissio
                                 <Separator className="mt-4" />
                             </div>
 
-                            {/* Permissões do Cargo */}
-                            <div className="mb-8">
-                                <div className="mb-4">
-                                    <div className="mb-2 flex items-center gap-2">
-                                        <User2 className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
-                                        <h3 className="text-foreground text-base font-semibold">Permissões do Cargo</h3>
-                                        <span className="text-muted-foreground/70 text-xs">
-                                            ({rolePermissions.length} {rolePermissions.length === 1 ? 'permissão' : 'permissões'})
-                                        </span>
-                                    </div>
-                                    <p className="text-muted-foreground dark:text-muted-foreground/70 text-sm">
-                                        Estas permissões são herdadas do cargo e não podem ser alteradas individualmente. Para modificar, altere as
-                                        permissões do cargo.
-                                    </p>
-                                </div>
-                                {user.role ? (
-                                    <>
-                                        <div className="mb-3 flex items-center gap-2">
-                                            <Shield className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-                                            <p className="text-foreground text-sm font-medium">{user.role.label}</p>
+                            {/* Permissões em Duas Colunas */}
+                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+                                {/* Coluna Esquerda: Permissões do Cargo */}
+                                <div className="lg:col-span-2">
+                                    <div className="mb-4">
+                                        <div className="mb-2 flex items-center gap-2">
+                                            <User2 className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                            <h3 className="text-foreground text-base font-semibold">Permissões do Cargo</h3>
+                                            <span className="text-muted-foreground/70 text-xs">
+                                                ({rolePermissions.length} {rolePermissions.length === 1 ? 'permissão' : 'permissões'})
+                                            </span>
                                         </div>
-                                        {rolePermissions.length > 0 ? (
-                                            <div className="flex flex-wrap gap-2">
-                                                {rolePermissions.map((permission) => (
-                                                    <Badge
-                                                        key={permission.name}
-                                                        variant="outline"
-                                                        className="border-cyan-500/50 bg-cyan-50/50 text-xs dark:border-cyan-500/40 dark:bg-cyan-950/20"
-                                                    >
-                                                        {permission.label}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-muted-foreground text-sm">Este cargo não possui permissões atribuídas.</p>
-                                        )}
-                                    </>
-                                ) : (
-                                    <p className="text-muted-foreground text-sm">Usuário não possui cargo atribuído.</p>
-                                )}
-                            </div>
-
-                            {/* Permissões Individuais */}
-                            <div>
-                                <div className="mb-4">
-                                    <div className="mb-2 flex items-center gap-2">
-                                        <Shield className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
-                                        <h3 className="text-foreground text-base font-semibold">Permissões Disponíveis</h3>
-                                    </div>
-                                    <p className="text-muted-foreground dark:text-muted-foreground/70 text-sm">
-                                        Selecione as permissões individuais que este usuário deve possuir (apenas permissões não incluídas no cargo)
-                                    </p>
-                                </div>
-
-                                {/* Grid de Permissões */}
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                    {all_permissions
-                                        .filter((permission) => {
-                                            // Filtrar permissões que já estão no cargo (elas são herdadas automaticamente)
-                                            return !rolePermissionNames.includes(permission.name);
-                                        })
-                                        .map((permission) => (
-                                            <PermissionCard
-                                                key={permission.name}
-                                                permission={permission}
-                                                isChecked={userPermissions.includes(permission.name)}
-                                                onToggle={handlePermissionToggle}
-                                            />
-                                        ))}
-                                </div>
-
-                                {/* Mensagem se todas as permissões estão no cargo */}
-                                {all_permissions.every((p) => rolePermissionNames.includes(p.name)) && (
-                                    <div className="border-border/40 bg-muted/20 rounded-md border p-4 text-center">
-                                        <p className="text-muted-foreground text-sm">
-                                            Todas as permissões disponíveis já estão incluídas no cargo deste usuário.
+                                        <p className="text-muted-foreground dark:text-muted-foreground/70 text-sm">
+                                            Estas permissões são herdadas do cargo e não podem ser alteradas individualmente. Para modificar, altere
+                                            as permissões do cargo.
                                         </p>
                                     </div>
-                                )}
+                                    {user.role ? (
+                                        <>
+                                            <div className="mb-3 flex items-center gap-2">
+                                                <Shield className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+                                                <p className="text-foreground text-sm font-medium">{user.role.label}</p>
+                                            </div>
+                                            {rolePermissions.length > 0 ? (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {rolePermissions.map((permission) => (
+                                                        <Badge
+                                                            key={permission.name}
+                                                            variant="outline"
+                                                            className="border-cyan-500/50 bg-cyan-50/50 text-xs dark:border-cyan-500/40 dark:bg-cyan-950/20"
+                                                        >
+                                                            {permission.label}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="border-border/40 bg-muted/20 rounded-md border p-4 text-center">
+                                                    <p className="text-muted-foreground text-sm">Este cargo não possui permissões atribuídas.</p>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="border-border/40 bg-muted/20 rounded-md border p-4 text-center">
+                                            <p className="text-muted-foreground text-sm">Usuário não possui cargo atribuído.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Coluna Direita: Permissões Disponíveis */}
+                                <div className="lg:col-span-3">
+                                    <div className="mb-4">
+                                        <div className="mb-2 flex items-center gap-2">
+                                            <Shield className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
+                                            <h3 className="text-foreground text-base font-semibold">Permissões Disponíveis</h3>
+                                        </div>
+                                        <p className="text-muted-foreground dark:text-muted-foreground/70 text-sm">
+                                            Selecione as permissões individuais que este usuário deve possuir (apenas permissões não incluídas no
+                                            cargo)
+                                        </p>
+                                    </div>
+
+                                    {/* Grid de Permissões */}
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {all_permissions
+                                            .filter((permission) => {
+                                                // Filtrar permissões que já estão no cargo (elas são herdadas automaticamente)
+                                                return !rolePermissionNames.includes(permission.name);
+                                            })
+                                            .map((permission) => (
+                                                <PermissionCard
+                                                    key={permission.name}
+                                                    permission={permission}
+                                                    isChecked={userPermissions.includes(permission.name)}
+                                                    onToggle={handlePermissionToggle}
+                                                />
+                                            ))}
+                                    </div>
+
+                                    {/* Mensagem se todas as permissões estão no cargo */}
+                                    {all_permissions.every((p) => rolePermissionNames.includes(p.name)) && (
+                                        <div className="border-border/40 bg-muted/20 rounded-md border p-4 text-center">
+                                            <p className="text-muted-foreground text-sm">
+                                                Todas as permissões disponíveis já estão incluídas no cargo deste usuário.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
