@@ -43,9 +43,9 @@ export function SearchBar({
         <div ref={containerRef} className={cn('relative flex-1 sm:w-64', className)}>
             <Input
                 id="search"
-                type="search"
+                type="text"
                 placeholder={placeholder}
-                className="border-secondary-foreground/20 h-8 pr-8 pl-9 text-xs"
+                className="border-secondary-foreground/20 h-8 pr-8 pl-9 text-xs [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onKeyDown={handleKeyDown}

@@ -29,15 +29,19 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
 
     // Função para verificar se um item está ativo
     const isItemActive = (item: NavItem): boolean => {
-        // Se a URL exata corresponde, está ativo
-        if (item.url === page.url) {
+        // Extrai o pathname da URL atual (remove query parameters e hash)
+        const currentPath = page.url.split('?')[0].split('#')[0];
+        const itemPath = item.url.split('?')[0].split('#')[0];
+
+        // Se o pathname exato corresponde, está ativo
+        if (itemPath === currentPath) {
             return true;
         }
 
         // Para rotas que devem ficar ativas em sub-rotas (ex: /users em /users/create, /users/1, etc)
-        // Verifica se a URL atual começa com a URL do item + '/' ou é exatamente igual
+        // Verifica se o pathname atual começa com o pathname do item + '/' ou é exatamente igual
         // Mas evita falsos positivos (ex: /users não deve ativar /user)
-        if (page.url.startsWith(item.url + '/') || page.url === item.url) {
+        if (currentPath.startsWith(itemPath + '/') || currentPath === itemPath) {
             return true;
         }
 
