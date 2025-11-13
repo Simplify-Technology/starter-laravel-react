@@ -77,8 +77,8 @@ export function PageInfo({ title, description, children, triggerAriaLabel = 'Abr
                 <DialogContent className={cn('max-h-[85vh] overflow-y-auto', maxWidthClassName ?? 'sm:max-w-3xl')}>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <div className="bg-primary/10 rounded-lg p-2">
-                                <InfoIcon className="text-primary h-5 w-5" />
+                            <div className="bg-primary/10 dark:bg-primary/30 rounded-lg p-2">
+                                <InfoIcon className="text-primary h-5 w-5 dark:text-blue-400" />
                             </div>
                             <span>{title}</span>
                         </DialogTitle>

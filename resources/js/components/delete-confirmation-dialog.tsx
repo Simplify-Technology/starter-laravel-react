@@ -33,6 +33,7 @@ export type DeleteConfirmationDialogProps = {
     description?: string;
     itemName?: string;
     itemType?: string;
+    itemTypeLabel?: string; // Custom label for item type (e.g., "Usuário" instead of "Usuário a ser excluído")
     icon?: LucideIcon;
     details?: DeleteDialogDetail[];
     warnings?: DeleteDialogWarning[];
@@ -51,6 +52,7 @@ export function DeleteConfirmationDialog({
     description,
     itemName,
     itemType,
+    itemTypeLabel,
     icon: Icon = Trash2,
     details,
     warnings,
@@ -62,13 +64,13 @@ export function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
     const variantConfig = {
         danger: {
-            iconBg: 'bg-red-100 dark:bg-red-900/30',
-            iconColor: 'text-red-600 dark:text-red-400',
+            iconBg: 'bg-red-100 dark:bg-red-900/40',
+            iconColor: 'text-red-600 dark:text-red-300',
             buttonVariant: 'destructive' as const,
         },
         warning: {
-            iconBg: 'bg-yellow-100 dark:bg-yellow-900/30',
-            iconColor: 'text-yellow-600 dark:text-yellow-400',
+            iconBg: 'bg-orange-100 dark:bg-orange-900/40',
+            iconColor: 'text-orange-600 dark:text-orange-400',
             buttonVariant: 'default' as const,
         },
     };
@@ -95,12 +97,13 @@ export function DeleteConfirmationDialog({
                     {itemName && (
                         <div className="bg-muted/50 dark:bg-muted/30 border-border/50 space-y-3 rounded-lg border p-4">
                             <div className="flex items-start gap-3">
-                                <div className="bg-primary/10 dark:bg-primary/20 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
-                                    <Info className="text-primary dark:text-primary/90 h-4 w-4" />
+                                <div className="bg-primary/10 dark:bg-primary/30 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+                                    <Info className="text-primary h-4 w-4 dark:text-blue-400" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-                                        {itemType ? `${itemType} a ser excluído${itemType.endsWith('o') ? '' : 'a'}` : 'Item a ser excluído'}
+                                        {itemTypeLabel ||
+                                            (itemType ? `${itemType} a ser excluído${itemType.endsWith('o') ? '' : 'a'}` : 'Item a ser excluído')}
                                     </p>
                                     <p className="text-foreground text-base font-semibold break-words">{itemName}</p>
                                 </div>
@@ -112,7 +115,9 @@ export function DeleteConfirmationDialog({
                                     {details.map((detail, index) => (
                                         <div key={index} className="flex items-center justify-between gap-3 text-sm">
                                             <div className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2">
-                                                {detail.icon && <detail.icon className="text-muted-foreground/70 h-3.5 w-3.5 shrink-0" />}
+                                                {detail.icon && (
+                                                    <detail.icon className="text-muted-foreground/70 dark:text-muted-foreground/60 h-3.5 w-3.5 shrink-0" />
+                                                )}
                                                 <span className="font-medium">{detail.label}</span>
                                             </div>
                                             <span className="text-foreground text-right font-semibold break-words">{detail.value}</span>
@@ -129,7 +134,9 @@ export function DeleteConfirmationDialog({
                             {details.map((detail, index) => (
                                 <div key={index} className="flex items-center justify-between gap-3 text-sm">
                                     <div className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2">
-                                        {detail.icon && <detail.icon className="text-muted-foreground/70 h-3.5 w-3.5 shrink-0" />}
+                                        {detail.icon && (
+                                            <detail.icon className="text-muted-foreground/70 dark:text-muted-foreground/60 h-3.5 w-3.5 shrink-0" />
+                                        )}
                                         <span className="font-medium">{detail.label}</span>
                                     </div>
                                     <span className="text-foreground text-right font-semibold break-words">{detail.value}</span>
@@ -147,17 +154,26 @@ export function DeleteConfirmationDialog({
                                     className={cn(
                                         'flex gap-2 rounded-lg border p-3',
                                         warning.severity === 'danger'
-                                            ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
-                                            : 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20',
+                                            ? 'border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-900/30'
+                                            : 'border-orange-200 bg-orange-50 dark:border-orange-800/50 dark:bg-orange-900/30',
                                     )}
                                 >
                                     <AlertTriangle
                                         className={cn(
                                             'h-4 w-4 shrink-0',
-                                            warning.severity === 'danger' ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400',
+                                            warning.severity === 'danger' ? 'text-red-600 dark:text-red-300' : 'text-orange-600 dark:text-orange-300',
                                         )}
                                     />
-                                    <p className="text-sm">{warning.message}</p>
+                                    <p
+                                        className={cn(
+                                            'text-sm',
+                                            warning.severity === 'danger'
+                                                ? 'text-red-900 dark:text-red-50/90'
+                                                : 'text-orange-900 dark:text-orange-50/90',
+                                        )}
+                                    >
+                                        {warning.message}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -167,10 +183,19 @@ export function DeleteConfirmationDialog({
                     {children}
 
                     {/* Confirmation Message */}
-                    <div className="bg-muted rounded-lg p-3">
-                        <p className="text-sm">
-                            <span className="font-semibold">Atenção:</span> Esta ação não pode ser desfeita. Todos os dados relacionados serão
-                            permanentemente removidos.
+                    <div
+                        className={cn(
+                            'rounded-lg p-3',
+                            variant === 'danger'
+                                ? 'bg-muted dark:bg-muted/50'
+                                : 'border border-orange-200 bg-orange-50 dark:border-orange-800/50 dark:bg-orange-900/20',
+                        )}
+                    >
+                        <p className={cn('text-sm', variant === 'danger' ? 'text-foreground' : 'text-orange-900 dark:text-orange-50/90')}>
+                            <span className="font-semibold">Atenção:</span>{' '}
+                            {variant === 'danger'
+                                ? 'Esta ação não pode ser desfeita. Todos os dados relacionados serão permanentemente removidos.'
+                                : 'Esta ação afetará o acesso do usuário ao sistema. Certifique-se de que o usuário possui outras permissões ou que você pretende atribuir um novo cargo posteriormente.'}
                         </p>
                     </div>
                 </div>
@@ -183,15 +208,24 @@ export function DeleteConfirmationDialog({
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={processing}>
                             {cancelText}
                         </Button>
-                        <Button type="button" variant={config.buttonVariant} onClick={onConfirm} disabled={processing} className="gap-2">
+                        <Button
+                            type="button"
+                            variant={config.buttonVariant}
+                            onClick={onConfirm}
+                            disabled={processing}
+                            className={cn(
+                                'gap-2',
+                                variant === 'warning' && 'bg-orange-600 text-white hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700',
+                            )}
+                        >
                             {processing ? (
                                 <>
                                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                    Excluindo...
+                                    {variant === 'warning' ? 'Removendo...' : 'Excluindo...'}
                                 </>
                             ) : (
                                 <>
-                                    <Trash2 className="h-4 w-4" />
+                                    {variant === 'warning' ? <Icon className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
                                     {confirmText}
                                 </>
                             )}

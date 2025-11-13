@@ -5,7 +5,18 @@ alwaysApply: false
 
 # Guia de Implementação de Módulos - CRM e Financeiro
 
-Este guia fornece templates, padrões e checklists para implementar os módulos CRM e Financeiro respeitando o sistema de permissões estabelecido.
+> **⚠️ Importante**: Este guia fornece **padrões recomendados** e **boas práticas**, não regras rígidas. Use como referência e adapte conforme a necessidade específica de cada módulo. Quando uma abordagem diferente fizer mais sentido, priorize a solução mais adequada ao contexto.
+
+Este guia fornece templates, padrões e checklists para implementar os módulos CRM e Financeiro respeitando o sistema de permissões estabelecido e seguindo a arquitetura frontend definida.
+
+## 🎯 Princípios Fundamentais (Flexíveis)
+
+Estes princípios devem ser considerados, mas podem ser adaptados conforme o contexto:
+
+1. **Separação de responsabilidades**: Manter lógica separada de renderização quando fizer sentido
+2. **Reutilização quando viável**: Usar componentes genéricos quando a complexidade não compensar
+3. **Manutenibilidade**: Priorizar código limpo e testável sobre seguir padrões cegamente
+4. **Contexto primeiro**: Cada módulo tem necessidades específicas - adapte os padrões
 
 ## 📋 Checklist de Permissões por Funcionalidade
 
@@ -39,7 +50,213 @@ Este guia fornece templates, padrões e checklists para implementar os módulos 
 | Visualizar relatórios | `view_financial_reports` | `$this->authorize('view_financial_reports')` |
 | Exportar relatórios   | `export_financial`       | `$this->authorize('export_financial')`       |
 
-## 🎯 Template de Controller com Autorização
+## 🎨 Padrões Frontend (React + TypeScript)
+
+> **Nota**: Os exemplos abaixo são **referências** baseadas no módulo de usuários. Adapte conforme necessário. Nem todo módulo precisa de todos esses hooks e componentes.
+
+### Estrutura de Página de Listagem
+
+**Quando apropriado**, seguir o padrão estabelecido no módulo de usuários:
+
+```typescript
+// pages/clients/index.tsx
+import { useClientFilters } from '@/hooks/clients/use-client-filters';
+import { useClientPermissions } from '@/hooks/clients/use-client-permissions';
+import { useClientActions } from '@/hooks/clients/use-client-actions';
+import { SearchBar } from '@/components/data-table/search-bar';
+import { Pagination } from '@/components/data-table/pagination';
+import { FilterToggle } from '@/components/data-table/filter-toggle';
+import { ClientTableRow } from '@/components/clients/client-table-row';
+import type { ClientsPageProps } from '@/types/clients';
+
+export default function Index({ clients, filters, pagination }: ClientsPageProps) {
+    // 1. Hooks de estado e lógica
+    const { localSearch, isSearching, handleFilterChange, clearFilters } = useClientFilters({
+        initialFilters: filters,
+        routeName: 'clients.index',
+    });
+    
+    const { canDeleteClient, canEdit, canManageClients } = useClientPermissions();
+    
+    // 2. Pré-cálculos e memoizações
+    const hasManageClients = useMemo(() => canManageClients(), [canManageClients]);
+    const tableColumns = useMemo(() => [...], []);
+    
+    // 3. Renderização
+    return (
+        <AppLayout>
+            <SearchBar value={localSearch} onChange={setLocalSearch} />
+            <FilterToggle isOpen={showFilters} onToggle={setShowFilters} />
+            {/* Tabela com ClientTableRow memoizado */}
+            <Pagination {...pagination} onPageChange={handlePageChange} />
+        </AppLayout>
+    );
+}
+```
+
+### Quando Adaptar os Padrões
+
+**✅ Considere uma abordagem diferente quando:**
+
+- O módulo é muito simples (ex: apenas listagem sem filtros complexos)
+- Há requisitos específicos que não se encaixam no padrão
+- A complexidade de seguir o padrão não compensa o benefício
+- Há uma solução mais simples e eficiente para o contexto
+
+**Exemplos de adaptações válidas:**
+
+```typescript
+// Módulo simples - pode não precisar de hooks separados
+export default function SimpleIndex({ items }: SimplePageProps) {
+    const [search, setSearch] = useState('');
+    // Lógica simples inline - não precisa de hook separado
+    return <div>{/* renderização simples */}</div>;
+}
+
+// Módulo com lógica específica - pode ter estrutura diferente
+export default function CustomIndex({ data }: CustomPageProps) {
+    // Usar estrutura diferente se fizer mais sentido
+    // Não precisa seguir exatamente o padrão de usuários
+}
+```
+
+### Componentes Genéricos Disponíveis
+
+**Reutilizar quando fizer sentido** - não obrigatório:
+
+- `SearchBar` - Busca com debounce
+- `Pagination` - Paginação
+- `FilterToggle` - Toggle de filtros
+- `DataTableHeader` - Cabeçalho de tabela
+- `ModuleInfoDialog` - Dialog de informações
+- `DeleteConfirmationDialog` - Confirmação de exclusão
+
+### Criar Componentes Específicos
+
+**Quando a funcionalidade é específica do módulo** ou quando generalizar adiciona complexidade desnecessária:
+
+```typescript
+// components/clients/client-table-row.tsx
+export const ClientTableRow = React.memo(function ClientTableRow({
+    client,
+    index,
+    onView,
+    onEdit,
+    onDelete,
+    // ...
+}: ClientTableRowProps) {
+    // Renderização da linha
+}, (prevProps, nextProps) => {
+    // Comparação customizada para evitar re-renders
+    return (
+        prevProps.client.id === nextProps.client.id &&
+        prevProps.client.name === nextProps.client.name &&
+        // ...
+    );
+});
+```
+
+### Hooks Customizados
+
+**Criar hooks quando:**
+- A lógica é complexa e reutilizável
+- Há estado que precisa ser gerenciado
+- Facilita testes e manutenção
+
+**❌ Não criar hooks quando:**
+- A lógica é muito simples (prefira inline)
+- Apenas para seguir o padrão (sem benefício real)
+- Adiciona complexidade desnecessária
+
+**Exemplo de criação de hooks para lógica específica do módulo:**
+
+```typescript
+// hooks/clients/use-client-filters.ts
+export function useClientFilters({ initialFilters, routeName }) {
+    const [localSearch, setLocalSearch] = useState(initialFilters.search || '');
+    const [isSearching, setIsSearching] = useState(false);
+    
+    // Lógica de busca com debounce
+    // Lógica de filtros
+    // ...
+    
+    return {
+        localSearch,
+        isSearching,
+        handleFilterChange,
+        clearFilters,
+        // ...
+    };
+}
+
+// hooks/clients/use-client-permissions.ts
+export function useClientPermissions() {
+    const { hasPermission } = usePermissions();
+    
+    const canDeleteClient = useCallback((client: Client) => {
+        if (!hasPermission('delete_clients')) return false;
+        // Lógica específica
+        return true;
+    }, [hasPermission]);
+    
+    return {
+        canDeleteClient,
+        canEdit: () => hasPermission('edit_clients'),
+        // ...
+    };
+}
+
+// hooks/clients/use-client-actions.ts
+export function useClientActions({ onDeleteSuccess, ... }) {
+    const handleDelete = useCallback((client: Client) => {
+        router.delete(route('clients.destroy', client.id), {
+            onSuccess: () => onDeleteSuccess?.(),
+        });
+    }, [onDeleteSuccess]);
+    
+    return {
+        onDelete: handleDelete,
+        // ...
+    };
+}
+```
+
+### Tipos TypeScript
+
+**Preferencialmente** criar arquivo de tipos separado (mas pode ser inline para casos muito simples):
+
+```typescript
+// types/clients.ts
+export type Client = {
+    id: number;
+    name: string;
+    email?: string;
+    // ...
+};
+
+export type ClientFilterParams = {
+    search?: string;
+    status?: string;
+    // ...
+};
+
+export type ClientsPageProps = {
+    clients: Client[];
+    filters: ClientFilterParams;
+    pagination: PaginationProps;
+};
+
+export type ClientTableRowProps = {
+    client: Client;
+    index: number;
+    onView?: (client: Client) => void;
+    onEdit?: (client: Client) => void;
+    onDelete?: (client: Client) => void;
+    // ...
+};
+```
+
+## 🛡️ Template de Controller com Autorização
 
 ### Exemplo: ClientController
 
@@ -76,6 +293,13 @@ class IndexController extends Controller
 
         return Inertia::render('clients/index', [
             'clients' => $clients,
+            'filters' => $request->only(['search', 'status']),
+            'pagination' => [
+                'current_page' => $clients->currentPage(),
+                'last_page' => $clients->lastPage(),
+                'per_page' => $clients->perPage(),
+                'total' => $clients->total(),
+            ],
         ]);
     }
 }
@@ -540,25 +764,43 @@ Route::middleware(['auth', 'can:view_financial'])->prefix('financial')->group(fu
 
 ## ✅ Checklist de Implementação
 
+> **Lembre-se**: Este checklist é um **guia**, não uma lista obrigatória. Marque apenas o que for relevante para seu módulo.
+
 Ao implementar um novo módulo ou funcionalidade:
 
 ### Preparação
-
 - [ ] Consultar `permissions-reference.md` para verificar permissões necessárias
 - [ ] Verificar se permissões já existem no enum `Permissions`
 - [ ] Verificar se permissões estão atribuídas aos papéis corretos no seeder
 
-### Implementação
-
+### Backend (Laravel)
 - [ ] Controller verifica permissão com `$this->authorize()`
 - [ ] Policy criada (se necessário para lógica complexa)
 - [ ] Rotas protegidas com middleware `can:permission_name`
 - [ ] Filtros por papel implementados (ex: Sales Rep vê só seus dados)
 - [ ] Validações específicas por papel (ex: Accounts Payable só cria despesas)
+
+### Frontend (React + TypeScript)
+- [ ] Estrutura de diretórios criada (adaptar conforme necessidade)
+- [ ] Tipos TypeScript definidos (em arquivo separado ou inline, conforme contexto)
+- [ ] Hook de filtros criado (se necessário para o módulo)
+- [ ] Hook de permissões criado (se necessário para o módulo)
+- [ ] Hook de ações criado (se necessário para o módulo)
+- [ ] Componentes genéricos reutilizados (quando fizer sentido)
+- [ ] Componentes específicos criados (quando necessário)
+- [ ] Memoização aplicada (quando apropriado para performance)
 - [ ] Frontend verifica permissões antes de mostrar botões/links
 
-### Testes
+### Qualidade
+- [ ] Sem erros de lint (`npm run ci:check`)
+- [ ] Compatível com dark mode
+- [ ] Responsivo (mobile, tablet, desktop)
+- [ ] Acessível (aria-labels, aria-live, navegação por teclado)
+- [ ] Transições suaves (200ms)
+- [ ] Hierarquia visual clara
+- [ ] Micro-interações polidas
 
+### Testes
 - [ ] Testar cada papel pode acessar apenas o que deve
 - [ ] Testar restrições por papel (ex: Sales Rep não pode deletar)
 - [ ] Testar filtros (ex: Sales Rep vê apenas seus clientes)
@@ -566,6 +808,7 @@ Ao implementar um novo módulo ou funcionalidade:
 
 ## 📚 Referências
 
+- **Arquitetura Frontend**: `.cursor/rules/frontend-architecture.md`
 - **Documentação de Permissões**: `.cursor/rules/permissions-reference.md`
 - **Enum de Permissões**: `app/Enum/Permissions.php`
 - **Enum de Papéis**: `app/Enum/Roles.php`
@@ -573,9 +816,23 @@ Ao implementar um novo módulo ou funcionalidade:
 
 ## 💡 Dicas Importantes
 
+### Backend (Laravel)
+
 1. **Sempre verifique permissão primeiro**: `$this->authorize()` deve ser a primeira linha do método
 2. **Use Policies para lógica complexa**: Se a validação for mais que uma verificação simples, crie uma Policy
 3. **Filtre dados por papel**: Sales Rep não deve ver dados de outros vendedores
 4. **Valide no backend**: Nunca confie apenas em validações do frontend
 5. **Teste todos os papéis**: Cada papel deve ter acesso apenas ao que precisa
 6. **Documente exceções**: Se um papel tem acesso especial, documente o motivo
+
+### Frontend (React + TypeScript)
+
+7. **Use este guia como referência, não como regra**: Adapte conforme necessário
+8. **Contexto primeiro**: Cada módulo tem necessidades específicas - adapte os padrões
+9. **Simplicidade sobre padrão**: Se uma solução simples funciona melhor, use-a
+10. **Priorize manutenibilidade**: Código limpo e testável é mais importante que seguir padrões
+11. **Reutilize componentes genéricos**: Evite duplicar código, use componentes genéricos quando possível
+12. **Organize tipos separadamente**: Preferencialmente em arquivo separado, mas pode ser inline para casos simples
+13. **Otimize performance quando necessário**: Pré-calcule valores fora de loops, use memoização quando apropriado
+14. **Não crie hooks desnecessários**: Se a lógica é simples, mantenha inline
+15. **Não force componentes genéricos**: Se generalizar adiciona complexidade, mantenha específico

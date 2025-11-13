@@ -8,7 +8,9 @@ import { usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
-    const { auth } = usePage().props as { auth?: { impersonating?: { active?: boolean; originalUserName?: string | null; impersonatedUserName?: string | null } } };
+    const { auth } = usePage().props as {
+        auth?: { impersonating?: { active?: boolean; originalUserName?: string | null; impersonatedUserName?: string | null } };
+    };
 
     return (
         <AppShell variant="sidebar">

@@ -93,7 +93,7 @@ final class StoreController extends Controller
         ]);
 
         return redirect()
-            ->route('users.show', $user)
+            ->route('users.index')
             ->with('success', 'Usuário criado com sucesso!');
     }
 }

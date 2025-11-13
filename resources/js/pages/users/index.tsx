@@ -1,82 +1,35 @@
 import { AddPermissionDialog } from '@/components/add-permission-dialog';
 import AssignRoleUser from '@/components/assign-role-user';
+import { FilterToggle } from '@/components/data-table/filter-toggle';
+import { Pagination } from '@/components/data-table/pagination';
+import { SearchBar } from '@/components/data-table/search-bar';
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog';
 import { EmptyState } from '@/components/empty-state';
-import { InfoFeatureList, InfoSection } from '@/components/page-info';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { FilterPanel } from '@/components/users/filter-panel';
+import { UserInfoDialog } from '@/components/users/user-info-dialog';
+import { UserTableRow } from '@/components/users/user-table-row';
 import { useFlashMessages } from '@/hooks/use-flash-messages';
-import { usePermissions } from '@/hooks/use-permissions';
+import { useUserActions } from '@/hooks/users/use-user-actions';
+import { useUserFilters } from '@/hooks/users/use-user-filters';
+import { useUserPermissions } from '@/hooks/users/use-user-permissions';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
-import { BreadcrumbItem, Role, type SharedData, User } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { BreadcrumbItem, User } from '@/types';
+import type { UsersPageProps } from '@/types/users';
+import { buildPaginationParams } from '@/utils/data-table/query-params';
+import { getUserInitials } from '@/utils/users/user-helpers';
+import { Head, Link, router } from '@inertiajs/react';
 import { Table } from '@radix-ui/themes';
-import {
-    CheckCircle,
-    Edit,
-    Eye,
-    EyeOff,
-    Filter,
-    Info,
-    Mail,
-    MoreHorizontal,
-    Phone,
-    Plus,
-    Search,
-    Shield,
-    SlidersHorizontal,
-    Sparkles,
-    Trash2,
-    User2,
-    UserCheck,
-    UserCog,
-    UserPlus,
-    Users as UsersIcon,
-    UserX,
-    X,
-    Zap,
-} from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { CheckCircle, Info, Mail, Phone, Plus, Settings, Shield, User2, UserPlus, UserX } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuários', href: '/users' }];
 
-type UsersProps = {
-    users: User[];
-    roles: Role[];
-    assignableRoles?: Role[];
-    filters?: {
-        search?: string;
-        role_id?: number;
-        is_active?: boolean | string;
-        sort_by?: string;
-        sort_order?: string;
-    };
-    pagination: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
-};
-
-export default function Index({ users, roles, assignableRoles = [], filters = {}, pagination }: UsersProps) {
-    const { auth } = usePage<SharedData>().props;
+export default function Index({ users, roles, assignableRoles = [], filters = {}, pagination }: UsersPageProps) {
     useFlashMessages();
 
-    // State
+    // Local state for modals and processing
     const [showFilters, setShowFilters] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showInfoDialog, setShowInfoDialog] = useState(false);
@@ -85,189 +38,46 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
     const [showAddPermissionDialog, setShowAddPermissionDialog] = useState(false);
     const [showAssignRoleDialog, setShowAssignRoleDialog] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const { hasPermission } = usePermissions();
+    const [showRevokeRoleDialog, setShowRevokeRoleDialog] = useState(false);
+    const [userToRevokeRole, setUserToRevokeRole] = useState<User | null>(null);
+    const [isRevokingRole, setIsRevokingRole] = useState(false);
 
-    // Local search state for debounced input
-    const [localSearch, setLocalSearch] = useState(filters.search || '');
-    const [isSearching, setIsSearching] = useState(false);
-    const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const isInitialMount = useRef(true);
+    // Hooks
+    const { localSearch, isSearching, setLocalSearch, handleFilterChange, clearFilters, clearSingleFilter, searchContainerRef } = useUserFilters({
+        initialFilters: filters,
+        routeName: 'users.index',
+    });
 
-    // Sync localSearch with filters.search when it changes from backend (but not on initial mount)
-    useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
-        }
+    const { canDeleteUser, canEdit, canImpersonate, canManagePermissions, canAssignRoles } = useUserPermissions();
 
-        // Only sync if the filter changed externally (from backend) and we're not currently searching
-        if (filters.search !== localSearch && !isSearching) {
-            setLocalSearch(filters.search || '');
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters.search]);
+    // Pré-calcular flags de permissão uma vez (otimização para evitar chamadas repetidas no map)
+    const hasManagePermissions = useMemo(() => canManagePermissions(), [canManagePermissions]);
+    const hasAssignRoles = useMemo(() => canAssignRoles(), [canAssignRoles]);
+    const canEditUsers = useMemo(() => canEdit(), [canEdit]);
 
-    // Debounced search effect - only triggers when user types
-    useEffect(() => {
-        // Skip initial mount and if search matches current filter
-        if (isInitialMount.current || localSearch === (filters.search || '')) {
-            return;
-        }
-
-        // Clear existing timeout
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
-        }
-
-        setIsSearching(true);
-        searchTimeoutRef.current = setTimeout(() => {
-            const params: Record<string, string | number | boolean | undefined> = {};
-
-            // Copy existing filters but only if they have values
-            if (filters.role_id) params.role_id = filters.role_id;
-            if (filters.is_active !== undefined && filters.is_active !== '' && filters.is_active !== null) {
-                params.is_active = filters.is_active;
-            }
-            if (filters.sort_by) params.sort_by = filters.sort_by;
-            if (filters.sort_order) params.sort_order = filters.sort_order;
-
-            // Add search if it has a value
-            if (localSearch.trim()) {
-                params.search = localSearch.trim();
-            }
-
-            router.get(route('users.index'), params, {
-                preserveState: true,
-                preserveScroll: true,
-                onFinish: () => setIsSearching(false),
-            });
-        }, 300);
-
-        return () => {
-            if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
-            }
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [localSearch]);
-
-    const handleFilterChange = useCallback(
-        (key: string, value: string | number | boolean | undefined) => {
-            const params: Record<string, string | number | boolean | undefined> = {};
-
-            // Copy existing filters but only if they have values AND are not the filter being changed
-            if (key !== 'search' && filters.search) params.search = filters.search;
-            if (key !== 'role_id' && filters.role_id) params.role_id = filters.role_id;
-            if (key !== 'is_active' && filters.is_active !== undefined && filters.is_active !== '') {
-                params.is_active = filters.is_active;
-            }
-            if (key !== 'sort_by' && filters.sort_by) params.sort_by = filters.sort_by;
-            if (key !== 'sort_order' && filters.sort_order) params.sort_order = filters.sort_order;
-
-            // Update the changed filter (only add if it has a valid value)
-            if (value !== 'all' && value !== '' && value !== undefined && value !== null) {
-                params[key] = value;
-            }
-            // If value is undefined/null/empty and it's being cleared, it won't be added to params
-
-            router.get(route('users.index'), params, {
-                preserveState: true,
-                preserveScroll: true,
-            });
+    const actions = useUserActions({
+        onDeleteSuccess: () => {
+            setShowDeleteDialog(false);
+            setUserToDelete(null);
         },
-        [filters],
-    );
-
-    const clearFilters = useCallback(() => {
-        router.get(
-            route('users.index'),
-            {},
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-        setLocalSearch('');
-    }, []);
-
-    const clearSingleFilter = useCallback(
-        (key: string) => {
-            handleFilterChange(key, undefined);
+        onDeleteError: () => {
+            setIsDeleting(false);
         },
-        [handleFilterChange],
-    );
-
-    // Ref for the search container
-    const searchContainerRef = useRef<HTMLDivElement>(null);
-
-    // Focus the search input when the search icon is clicked
-    const focusSearchInput = useCallback((e?: React.MouseEvent) => {
-        if (e) {
-            e.stopPropagation();
-        }
-        const inputElement = searchContainerRef.current?.querySelector('input');
-        if (inputElement) {
-            inputElement.focus();
-        }
-    }, []);
-
-    // Handle Escape key to clear the search input
-    const handleSearchKeyDown = useCallback(
-        (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'Escape' && localSearch) {
-                e.preventDefault();
-                setLocalSearch('');
-                handleFilterChange('search', '');
-            }
+        onRevokeRoleSuccess: () => {
+            setShowRevokeRoleDialog(false);
+            setUserToRevokeRole(null);
         },
-        [localSearch, handleFilterChange],
-    );
+        onRevokeRoleError: () => {
+            setIsRevokingRole(false);
+        },
+    });
 
+    // Handlers for modals
     const handleDelete = useCallback(() => {
         if (!userToDelete) return;
-
         setIsDeleting(true);
-        router.delete(route('users.destroy', userToDelete.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                setShowDeleteDialog(false);
-                setUserToDelete(null);
-            },
-            onError: () => {
-                setIsDeleting(false);
-            },
-            onFinish: () => setIsDeleting(false),
-        });
-    }, [userToDelete]);
-
-    const canDeleteUser = useCallback(
-        (user: User) => {
-            // Cannot delete super_user
-            if (user.role?.name === 'super_user') {
-                return false;
-            }
-            // Cannot delete self
-            if (user.id === auth.user.id) {
-                return false;
-            }
-            return true;
-        },
-        [auth.user.id],
-    );
-
-    const handleToggleActive = useCallback((user: User) => {
-        router.patch(
-            route('users.toggle-active', user.id),
-            {},
-            {
-                preserveScroll: true,
-            },
-        );
-    }, []);
-
-    const handleImpersonate = useCallback((user: User) => {
-        router.post(route('users.impersonate', user.id), {});
-    }, []);
+        actions.onDelete(userToDelete);
+    }, [userToDelete, actions]);
 
     const handleAddPermission = useCallback((user: User) => {
         setSelectedUser(user);
@@ -280,30 +90,19 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
     }, []);
 
     const handleRevokeRole = useCallback((user: User) => {
-        if (!confirm('Tem certeza que deseja remover o cargo deste usuário?')) {
-            return;
-        }
-
-        router.delete(route('user.revoke-role', user.id), {
-            preserveScroll: true,
-        });
+        setUserToRevokeRole(user);
+        setShowRevokeRoleDialog(true);
     }, []);
+
+    const confirmRevokeRole = useCallback(() => {
+        if (!userToRevokeRole) return;
+        setIsRevokingRole(true);
+        actions.onRevokeRole(userToRevokeRole);
+    }, [userToRevokeRole, actions]);
 
     const handlePageChange = useCallback(
         (page: number) => {
-            const params: Record<string, string | number | boolean | undefined> = {};
-
-            // Copy existing filters but only if they have values
-            if (filters.search) params.search = filters.search;
-            if (filters.role_id) params.role_id = filters.role_id;
-            if (filters.is_active !== undefined && filters.is_active !== '' && filters.is_active !== null) {
-                params.is_active = filters.is_active;
-            }
-            if (filters.sort_by) params.sort_by = filters.sort_by;
-            if (filters.sort_order) params.sort_order = filters.sort_order;
-
-            params.page = page;
-
+            const params = buildPaginationParams(page, filters);
             router.get(route('users.index'), params, {
                 preserveState: true,
                 preserveScroll: false,
@@ -312,170 +111,85 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
         [filters],
     );
 
-    // Memoized user initials
-    const getUserInitials = useCallback((name: string) => {
-        return name
-            .split(' ')
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase();
-    }, []);
+    // Calculate active filters count (incluindo busca)
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (filters.search?.trim()) count++;
+        if (filters.role_id) count++;
+        if (filters.is_active !== undefined && filters.is_active !== '') count++;
+        return count;
+    }, [filters]);
+
+    // Table columns configuration (memoizado para evitar recriação a cada render)
+    const tableColumns = useMemo(
+        () => [
+            { key: 'name', label: 'Nome', icon: User2 },
+            { key: 'email', label: 'Email', icon: Mail },
+            { key: 'mobile', label: 'Celular', icon: Phone },
+            { key: 'role', label: 'Cargo', icon: Shield },
+            { key: 'status', label: 'Status', icon: CheckCircle },
+        ],
+        [],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gerenciamento de Usuários" />
+            {/* Aria live region for screen readers */}
+            <div aria-live="polite" aria-atomic="true" className="sr-only">
+                {isSearching ? 'Buscando usuários...' : ''}
+            </div>
             <div className="flex h-full flex-1 flex-col gap-3 p-4 md:gap-4 md:p-6">
                 {/* Data Table with Integrated Filters */}
-                <div className="bg-card border-secondary-foreground/15 rounded-lg border shadow-sm">
+                <div className="bg-card border-border/40 overflow-hidden rounded-lg border shadow-sm">
                     {/* Table Header with Search and Filter Toggle */}
-                    <div className="bg-muted/30 border-secondary-foreground/15 border-b">
+                    <div className="bg-muted/20 border-border/30 border-b backdrop-blur-sm">
                         <div className="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
-                                <UserPlus className="h-3.5 w-3.5 text-cyan-600" />
-                                <h2 className="text-sm font-semibold">Usuários</h2>
+                                <UserPlus className="h-4 w-4 text-cyan-600 dark:text-cyan-500" />
+                                <h2 className="text-base font-semibold tracking-tight">Usuários</h2>
                                 <Dialog open={showInfoDialog} onOpenChange={setShowInfoDialog}>
                                     <DialogTrigger asChild>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="hover:bg-accent/50 dark:hover:bg-accent/20 hover:text-primary dark:hover:text-primary/90 h-6 w-6 cursor-pointer transition-colors"
+                                            className="hover:bg-accent/50 dark:hover:bg-accent/20 hover:text-primary dark:hover:text-primary/90 h-6 w-6 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
+                                            aria-label="Informações sobre o módulo de usuários"
                                         >
-                                            <Info className="text-muted-foreground dark:text-muted-foreground/80 h-3.5 w-3.5" />
+                                            <Info className="text-muted-foreground dark:text-muted-foreground/80 h-4 w-4 transition-colors duration-200" />
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
-                                        <DialogHeader>
-                                            <DialogTitle className="flex items-center gap-2">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
-                                                    <UsersIcon className="h-5 w-5 text-white" />
-                                                </div>
-                                                Informações sobre Usuários
-                                            </DialogTitle>
-                                        </DialogHeader>
-                                        <div className="space-y-4">
-                                            <InfoSection title="Visão Geral" icon={UsersIcon} iconColor="text-cyan-600">
-                                                <p>
-                                                    O módulo de Usuários centraliza o gerenciamento de todas as contas da plataforma, permitindo
-                                                    cadastro, edição, vinculação com cargos e controle de permissões.
-                                                </p>
-                                            </InfoSection>
-                                            <InfoSection title="Funcionalidades Principais" icon={Sparkles} iconColor="text-purple-600">
-                                                <InfoFeatureList
-                                                    features={[
-                                                        { label: 'Cadastro individual de usuários com dados completos' },
-                                                        { label: 'Gestão de perfis de acesso e permissões' },
-                                                        { label: 'Ativação/desativação de contas' },
-                                                        { label: 'Histórico de atividades e auditoria', badge: 'Auditoria' },
-                                                        { label: 'Busca e filtros avançados' },
-                                                        { label: 'Paginação eficiente para grandes volumes' },
-                                                    ]}
-                                                />
-                                            </InfoSection>
-                                            <InfoSection title="Filtros e Busca" icon={Filter} iconColor="text-orange-600">
-                                                <InfoFeatureList
-                                                    features={[
-                                                        { label: 'Busca textual - Pesquise por nome ou email' },
-                                                        { label: 'Filtro por Cargo - Visualize usuários por perfil' },
-                                                        { label: 'Filtro por Status - Ativo ou Inativo' },
-                                                        { label: 'Ordenação por colunas' },
-                                                    ]}
-                                                />
-                                            </InfoSection>
-                                            <InfoSection title="Perfis de Acesso" icon={Shield} iconColor="text-red-600">
-                                                <InfoFeatureList
-                                                    features={[
-                                                        { label: 'Super User - Acesso total ao sistema', badge: 'Máximo' },
-                                                        { label: 'Admin - Gerencia usuários e configurações', badge: 'Gestão' },
-                                                        { label: 'Manager - Acesso intermediário', badge: 'Intermediário' },
-                                                        { label: 'Outros perfis - Permissões customizadas', badge: 'Customizado' },
-                                                    ]}
-                                                />
-                                            </InfoSection>
-                                            <InfoSection title="Dicas de Uso" icon={Zap} iconColor="text-yellow-600">
-                                                <ul className="space-y-1.5 text-sm">
-                                                    <li>• A busca é instantânea e procura em nome e email simultaneamente</li>
-                                                    <li>• Combine filtros de cargo e status para segmentar usuários</li>
-                                                    <li>• Ao editar, você pode alterar cargo e permissões vinculadas</li>
-                                                    <li>• Usuários inativos não conseguem fazer login na plataforma</li>
-                                                    <li>• Use os ícones de ação rápida na tabela para operações frequentes</li>
-                                                </ul>
-                                            </InfoSection>
-                                        </div>
-                                    </DialogContent>
                                 </Dialog>
-                                <span className="text-muted-foreground text-xs">• {pagination.total.toLocaleString('pt-BR')} registros</span>
-                                {/* Search Input - Always Visible */}
-                                <div ref={searchContainerRef} className="relative ms-4 flex-1 sm:w-64">
-                                    <Input
-                                        id="search"
-                                        type="search"
-                                        placeholder="Buscar nome ou email"
-                                        className="border-secondary-foreground/20 h-8 pr-8 pl-9 text-xs"
+                                <UserInfoDialog open={showInfoDialog} onOpenChange={setShowInfoDialog} />
+                                <span className="text-muted-foreground/80 text-xs font-medium">
+                                    • {pagination.total.toLocaleString('pt-BR')} registros
+                                </span>
+                                <div ref={searchContainerRef} className="ms-4">
+                                    <SearchBar
                                         value={localSearch}
-                                        onChange={(e) => setLocalSearch(e.target.value)}
-                                        onKeyDown={handleSearchKeyDown}
-                                        aria-label="Pesquisar usuários"
+                                        onChange={setLocalSearch}
+                                        onClear={() => {
+                                            setLocalSearch('');
+                                            clearSingleFilter('search');
+                                        }}
+                                        placeholder="Buscar nome ou email"
+                                        isSearching={isSearching}
+                                        ariaLabel="Pesquisar usuários"
                                     />
-                                    <div
-                                        className="absolute top-1/2 left-3 -translate-y-1/2 cursor-pointer"
-                                        onClick={focusSearchInput}
-                                        role="button"
-                                        aria-label="Focar busca"
-                                    >
-                                        <Search className="text-muted-foreground h-3.5 w-3.5" />
-                                    </div>
-                                    {localSearch && (
-                                        <button
-                                            type="button"
-                                            className="hover:bg-muted absolute top-1/2 right-2 -translate-y-1/2 rounded-sm p-0.5 transition-colors"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setLocalSearch('');
-                                                clearSingleFilter('search');
-                                            }}
-                                            aria-label="Limpar busca"
-                                        >
-                                            <X className="text-muted-foreground hover:text-foreground h-3.5 w-3.5" />
-                                        </button>
-                                    )}
-                                    {isSearching && !localSearch && (
-                                        <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                                            <div className="border-primary h-3.5 w-3.5 animate-spin rounded-full border-2 border-t-transparent" />
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                {/* Filter Toggle Button */}
-                                <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className={cn(
-                                        'flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
-                                        showFilters
-                                            ? 'bg-primary/20 text-primary hover:bg-primary/30 dark:bg-primary/40 dark:hover:bg-primary/50 dark:text-white dark:shadow-sm'
-                                            : 'text-foreground/70 hover:bg-muted/60 hover:text-foreground dark:text-foreground/90 dark:hover:bg-muted/60 dark:border-border/50 dark:border dark:hover:text-white',
-                                    )}
-                                    aria-label="Filtros avançados"
-                                    aria-pressed={showFilters}
-                                >
-                                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                                    {showFilters ? 'Ocultar' : 'Filtros'}
-                                </button>
-
-                                {/* New User Button */}
+                                <FilterToggle
+                                    isOpen={showFilters}
+                                    onToggle={() => setShowFilters(!showFilters)}
+                                    activeFiltersCount={activeFiltersCount}
+                                />
                                 <Link href={route('users.create')}>
                                     <Button
                                         size="sm"
-                                        className={cn(
-                                            'h-8 gap-1.5',
-                                            'dark:bg-primary dark:text-white dark:shadow-lg',
-                                            'dark:hover:bg-primary/80 dark:hover:shadow-xl',
-                                            'dark:border-0',
-                                        )}
+                                        className="h-8 gap-1.5 bg-cyan-600 text-white transition-all duration-200 ease-in-out hover:scale-105 hover:bg-cyan-700 active:scale-95 dark:bg-cyan-600 dark:text-white dark:shadow-lg dark:hover:bg-cyan-700 dark:hover:shadow-xl"
                                     >
-                                        <Plus className="h-3.5 w-3.5" />
+                                        <Plus className="h-4 w-4 transition-transform duration-200" />
                                         Novo Usuário
                                     </Button>
                                 </Link>
@@ -488,9 +202,9 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                     filters={filters}
                                     roles={roles}
                                     isSearching={isSearching}
-                                    onFilterChange={handleFilterChange}
+                                    onFilterChange={(key, value) => handleFilterChange(key as keyof typeof filters, value)}
                                     onClearFilters={clearFilters}
-                                    onClearSingleFilter={clearSingleFilter}
+                                    onClearSingleFilter={(key) => clearSingleFilter(key as keyof typeof filters)}
                                 />
                             </div>
                         )}
@@ -498,284 +212,95 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
 
                     {/* Table Content */}
                     <div className="p-3">
-                <Table.Root variant="surface">
-                    <Table.Header>
-                                <Table.Row className="bg-muted/30">
-                                    <Table.ColumnHeaderCell className="text-xs font-semibold">
-                                        <div className="flex items-center gap-1.5">
-                                            <User2 className="h-4 w-4 text-blue-600" />
-                                            Nome
-                                        </div>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell className="text-xs font-semibold">
-                                        <div className="flex items-center gap-1.5">
-                                            <Mail className="h-4 w-4 text-purple-600" />
-                                            Email
-                                        </div>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell className="text-xs font-semibold">
-                                        <div className="flex items-center gap-1.5">
-                                            <Phone className="h-4 w-4 text-green-600" />
-                                            Celular
-                                        </div>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell className="text-xs font-semibold">
-                                        <div className="flex items-center gap-1.5">
-                                            <Shield className="h-4 w-4 text-orange-600" />
-                                            Cargo
-                                        </div>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell className="text-xs font-semibold">
-                                        <div className="flex items-center gap-1.5">
-                                            <CheckCircle className="h-4 w-4 text-green-600" />
-                                            Status
-                                        </div>
-                                    </Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell className="text-end text-xs font-semibold">Ações</Table.ColumnHeaderCell>
-                        </Table.Row>
-                    </Table.Header>
-
-                    <Table.Body>
-                        {users.length > 0 ? (
-                                    users.map((user, index) => (
-                                        <Table.Row
-                                            key={user.id}
-                                            className={cn(
-                                                'hover:bg-muted/40 dark:hover:bg-muted/20 transition-colors',
-                                                index % 2 === 0 && 'bg-muted/5 dark:bg-muted/5',
-                                            )}
-                                        >
-                                            <Table.RowHeaderCell>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-xs font-semibold text-white shadow-sm">
-                                                        {getUserInitials(user.name)}
-                                                    </div>
-                                                    <div className="text-sm font-medium">{user.name}</div>
+                        <Table.Root variant="surface">
+                            <Table.Header>
+                                <Table.Row className="bg-muted/10">
+                                    {tableColumns.map((column) => {
+                                        const Icon = column.icon;
+                                        return (
+                                            <Table.ColumnHeaderCell
+                                                key={column.key}
+                                                className={`text-sm font-semibold ${column.key === 'mobile' ? 'hidden md:table-cell' : ''}`}
+                                            >
+                                                <div className="flex items-center gap-1.5">
+                                                    <Icon className="h-4 w-4 text-cyan-600 dark:text-cyan-500" />
+                                                    {column.label}
                                                 </div>
-                                            </Table.RowHeaderCell>
-                                            <Table.Cell>
-                                                <div className="text-sm">{user.email}</div>
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <div className="text-sm">{user.mobile || '-'}</div>
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <div className="text-sm">{user.role?.label || user.role?.name || '-'}</div>
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                {user.is_active ? (
-                                                    <Badge
-                                                        variant="default"
-                                                        className="bg-green-100 text-green-900 dark:bg-green-400/10 dark:text-green-300"
-                                                    >
-                                                        <Eye className="mr-1 h-3 w-3" />
-                                                        Ativo
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                                                        <EyeOff className="mr-1 h-3 w-3" />
-                                                        Inativo
-                                                    </Badge>
-                                                )}
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <div className="flex items-center justify-end gap-2">
-                                                    {/* Ver Detalhes - Botão visível (ação mais utilizada) */}
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Link href={route('users.show', user.id)}>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    aria-label="Ver detalhes"
-                                                                    className="hover:bg-muted/60 hover:text-primary dark:hover:bg-muted/40 dark:hover:text-primary [&_svg]:text-muted-foreground dark:[&_svg]:text-muted-foreground/70 hover:[&_svg]:text-primary dark:hover:[&_svg]:text-secondary-foreground/80 transition-colors"
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                </Button>
-                                                            </Link>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Detalhes</TooltipContent>
-                                                    </Tooltip>
-
-                                                    {/* Dropdown Menu - Ações menos utilizadas */}
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                aria-label="Mais opções"
-                                                                className="hover:bg-muted/60 hover:text-primary dark:hover:bg-muted/40 dark:hover:text-primary [&_svg]:text-muted-foreground dark:[&_svg]:text-muted-foreground/70 hover:[&_svg]:text-primary dark:hover:[&_svg]:text-secondary-foreground/80 transition-colors"
-                                                            >
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-56">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={route('users.show', user.id)} className="cursor-pointer">
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    Detalhes
-                                                                </Link>
-                                                            </DropdownMenuItem>
-
-                                                            {hasPermission('manage_users') && (
-                                                                <>
-                                                                    <DropdownMenuItem asChild>
-                                                                        <Link href={route('users.edit', user.id)} className="cursor-pointer">
-                                                                            <Edit className="mr-2 h-4 w-4" />
-                                                                            Editar
-                                                                        </Link>
-                                                                    </DropdownMenuItem>
-
-                                                                    {hasPermission('manage_users') && (
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleAddPermission(user)}
-                                                                            className="cursor-pointer"
-                                                                        >
-                                                                            <Plus className="mr-2 h-4 w-4" />
-                                                                            Adicionar Permissão
-                                                                        </DropdownMenuItem>
-                                                                    )}
-
-                                                                    <DropdownMenuSeparator />
-
-                                                                    {hasPermission('assign_roles') && (
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleAssignRole(user)}
-                                                                            className="cursor-pointer"
-                                                                        >
-                                                                            <UserCheck className="mr-2 h-4 w-4" />
-                                                                            Atribuir Cargo
-                                                                        </DropdownMenuItem>
-                                                                    )}
-
-                                                                    {hasPermission('assign_roles') && auth.user.id !== user.id && (
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleRevokeRole(user)}
-                                                                            className="cursor-pointer text-destructive focus:text-destructive"
-                                                                        >
-                                                                            <UserX className="mr-2 h-4 w-4" />
-                                                                            Remover Cargo
-                                                                        </DropdownMenuItem>
-                                                                    )}
-
-                                                                    <DropdownMenuSeparator />
-
-                                                                    {(user as User & { can_impersonate?: boolean }).can_impersonate && (
-                                                                        <DropdownMenuItem
-                                                                            onClick={(e) => {
-                                                                                e.preventDefault();
-                                                                                handleImpersonate(user);
-                                                                            }}
-                                                                            className="cursor-pointer"
-                                                                        >
-                                                                            <UserCog className="mr-2 h-4 w-4" />
-                                                                            Personificar
-                                                                        </DropdownMenuItem>
-                                                                    )}
-
-                                                                    {hasPermission('manage_users') && (
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleToggleActive(user)}
-                                                                            className={cn(
-                                                                                'cursor-pointer',
-                                                                                user.is_active ? 'text-red-600 focus:text-red-600' : 'text-green-600 focus:text-green-600'
-                                                                            )}
-                                                                        >
-                                                                            {user.is_active ? (
-                                                                                <>
-                                                                                    <UserX className="mr-2 h-4 w-4" />
-                                                                                    Desativar
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <UserCheck className="mr-2 h-4 w-4" />
-                                                                                    Ativar
-                                                                                </>
-                                                                            )}
-                                                                        </DropdownMenuItem>
-                                                                    )}
-
-                                                                    {hasPermission('manage_users') && canDeleteUser(user) && (
-                                                                        <>
-                                                                            <DropdownMenuSeparator />
-                                                                            <DropdownMenuItem
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault();
-                                                                                    setUserToDelete(user);
-                                                                                    setShowDeleteDialog(true);
-                                                                                }}
-                                                                                disabled={isDeleting}
-                                                                                className="cursor-pointer text-destructive focus:text-destructive disabled:opacity-50"
-                                                                            >
-                                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                                Excluir
-                                                                            </DropdownMenuItem>
-                                                                        </>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </Table.Cell>
+                                            </Table.ColumnHeaderCell>
+                                        );
+                                    })}
+                                    <Table.ColumnHeaderCell className="text-end text-sm font-semibold">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <Settings className="h-4 w-4 text-cyan-600 dark:text-cyan-500" />
+                                            Ações
+                                        </div>
+                                    </Table.ColumnHeaderCell>
                                 </Table.Row>
-                            ))
-                        ) : (
+                            </Table.Header>
+
+                            <Table.Body>
+                                {users.length > 0 ? (
+                                    users.map((user, index) => (
+                                        <UserTableRow
+                                            key={user.id}
+                                            user={user}
+                                            index={index}
+                                            onView={actions.onView}
+                                            onEdit={canEditUsers ? actions.onEdit : undefined}
+                                            onDelete={
+                                                hasManagePermissions && canDeleteUser(user)
+                                                    ? (user) => {
+                                                          setUserToDelete(user);
+                                                          setShowDeleteDialog(true);
+                                                      }
+                                                    : undefined
+                                            }
+                                            onToggleActive={hasManagePermissions ? actions.onToggleActive : undefined}
+                                            onImpersonate={canImpersonate(user) ? actions.onImpersonate : undefined}
+                                            onAssignRole={hasAssignRoles ? handleAssignRole : undefined}
+                                            onRevokeRole={hasAssignRoles ? handleRevokeRole : undefined}
+                                            onAddPermission={hasManagePermissions ? handleAddPermission : undefined}
+                                            canDelete={canDeleteUser}
+                                            canEdit={canEditUsers}
+                                            canImpersonate={canImpersonate}
+                                            canManagePermissions={hasManagePermissions}
+                                            canAssignRoles={hasAssignRoles}
+                                            getUserInitials={getUserInitials}
+                                        />
+                                    ))
+                                ) : (
                                     <Table.Row>
                                         <Table.Cell colSpan={6}>
-                                            <div className="flex items-center justify-center py-12">
-                                                <EmptyState
-                                                    title={
-                                                        filters.search || filters.role_id !== undefined || filters.is_active !== undefined
-                                                            ? 'Nenhum usuário encontrado com os filtros aplicados'
-                                                            : 'Nenhum usuário encontrado'
-                                                    }
-                                                    description={
-                                                        filters.search || filters.role_id !== undefined || filters.is_active !== undefined
-                                                            ? 'Tente ajustar os critérios de busca ou limpar os filtros'
-                                                            : 'Não há usuários cadastrados no sistema'
-                                                    }
-                                                    icon={User2}
-                                                    type={'row'}
-                                                />
-                                            </div>
+                                            <EmptyState
+                                                title={
+                                                    filters.search || filters.role_id !== undefined || filters.is_active !== undefined
+                                                        ? 'Nenhum usuário encontrado com os filtros aplicados'
+                                                        : 'Nenhum usuário encontrado'
+                                                }
+                                                description={
+                                                    filters.search || filters.role_id !== undefined || filters.is_active !== undefined
+                                                        ? 'Tente ajustar os critérios de busca ou limpar os filtros'
+                                                        : 'Não há usuários cadastrados no sistema'
+                                                }
+                                                icon={User2}
+                                            />
                                         </Table.Cell>
                                     </Table.Row>
-                        )}
-                    </Table.Body>
-                </Table.Root>
-            </div>
+                                )}
+                            </Table.Body>
+                        </Table.Root>
+                    </div>
                 </div>
 
                 {/* Pagination */}
-                {pagination.last_page > 1 && (
-                    <div className="flex items-center justify-between">
-                        <div className="text-muted-foreground text-sm">
-                            Mostrando {((pagination.current_page - 1) * pagination.per_page + 1).toLocaleString('pt-BR')} até{' '}
-                            {Math.min(pagination.current_page * pagination.per_page, pagination.total).toLocaleString('pt-BR')} de{' '}
-                            {pagination.total.toLocaleString('pt-BR')} usuários
-                        </div>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => handlePageChange(pagination.current_page - 1)}
-                                disabled={pagination.current_page === 1}
-                            >
-                                Anterior
-                            </Button>
-                            <span className="flex items-center px-4 text-sm">
-                                Página {pagination.current_page} de {pagination.last_page}
-                            </span>
-                            <Button
-                                variant="outline"
-                                onClick={() => handlePageChange(pagination.current_page + 1)}
-                                disabled={pagination.current_page === pagination.last_page}
-                            >
-                                Próxima
-                            </Button>
-                        </div>
-                    </div>
-                )}
+                <Pagination
+                    currentPage={pagination.current_page}
+                    lastPage={pagination.last_page}
+                    perPage={pagination.per_page}
+                    total={pagination.total}
+                    onPageChange={handlePageChange}
+                    itemLabel="usuários"
+                />
             </div>
 
             {/* Delete Confirmation Dialog */}
@@ -823,7 +348,12 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                     user={{
                         id: selectedUser.id,
                         name: selectedUser.name,
-                        custom_permissions_list: (selectedUser as User & { custom_permissions_list?: Array<{ name: string; label: string; meta?: { can_impersonate_any?: boolean } }> }).custom_permissions_list || [],
+                        custom_permissions_list:
+                            (
+                                selectedUser as User & {
+                                    custom_permissions_list?: Array<{ name: string; label: string; meta?: { can_impersonate_any?: boolean } }>;
+                                }
+                            ).custom_permissions_list || [],
                     }}
                 />
             )}
@@ -841,6 +371,47 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                     }}
                 />
             )}
+
+            {/* Revoke Role Confirmation Dialog */}
+            <DeleteConfirmationDialog
+                open={showRevokeRoleDialog}
+                onOpenChange={setShowRevokeRoleDialog}
+                onConfirm={confirmRevokeRole}
+                title="Remover Cargo do Usuário"
+                description="Ao remover o cargo, o usuário perderá automaticamente todas as permissões vinculadas a esse cargo. Esta ação pode afetar o acesso do usuário ao sistema."
+                itemName={userToRevokeRole?.name}
+                itemType="Usuário"
+                itemTypeLabel="Usuário"
+                icon={UserX}
+                details={
+                    userToRevokeRole
+                        ? [
+                              { label: 'Email', value: userToRevokeRole.email, icon: Mail },
+                              { label: 'Cargo Atual', value: userToRevokeRole.role?.label || 'Não definido', icon: Shield },
+                          ]
+                        : []
+                }
+                warnings={[
+                    {
+                        message:
+                            'Todas as permissões herdadas deste cargo serão removidas automaticamente. O usuário ficará apenas com permissões individuais que foram concedidas diretamente a ele.',
+                        severity: 'warning',
+                    },
+                    {
+                        message:
+                            'Se o usuário não possuir outras permissões ou cargos, ele poderá perder acesso a funcionalidades importantes do sistema.',
+                        severity: 'warning',
+                    },
+                    {
+                        message: 'Você pode atribuir um novo cargo a este usuário a qualquer momento para restaurar as permissões necessárias.',
+                        severity: 'warning',
+                    },
+                ]}
+                variant="warning"
+                confirmText="Remover Cargo"
+                cancelText="Cancelar"
+                processing={isRevokingRole}
+            />
         </AppLayout>
     );
 }

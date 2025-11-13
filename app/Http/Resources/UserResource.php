@@ -27,10 +27,20 @@ class UserResource extends JsonResource
                     return null;
                 }
 
+                $permissions = [];
+
+                if ($this->role->relationLoaded('permissions') && $this->role->permissions) {
+                    $permissions = $this->role->permissions->map(fn($perm) => [
+                        'name'  => $perm->name,
+                        'label' => $perm->label,
+                    ])->toArray();
+                }
+
                 return [
-                    'id'    => $this->role->id,
-                    'name'  => $this->role->name,
-                    'label' => $this->role->label,
+                    'id'          => $this->role->id,
+                    'name'        => $this->role->name,
+                    'label'       => $this->role->label,
+                    'permissions' => $permissions,
                 ];
             }),
             'permissions' => $this->whenLoaded('permissions', fn() => $this->permissions?->map(fn($perm) => [

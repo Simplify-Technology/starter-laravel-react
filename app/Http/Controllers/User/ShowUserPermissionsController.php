@@ -5,25 +5,31 @@ declare(strict_types = 1);
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use App\Models\Permission;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response;
 
 final class ShowUserPermissionsController extends Controller
 {
-    public function __invoke(User $user): JsonResponse
+    public function __invoke(Request $request, User $user): Response
     {
         Gate::authorize('managePermissions', $user);
 
-        return response()->json([
-            'user_id'         => $user->id,
-            'user_name'       => $user->name,
-            'permissions'     => $user->getCustomPermissionsList(),
-            'all_permissions' => \App\Models\Permission::all()->map(fn($perm) => [
-                'id'    => $perm->id,
-                'name'  => $perm->name,
-                'label' => $perm->label,
-            ]),
+        $user->load(['role.permissions', 'permissions']);
+
+        $allPermissions = Permission::all()->map(fn($perm) => [
+            'id'    => $perm->id,
+            'name'  => $perm->name,
+            'label' => $perm->label,
+        ]);
+
+        return Inertia::render('users/permissions', [
+            'user'            => new UserResource($user),
+            'all_permissions' => $allPermissions,
         ]);
     }
 }
