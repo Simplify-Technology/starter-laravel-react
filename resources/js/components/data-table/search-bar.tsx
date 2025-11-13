@@ -44,6 +44,8 @@ export function SearchBar({
             <Input
                 id="search"
                 type="text"
+                autoComplete="off"
+                data-form-type="search"
                 placeholder={placeholder}
                 className="border-secondary-foreground/20 h-8 pr-8 pl-9 text-xs [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 value={value}
