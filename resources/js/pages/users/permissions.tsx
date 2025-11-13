@@ -181,7 +181,7 @@ export default function UserPermissions({ user, all_permissions }: UserPermissio
                             </div>
 
                             {/* Permissões em Duas Colunas */}
-                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-7">
                                 {/* Coluna Esquerda: Permissões do Cargo */}
                                 <div className="lg:col-span-2">
                                     <div className="mb-4">
@@ -229,7 +229,7 @@ export default function UserPermissions({ user, all_permissions }: UserPermissio
                                 </div>
 
                                 {/* Coluna Direita: Permissões Disponíveis */}
-                                <div className="lg:col-span-3">
+                                <div className="lg:col-span-5">
                                     <div className="mb-4">
                                         <div className="mb-2 flex items-center gap-2">
                                             <Shield className="h-4 w-4 text-cyan-600 transition-colors duration-200 dark:text-cyan-500" />
@@ -242,7 +242,7 @@ export default function UserPermissions({ user, all_permissions }: UserPermissio
                                     </div>
 
                                     {/* Grid de Permissões */}
-                                    <div className="grid grid-cols-1 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                                         {all_permissions
                                             .filter((permission) => {
                                                 // Filtrar permissões que já estão no cargo (elas são herdadas automaticamente)
