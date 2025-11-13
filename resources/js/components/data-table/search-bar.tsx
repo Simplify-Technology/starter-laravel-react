@@ -57,7 +57,7 @@ export function SearchBar({
             {value && (
                 <button
                     type="button"
-                    className="hover:bg-muted absolute top-1/2 right-2 -translate-y-1/2 rounded-sm p-0.5 transition-all duration-200 ease-in-out hover:scale-110 active:scale-95"
+                    className="hover:bg-muted/80 dark:hover:bg-muted/60 absolute top-1/2 right-2 -translate-y-1/2 rounded-sm p-0.5 transition-all duration-200 ease-in-out hover:scale-110 active:scale-95"
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -65,7 +65,7 @@ export function SearchBar({
                     }}
                     aria-label="Limpar busca"
                 >
-                    <X className="text-muted-foreground hover:text-foreground dark:text-muted-foreground/70 dark:hover:text-foreground h-4 w-4 transition-colors duration-200" />
+                    <X className="text-muted-foreground hover:text-foreground dark:text-muted-foreground/70 dark:hover:text-foreground/90 h-4 w-4 transition-colors duration-200" />
                 </button>
             )}
             {isSearching && !value && (

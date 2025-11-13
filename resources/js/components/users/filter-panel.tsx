@@ -52,7 +52,7 @@ export function FilterPanel({
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="hover:bg-muted/50 h-6 px-2 text-xs"
+                            className="hover:bg-muted/80 dark:hover:bg-muted/60 dark:hover:text-foreground h-6 px-2 text-xs"
                             onClick={() => onClearSingleFilter(key)}
                             aria-label="Limpar filtro"
                         >
@@ -158,7 +158,7 @@ export function FilterPanel({
                         variant="outline"
                         size="sm"
                         onClick={onClearFilters}
-                        className="hover:bg-muted/50 h-9 text-sm"
+                        className="hover:bg-muted/80 dark:hover:bg-muted/60 dark:hover:text-foreground dark:hover:border-border h-9 text-sm"
                         aria-label="Limpar todos os filtros"
                         disabled={isSearching}
                     >
