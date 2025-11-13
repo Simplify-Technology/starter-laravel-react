@@ -271,22 +271,19 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                 ) : (
                                     <Table.Row>
                                         <Table.Cell colSpan={6}>
-                                            <div className="flex items-center justify-center py-12">
-                                                <EmptyState
-                                                    title={
-                                                        filters.search || filters.role_id !== undefined || filters.is_active !== undefined
-                                                            ? 'Nenhum usuário encontrado com os filtros aplicados'
-                                                            : 'Nenhum usuário encontrado'
-                                                    }
-                                                    description={
-                                                        filters.search || filters.role_id !== undefined || filters.is_active !== undefined
-                                                            ? 'Tente ajustar os critérios de busca ou limpar os filtros'
-                                                            : 'Não há usuários cadastrados no sistema'
-                                                    }
-                                                    icon={User2}
-                                                    type={'row'}
-                                                />
-                                            </div>
+                                            <EmptyState
+                                                title={
+                                                    filters.search || filters.role_id !== undefined || filters.is_active !== undefined
+                                                        ? 'Nenhum usuário encontrado com os filtros aplicados'
+                                                        : 'Nenhum usuário encontrado'
+                                                }
+                                                description={
+                                                    filters.search || filters.role_id !== undefined || filters.is_active !== undefined
+                                                        ? 'Tente ajustar os critérios de busca ou limpar os filtros'
+                                                        : 'Não há usuários cadastrados no sistema'
+                                                }
+                                                icon={User2}
+                                            />
                                         </Table.Cell>
                                     </Table.Row>
                                 )}
