@@ -78,7 +78,7 @@ export function FilterPanel({
                 {/* Role Filter */}
                 {renderFilterField(
                     <div className="flex items-center gap-1.5 text-sm font-medium">
-                        <Shield className="h-4 w-4 text-blue-600" />
+                        <Shield className="h-4 w-4 text-cyan-600" />
                         Cargo
                     </div>,
                     'role_id',
@@ -104,7 +104,7 @@ export function FilterPanel({
                 {/* Status Filter */}
                 {renderFilterField(
                     <div className="flex items-center gap-1.5 text-sm font-medium">
-                        <EyeOff className="h-4 w-4 text-gray-600" />
+                        <EyeOff className="h-4 w-4 text-gray-600 dark:text-cyan-600" />
                         Status
                     </div>,
                     'is_active',
