@@ -7,33 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { usePermissions } from '@/hooks/use-permissions';
-import { Role, User } from '@/types';
+import type { UserFormData, UserFormProps } from '@/types/users';
 import { applyCpfCnpjMask, applyMobileMask, applyPhoneMask } from '@/utils/format/masks';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-
-interface UserFormData {
-    name: string;
-    email: string;
-    cpf_cnpj?: string;
-    phone?: string;
-    mobile?: string;
-    password?: string;
-    password_confirmation?: string;
-    role_id?: number | null;
-    is_active?: boolean;
-    user_notes?: string;
-}
-
-interface UserFormProps {
-    user?: User | null;
-    roles: Role[];
-    onSubmit?: (data: UserFormData) => void;
-    isProcessing?: boolean;
-    errors?: Record<string, string>;
-    routeName: string;
-    routeParams?: Record<string, string | number>;
-}
 
 export default function UserForm({
     user,
@@ -52,14 +29,7 @@ export default function UserForm({
     const initialPhone = user?.phone ? applyPhoneMask(user.phone) : '';
     const initialMobile = user?.mobile ? applyMobileMask(user.mobile) : '';
 
-    const {
-        data,
-        setData,
-        post,
-        put,
-        processing: formProcessing,
-        errors: formErrors,
-    } = useForm<UserFormData>({
+    const form = useForm<UserFormData>({
         name: user?.name || '',
         email: user?.email || '',
         cpf_cnpj: initialCpfCnpj,
@@ -72,42 +42,68 @@ export default function UserForm({
         user_notes: user?.user_notes || '',
     });
 
+    // Explicitly type data to avoid TypeScript inference issues
+    const data = form.data as UserFormData;
+    const setData = form.setData as <K extends keyof UserFormData>(key: K, value: UserFormData[K]) => void;
+    const { post, put, processing: formProcessing, errors: formErrors } = form;
+
     const processing = externalProcessing ?? formProcessing;
-    const errors = { ...formErrors, ...externalErrors };
+    const errors: Record<string, string> = { ...formErrors, ...externalErrors };
+
+    // Helper function to clean form data before submission
+    const cleanFormData = (formData: UserFormData): Partial<UserFormData> => {
+        const cleaned: Partial<UserFormData> = { ...formData };
+
+        // Remove password fields if empty (for update)
+        if (user && !cleaned.password) {
+            delete cleaned.password;
+            delete cleaned.password_confirmation;
+        }
+
+        // Ensure role_id is null (not 0 or empty string) when no role is selected
+        if (cleaned.role_id === null || cleaned.role_id === undefined || cleaned.role_id === 0) {
+            cleaned.role_id = null;
+        }
+
+        // Clean empty optional fields
+        if (!cleaned.cpf_cnpj) cleaned.cpf_cnpj = undefined;
+        if (!cleaned.phone) cleaned.phone = undefined;
+        if (!cleaned.mobile) cleaned.mobile = undefined;
+        if (!cleaned.user_notes) cleaned.user_notes = undefined;
+
+        return cleaned;
+    };
 
     const handleSubmit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        // Prepare submit data
-        const submitData: UserFormData = { ...data };
-
-        // Remove password fields if empty (for update)
-        if (user && !submitData.password) {
-            delete submitData.password;
-            delete submitData.password_confirmation;
-        }
-
-        // Ensure role_id is null (not 0 or empty string) when no role is selected
-        if (submitData.role_id === null || submitData.role_id === undefined || submitData.role_id === 0) {
-            submitData.role_id = null;
-        }
-
-        // Clean empty optional fields
-        if (!submitData.cpf_cnpj) submitData.cpf_cnpj = undefined;
-        if (!submitData.phone) submitData.phone = undefined;
-        if (!submitData.mobile) submitData.mobile = undefined;
-        if (!submitData.user_notes) submitData.user_notes = undefined;
-
-        // Update form data before submission
-        Object.keys(submitData).forEach((key) => {
-            const typedKey = key as keyof UserFormData;
-            setData(typedKey, submitData[typedKey]);
-        });
+        const cleanedData = cleanFormData(data);
 
         if (onSubmit) {
-            onSubmit(submitData);
+            onSubmit(cleanedData as UserFormData);
         } else {
-            // Submit using Inertia directly - Inertia will use the form data automatically
+            // Update form data with cleaned values before submission
+            if (cleanedData.cpf_cnpj !== data.cpf_cnpj) {
+                setData('cpf_cnpj', cleanedData.cpf_cnpj ?? '');
+            }
+            if (cleanedData.phone !== data.phone) {
+                setData('phone', cleanedData.phone ?? '');
+            }
+            if (cleanedData.mobile !== data.mobile) {
+                setData('mobile', cleanedData.mobile ?? '');
+            }
+            if (cleanedData.user_notes !== data.user_notes) {
+                setData('user_notes', cleanedData.user_notes ?? '');
+            }
+            if (cleanedData.role_id !== data.role_id) {
+                setData('role_id', cleanedData.role_id ?? null);
+            }
+            if (user && !cleanedData.password) {
+                setData('password', '');
+                setData('password_confirmation', '');
+            }
+
+            // Submit using Inertia - it will use the updated form data
             if (user) {
                 put(route(routeName, { ...routeParams, user: user.id }), {
                     preserveScroll: true,
@@ -346,7 +342,7 @@ export default function UserForm({
                         </Label>
                         <Textarea
                             id="user_notes"
-                            value={data.user_notes}
+                            value={data.user_notes || ''}
                             onChange={(e) => setData('user_notes', e.target.value)}
                             placeholder="Informações adicionais sobre o usuário..."
                             rows={4}

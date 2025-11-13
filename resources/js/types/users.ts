@@ -148,3 +148,30 @@ export type UserTableConfig = {
     showActions?: boolean;
     enableSorting?: boolean;
 };
+
+// ============================================================================
+// Form Types
+// ============================================================================
+
+export type UserFormData = {
+    name: string;
+    email: string;
+    cpf_cnpj?: string;
+    phone?: string;
+    mobile?: string;
+    password?: string;
+    password_confirmation?: string;
+    role_id?: number | null;
+    is_active?: boolean;
+    user_notes?: string;
+};
+
+export type UserFormProps = {
+    user?: User | null;
+    roles: Role[];
+    onSubmit?: (data: UserFormData) => void;
+    isProcessing?: boolean;
+    errors?: Record<string, string>;
+    routeName: string;
+    routeParams?: Record<string, string | number>;
+};
