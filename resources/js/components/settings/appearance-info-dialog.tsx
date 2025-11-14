@@ -81,7 +81,6 @@ export function AppearanceInfoDialog({ open, onOpenChange }: AppearanceInfoDialo
             content: (
                 <ul className="space-y-1.5 text-sm">
                     <li>• Use tema claro durante o dia e escuro à noite</li>
-                    <li>• "Seguir Sistema" ajusta automaticamente conforme horário</li>
                     <li>• A preferência é salva automaticamente, não precisa confirmar</li>
                     <li>• Você pode alternar entre temas a qualquer momento</li>
                     <li>• O tema escolhido afeta toda a interface da plataforma</li>

@@ -116,7 +116,7 @@ export function FilterPanel({
                                   ? 'active'
                                   : 'inactive'
                         }
-                        onValueChange={(value) => onFilterChange('is_active', value === 'all' ? undefined : value === 'active')}
+                        onValueChange={(value) => onFilterChange('is_active', value === 'all' ? undefined : value === 'active' ? true : false)}
                         aria-label="Filtrar por status"
                     >
                         <SelectTrigger>
