@@ -172,7 +172,7 @@ export default function Index({ users, roles, assignableRoles = [], filters = {}
                                             setLocalSearch('');
                                             clearSingleFilter('search');
                                         }}
-                                        placeholder="Buscar nome ou email"
+                                        placeholder="Buscar nome, email ou celular"
                                         isSearching={isSearching}
                                         ariaLabel="Pesquisar usuários"
                                     />

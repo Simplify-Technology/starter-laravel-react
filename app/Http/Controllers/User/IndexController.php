@@ -26,12 +26,14 @@ final class IndexController extends Controller
 
         $query = User::query()->with(['role', 'permissions']);
 
-        // Busca por nome ou email
+        // Busca por nome, email ou celular
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
