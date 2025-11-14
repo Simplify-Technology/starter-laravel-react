@@ -65,12 +65,14 @@ resources/js/
 #### Componentes Genéricos vs Específicos
 
 **✅ CRIAR COMPONENTE GENÉRICO quando:**
+
 - A funcionalidade pode ser reutilizada em outros módulos
 - A lógica é genérica (ex: busca, paginação, filtros)
 - Não há dependências específicas do módulo
 - Facilita manutenção e consistência
 
 **Exemplos:**
+
 - `SearchBar` - busca genérica com debounce
 - `Pagination` - paginação reutilizável
 - `FilterToggle` - toggle de filtros
@@ -78,12 +80,14 @@ resources/js/
 - `ModuleInfoDialog` - dialog de informações genérico
 
 **✅ MANTER COMPONENTE ESPECÍFICO quando:**
+
 - A lógica é específica do módulo
 - Há dependências de tipos ou dados do módulo
 - A complexidade de tornar genérico não compensa
 - Facilita testes e manutenção
 
 **Exemplos:**
+
 - `UserTableRow` - linha específica da tabela de usuários
 - `UserActionsMenu` - menu de ações específico de usuários
 - `UserInfoDialog` - configuração específica do módulo usuários
@@ -103,6 +107,7 @@ export function UserTableRow({ user }: { user: User }) { ... }
 ```
 
 **Estrutura de tipos:**
+
 - `types/users.ts` - Tipos específicos do módulo
 - `types/data-table.ts` - Tipos genéricos para tabelas
 - `types/dialogs.ts` - Tipos genéricos para dialogs
@@ -111,6 +116,7 @@ export function UserTableRow({ user }: { user: User }) { ... }
 ### 4. Hooks Customizados
 
 **✅ CRIAR HOOK quando:**
+
 - Há lógica complexa que pode ser reutilizada
 - Há estado que precisa ser gerenciado
 - Há chamadas ao backend que precisam ser centralizadas
@@ -158,6 +164,7 @@ export function useUserActions({ onDeleteSuccess, ... }) {
 #### Memoização
 
 **✅ USAR `useMemo` quando:**
+
 - Array/objeto criado a cada render (ex: `tableColumns`)
 - Cálculo pesado que depende de props/state
 - Valores derivados que não mudam frequentemente
@@ -178,6 +185,7 @@ const canEditUsers = useMemo(() => canEdit(), [canEdit]);
 ```
 
 **✅ USAR `React.memo` quando:**
+
 - Componente renderiza frequentemente (ex: linhas de tabela)
 - Props mudam raramente
 - Re-render é custoso
@@ -197,6 +205,7 @@ export const UserTableRow = React.memo(function UserTableRow({ ... }: UserTableR
 ```
 
 **✅ USAR `useCallback` quando:**
+
 - Função passada como prop para componente memoizado
 - Função usada como dependência de outro hook
 - Função criada em componente que renderiza frequentemente
@@ -296,11 +305,88 @@ export default function Index({ users, roles, filters, pagination }: UsersPagePr
 - **Cores consistentes**: Ícones e textos com cores adequadas para ambos os modos
 - **Testar ambos os modos**: Garantir legibilidade e contraste
 
+### 11. Tailwind CSS - Sintaxe e Boas Práticas
+
+#### Variáveis CSS Customizadas
+
+**✅ SEMPRE usar a sintaxe oficial do Tailwind CSS para variáveis CSS:**
+
+```typescript
+// ✅ CORRETO: Sintaxe oficial com colchetes e função var()
+'h-[var(--radix-select-trigger-height)]';
+'w-[var(--radix-dropdown-menu-trigger-width)]';
+'min-w-[var(--radix-select-trigger-width)]';
+
+// ❌ INCORRETO: Sintaxe com parênteses (não é válida no Tailwind)
+'h-(--radix-select-trigger-height)'; // ❌ NÃO FUNCIONA
+'w-(--radix-dropdown-menu-trigger-width)'; // ❌ NÃO FUNCIONA
+```
+
+**Regra obrigatória:**
+
+- Variáveis CSS devem sempre usar `[var(--variable-name)]` com colchetes e a função `var()`
+- A sintaxe `(--variable-name)` com parênteses não é válida e quebrará o layout
+- Esta é a sintaxe oficial documentada do Tailwind CSS
+
+**⚠️ IMPORTANTE - Avisos do Linter:**
+
+- Alguns linters podem sugerir incorretamente a sintaxe `(--variable-name)` com parênteses
+- **IGNORAR essas sugestões** - elas estão incorretas e quebrarão o layout
+- A sintaxe correta é sempre `[var(--variable-name)]` conforme documentação oficial do Tailwind CSS
+
+**Exemplos no projeto:**
+
+- `navigation-menu.tsx`: `h-[var(--radix-navigation-menu-viewport-height)]` ✅
+- `sidebar.tsx`: `calc(var(--sidebar-width))` dentro de colchetes ✅
+
+#### Valores Arbitrários
+
+**✅ Para valores arbitrários simples:**
+
+```typescript
+// ✅ CORRETO: Valores arbitrários com colchetes
+'min-w-[8rem]';
+'h-[200px]';
+'w-[calc(100%-2rem)]';
+```
+
+**✅ Para valores com unidades Tailwind padrão:**
+
+```typescript
+// ✅ PREFERIR classes Tailwind quando disponível
+'min-w-32'; // Equivale a 8rem (128px)
+'h-9'; // Equivale a 2.25rem (36px)
+
+// ✅ USAR valores arbitrários quando necessário
+'min-w-[8rem]'; // Se precisar especificamente de rem para responsividade
+```
+
+**Nota sobre `min-w-[8rem]` vs `min-w-32`:**
+
+- `min-w-32` = `8rem` = `128px` (assumindo base 16px)
+- Ambos são válidos, mas `min-w-[8rem]` pode ser preferido para consistência com outros valores `rem` no projeto
+- O projeto já usa `min-w-[8rem]` em `dropdown-menu.tsx` e `select.tsx` - manter consistência
+
+#### Data Attributes
+
+**✅ Sintaxe simplificada quando não precisa de valor específico:**
+
+```typescript
+// ✅ CORRETO: Sintaxe simplificada
+'data-placeholder:text-muted-foreground';
+'data-disabled:pointer-events-none';
+
+// ✅ TAMBÉM VÁLIDO: Sintaxe com colchetes (quando precisa de valor específico)
+'data-[state=open]:animate-in';
+'data-[disabled]:opacity-50';
+```
+
 ## 📋 Checklist de Implementação
 
 Ao criar um novo módulo:
 
 ### Estrutura de Arquivos
+
 - [ ] Criar diretório `pages/{module}/`
 - [ ] Criar diretório `components/{module}/`
 - [ ] Criar diretório `hooks/{module}/`
@@ -308,31 +394,37 @@ Ao criar um novo módulo:
 - [ ] Criar arquivo `types/{module}.ts`
 
 ### Componentes
+
 - [ ] Identificar componentes genéricos (extrair para `components/data-table/` ou similar)
 - [ ] Criar componentes específicos do módulo
 - [ ] Aplicar `React.memo` quando apropriado
 - [ ] Garantir acessibilidade (aria-labels, navegação por teclado)
 
 ### Hooks
+
 - [ ] Criar hook de filtros se necessário (`use{Module}Filters`)
 - [ ] Criar hook de permissões se necessário (`use{Module}Permissions`)
 - [ ] Criar hook de ações se necessário (`use{Module}Actions`)
 - [ ] Centralizar lógica complexa em hooks
 
 ### Tipos
+
 - [ ] Definir tipos da página (`{Module}PageProps`)
 - [ ] Definir tipos de filtros (`{Module}FilterParams`)
 - [ ] Definir tipos de componentes (`{Module}TableRowProps`, etc.)
 - [ ] Exportar tipos necessários
 
 ### Performance
+
 - [ ] Memoizar arrays/objetos criados a cada render (`useMemo`)
 - [ ] Pré-calcular valores fora de loops
 - [ ] Aplicar `React.memo` em componentes de lista
 - [ ] Otimizar dependências de hooks (`useCallback`, `useMemo`)
 
 ### Qualidade
+
 - [ ] Sem erros de lint (`npm run ci:check`)
+- [ ] **Variáveis CSS usando sintaxe correta**: `[var(--variable-name)]` nunca `(--variable-name)`
 - [ ] Compatível com dark mode
 - [ ] Responsivo (mobile, tablet, desktop)
 - [ ] Acessível (aria-labels, navegação por teclado)
