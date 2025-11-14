@@ -65,7 +65,7 @@ export function SettingsSidebar({ currentPath, onSelectItem }: SettingsSidebarPr
                                 'h-auto w-full justify-start gap-2 px-3 py-2.5 text-left transition-all duration-200',
                                 isActive
                                     ? 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:border-l-2 dark:border-cyan-500 dark:bg-cyan-500/20 dark:text-cyan-200 dark:shadow-sm dark:hover:bg-cyan-500/30'
-                                    : 'hover:bg-muted/60 hover:text-foreground dark:hover:bg-muted/50 dark:text-foreground/90 dark:hover:text-foreground dark:hover:bg-muted/60',
+                                    : 'hover:bg-muted/60 hover:text-foreground dark:text-foreground/90 dark:hover:text-foreground dark:hover:bg-muted/60',
                             )}
                             asChild
                             onClick={onSelectItem}

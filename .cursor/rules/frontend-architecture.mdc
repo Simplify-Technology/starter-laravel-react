@@ -381,6 +381,63 @@ export default function Index({ users, roles, filters, pagination }: UsersPagePr
 'data-[disabled]:opacity-50';
 ```
 
+#### Modificador !important
+
+**✅ SEMPRE usar a sintaxe oficial do Tailwind CSS para !important:**
+
+```typescript
+// ✅ CORRETO: Sintaxe oficial com ! no início
+'!size-5';
+'!text-red-500';
+'!bg-blue-600';
+
+// ❌ INCORRETO: Sintaxe com ! no final (não é válida no Tailwind)
+'size-5!'; // ❌ NÃO FUNCIONA
+'text-red-500!'; // ❌ NÃO FUNCIONA
+```
+
+**Regra obrigatória:**
+
+- O modificador `!important` deve sempre usar `!` no início da classe
+- A sintaxe `class!` com `!` no final não é válida e não funcionará
+- Esta é a sintaxe oficial documentada do Tailwind CSS
+
+**⚠️ IMPORTANTE - Avisos do Linter:**
+
+- Alguns linters/plugins podem sugerir incorretamente a sintaxe `class!` com `!` no final
+- **IGNORAR essas sugestões** - elas estão incorretas e não funcionarão
+- A sintaxe correta é sempre `!class` com `!` no início conforme documentação oficial do Tailwind CSS
+
+**Recomendações para Configuração:**
+
+1. **Se o aviso vier do Prettier/plugin Tailwind:**
+    - O `prettier-plugin-tailwindcss` pode gerar sugestões incorretas sobre `!important`
+    - O Prettier **não deve reescrever automaticamente** essas classes (o plugin apenas ordena, não transforma sintaxe)
+    - Manter a sintaxe `!class` e ignorar as sugestões de linter/IDE
+    - O arquivo `.prettierrc` já está configurado corretamente com `prettier-plugin-tailwindcss`
+
+2. **Se o aviso vier do ESLint:**
+    - Verificar se há um plugin específico do Tailwind CSS no ESLint
+    - Se necessário, adicionar regra para desabilitar esse aviso específico
+    - O `eslint.config.js` atual não tem regras específicas do Tailwind - avisos provavelmente vêm do IDE/editor
+
+3. **Se o aviso vier do IDE/Editor (VS Code, Cursor, etc.):**
+    - Pode ser uma extensão do editor que está analisando classes Tailwind
+    - Verificar configurações da extensão Tailwind CSS IntelliSense
+    - Desabilitar validação de sintaxe do Tailwind na extensão se necessário
+    - Ou simplesmente ignorar o aviso - o código está correto
+
+4. **Solução prática recomendada:**
+    - **Sempre usar `!class`** (sintaxe correta do Tailwind CSS)
+    - **Ignorar avisos** que sugerem `class!` (sintaxe incorreta)
+    - Se o aviso for muito intrusivo, adicionar comentário: `// eslint-disable-next-line` (apenas se necessário)
+    - **Não alterar o código** para seguir sugestões incorretas do linter/IDE
+
+**Exemplos no projeto:**
+
+- `app-header.tsx`: `!size-5` ✅
+- Qualquer classe com `!important`: sempre `!` no início ✅
+
 ## 📋 Checklist de Implementação
 
 Ao criar um novo módulo:
@@ -425,6 +482,7 @@ Ao criar um novo módulo:
 
 - [ ] Sem erros de lint (`npm run ci:check`)
 - [ ] **Variáveis CSS usando sintaxe correta**: `[var(--variable-name)]` nunca `(--variable-name)`
+- [ ] **Modificador !important usando sintaxe correta**: `!class` nunca `class!`
 - [ ] Compatível com dark mode
 - [ ] Responsivo (mobile, tablet, desktop)
 - [ ] Acessível (aria-labels, navegação por teclado)
