@@ -34,7 +34,6 @@ class RoleResource extends JsonResource
      * This ensures compatibility with React components that expect arrays.
      *
      * @param Collection $roles Collection of Role models
-     * @param Request $request
      * @return array<int, array<string, mixed>>
      */
     public static function toArrayCollection(Collection $roles, Request $request): array

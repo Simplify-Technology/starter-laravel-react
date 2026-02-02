@@ -28,8 +28,8 @@ final class ImpersonationService
 
     public function stop(): User
     {
-        $originalUserId   = Session::pull(self::SESSION_ORIGINAL_USER_ID);
-        $originalUserName = Session::pull(self::SESSION_ORIGINAL_USER_NAME);
+        $originalUserId = Session::pull(self::SESSION_ORIGINAL_USER_ID);
+        Session::pull(self::SESSION_ORIGINAL_USER_NAME);
 
         $originalUser     = User::findOrFail($originalUserId);
         $impersonatedUser = Auth::user();

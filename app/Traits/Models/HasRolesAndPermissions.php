@@ -84,12 +84,12 @@ trait HasRolesAndPermissions
 
         if ($existing) {
             $this->permissions()->updateExistingPivot($permissionModel->id, [
-                'meta'       => !empty($meta) ? json_encode($meta) : null,
+                'meta'       => $meta === [] ? null : json_encode($meta),
                 'updated_at' => now(),
             ]);
         } else {
             $this->permissions()->attach($permissionModel->id, [
-                'meta'       => !empty($meta) ? json_encode($meta) : null,
+                'meta'       => $meta === [] ? null : json_encode($meta),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

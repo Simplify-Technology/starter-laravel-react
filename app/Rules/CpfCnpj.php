@@ -81,7 +81,7 @@ class CpfCnpj implements ValidationRule
             return false;
         }
 
-        $length  = $length + 1;
+        $length += 1;
         $numbers = substr($cnpj, 0, $length);
         $sum     = 0;
         $pos     = $length - 7;

@@ -42,11 +42,7 @@ class UserPolicy
         }
 
         // Outros usuários não podem editar super_user
-        if ($model->hasRole('super_user')) {
-            return false;
-        }
-
-        return true;
+        return !$model->hasRole('super_user');
     }
 
     public function delete(User $user, User $model): bool
@@ -66,11 +62,7 @@ class UserPolicy
         }
 
         // Outros usuários não podem deletar super_user
-        if ($model->hasRole('super_user')) {
-            return false;
-        }
-
-        return true;
+        return !$model->hasRole('super_user');
     }
 
     public function toggleActive(User $user, User $model): bool
@@ -90,11 +82,7 @@ class UserPolicy
         }
 
         // Outros usuários não podem desativar super_user
-        if ($model->hasRole('super_user')) {
-            return false;
-        }
-
-        return true;
+        return !$model->hasRole('super_user');
     }
 
     public function impersonate(User $user, User $model): bool
