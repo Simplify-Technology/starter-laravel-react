@@ -1,0 +1,41 @@
+#!/usr/bin/env sh
+set -e
+
+if [ "${SKIP_GIT_HOOKS-}" = "1" ]; then
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$REPO_ROOT" ]; then
+  cd "$REPO_ROOT"
+fi
+
+if ! command -v composer >/dev/null 2>&1; then
+  echo "pre-push: composer não encontrado." >&2
+  exit 1
+fi
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pre-push: pnpm não encontrado. Rode: pnpm install" >&2
+  exit 1
+fi
+
+echo "pre-push: backend (pint --test, rector --dry-run, pest)"
+
+if [ -z "${APP_KEY-}" ]; then
+  ENV_APP_KEY=""
+  if [ -f ".env" ]; then
+    ENV_APP_KEY="$(sed -nE 's/^APP_KEY=(.*)$/\\1/p' .env | head -n 1)"
+  fi
+
+  if [ -z "$ENV_APP_KEY" ]; then
+    echo "pre-push: APP_KEY não encontrado (env não inicializado)." >&2
+    echo "  Rode: cp .env.example .env && php artisan key:generate" >&2
+    exit 1
+  fi
+fi
+
+composer ci:check --no-interaction
+
+echo "pre-push: frontend (eslint, prettier --check, typescript, vitest, build)"
+LARAVEL_BYPASS_ENV_CHECK=1 pnpm -s run ci:check

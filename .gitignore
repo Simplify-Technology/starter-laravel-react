@@ -1,12 +1,15 @@
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules
+/node_modules/.cache
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
 /vendor
+.eslintcache
+/.pnpm-store
 .env
 .env.backup
 .env.production

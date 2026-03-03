@@ -1,0 +1,54 @@
+#!/usr/bin/env sh
+set -e
+
+if [ "${SKIP_GIT_HOOKS-}" = "1" ]; then
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$REPO_ROOT" ]; then
+  cd "$REPO_ROOT"
+fi
+
+ISSUE_HELPER="scripts/git/get-issue-id.sh"
+if [ -n "$REPO_ROOT" ]; then
+  ISSUE_HELPER="$REPO_ROOT/$ISSUE_HELPER"
+fi
+
+MSG_FILE="$1"
+SOURCE="${2-}"
+
+if [ -z "$MSG_FILE" ] || [ ! -f "$MSG_FILE" ]; then
+  exit 0
+fi
+
+case "$SOURCE" in
+  merge|squash)
+    exit 0
+    ;;
+esac
+
+FIRST_LINE="$(sed -n '1p' "$MSG_FILE")"
+
+case "$FIRST_LINE" in
+  Merge\ *|Revert\ *|fixup\!\ *|squash\!\ *)
+    exit 0
+    ;;
+esac
+
+ISSUE_ID="$(sh "$ISSUE_HELPER" 2>/dev/null || true)"
+
+if [ -z "$ISSUE_ID" ]; then
+  exit 0
+fi
+
+if printf '%s' "$FIRST_LINE" | grep -Eq "^\\[$ISSUE_ID\\]:[[:space:]]?"; then
+  exit 0
+fi
+
+NORMALIZED_FIRST_LINE="$(printf '%s' "$FIRST_LINE" | sed -E "s/^$ISSUE_ID:[[:space:]]*//; s/^$ISSUE_ID[[:space:]]+//")"
+
+{
+  printf '[%s]: %s\n' "$ISSUE_ID" "$NORMALIZED_FIRST_LINE"
+  sed -n '2,$p' "$MSG_FILE"
+} >"$MSG_FILE"

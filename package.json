@@ -8,16 +8,29 @@
     "prepare": "husky",
     "format": "prettier --write resources/",
     "format:check": "prettier --check resources/",
-    "lint:check": "eslint . --fix",
+    "lint": "eslint . --cache --cache-location node_modules/.cache/eslint --max-warnings=0",
+    "lint:fix": "eslint . --cache --cache-location node_modules/.cache/eslint --max-warnings=0 --fix",
     "types": "tsc --noEmit",
-    "ci:lint": "npm run lint:check && npm run format && npm run types",
+    "ci:lint": "pnpm -s lint && pnpm -s format:check && pnpm -s types",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "ci:test": "npm run test:run",
-    "ci:build": "npm run build",
-    "ci:check": "npm run ci:lint && npm run ci:test && npm run ci:build"
+    "ci:test": "LARAVEL_BYPASS_ENV_CHECK=1 pnpm -s test:run",
+    "ci:build": "pnpm -s build",
+    "ci:check": "pnpm -s ci:lint && pnpm -s ci:test && pnpm -s ci:build"
+  },
+  "lint-staged": {
+    "**/*.php": [
+      "vendor/bin/pint --quiet"
+    ],
+    "resources/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --cache --cache-location node_modules/.cache/eslint --max-warnings=0 --fix"
+    ],
+    "resources/**/*.{css,html,json,md,mdx,scss,yaml,yml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
@@ -34,6 +47,7 @@
     "eslint-plugin-react-hooks": "^7",
     "husky": "^9.1.7",
     "jsdom": "^27.0.1",
+    "lint-staged": "^16.3.1",
     "prettier": "^3.4.2",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
