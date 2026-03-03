@@ -18,27 +18,28 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
-    env:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    # Evita problemas de permissões em PRs do dependabot
+    if: (github.actor != 'dependabot[bot]')
     steps:
       - uses: actions/checkout@v4
 
-      # Cache das regras para acelerar execuções
-      - name: Cache Semgrep rules
-        uses: actions/cache@v4
-        with:
-          path: ~/.semgrep
-          key: ${{ runner.os }}-semgrep-rules
-          restore-keys: |
-            ${{ runner.os }}-semgrep
-
       # Executa o Semgrep e gera relatório
       - name: Run Semgrep
-        run: semgrep ci --sarif --output=semgrep.sarif
+        run: |
+          if [ -n "${SEMGREP_APP_TOKEN_FROM_SECRET}" ]; then
+            export SEMGREP_APP_TOKEN="${SEMGREP_APP_TOKEN_FROM_SECRET}"
+          else
+            export SEMGREP_RULES="p/default"
+          fi
+
+          semgrep ci --sarif > semgrep.sarif
+        env:
+          SEMGREP_APP_TOKEN_FROM_SECRET: ${{ secrets.SEMGREP_APP_TOKEN }}
 
       # Publica como artifact para consulta
       - name: Upload Semgrep report
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: semgrep-report
           path: semgrep.sarif
