@@ -58,19 +58,22 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
+        "lint": "vendor/bin/pint --test",
+        "lint:fix": "vendor/bin/pint",
         "ci:test": "vendor/bin/pest",
-        "ci:lint": "vendor/bin/pint",
+        "ci:lint": "vendor/bin/pint --test",
         "ci:rector": "vendor/bin/rector process --dry-run --config ./rector.php",
         "ci:check": [
             "@ci:lint",
+            "@ci:rector",
             "@ci:test"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"pnpm -s run dev\" --names=server,queue,logs,vite"
         ],
         "dev:ssr": [
-            "npm run build:ssr",
+            "pnpm -s run build:ssr",
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr"
         ]
