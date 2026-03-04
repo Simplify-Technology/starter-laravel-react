@@ -26,31 +26,33 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Cache npm
-        uses: actions/cache@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          version: 9
+          run_install: false
 
-      - run: npm ci
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
 
       - name: Type check
-        run: npm run types
+        run: pnpm -s run types
 
       - name: Lint
-        run: npm run lint:check
+        run: pnpm -s run lint
 
       - name: Unit tests
-        run: npm test -- --ci
+        run: pnpm -s run test:run
         env:
           CI: true
 
       - name: Build
-        run: npm run build
+        run: pnpm -s run build
 
   # -----------------------
   # Backend pipeline
@@ -88,18 +90,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Cache npm
-        uses: actions/cache@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          version: 9
+          run_install: false
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
+
+      - name: Build frontend assets
+        run: pnpm -s run build
 
       - run: cp .env.example .env
       - run: php artisan key:generate
@@ -116,6 +122,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -130,13 +149,17 @@ jobs:
             ${{ runner.os }}-composer-
 
       - run: composer install -q --no-interaction --prefer-dist
-      - run: npm ci
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          HUSKY: 0
 
       - name: Run Pint (check only)
         run: vendor/bin/pint --test
 
       - name: Check frontend format
-        run: npm run format:check
+        run: pnpm -s run format:check
 
   # -----------------------
   # Rector (opcional, não bloqueia)

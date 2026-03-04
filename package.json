@@ -5,7 +5,7 @@
     "build": "vite build",
     "build:ssr": "vite build && vite build --ssr",
     "dev": "vite",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "format": "prettier --write resources/",
     "format:check": "prettier --check resources/",
     "lint": "eslint . --cache --cache-location node_modules/.cache/eslint --max-warnings=0",
