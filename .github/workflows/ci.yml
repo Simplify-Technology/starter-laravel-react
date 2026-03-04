@@ -73,7 +73,7 @@ jobs:
     needs: frontend
     strategy:
       matrix:
-        php: [ 8.3, 8.4 ]
+        php: [ 8.4 ]
         node: [ 22 ] # pode expandir para [20, 22] se quiser
     steps:
       - uses: actions/checkout@v4
