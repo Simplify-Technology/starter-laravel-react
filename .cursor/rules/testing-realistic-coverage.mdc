@@ -15,6 +15,10 @@ Ao criar/alterar qualquer teste, garanta **cobertura de casos reais** — evite 
   - **Happy path real**: payload **não-vazio** / mudança efetiva (ex.: swap de valores, add/remove).
   - **Unhappy path**: payload inválido / autorização negada.
 
+- **Nomeie testes e variáveis pelo comportamento**:
+  - Nome do teste deve descrever o **efeito observado**, não passos de implementação (ex.: “clear + swap”).
+  - Em testes multi-etapas, use nomes que indiquem a fase (ex.: `userAfterFirstUpdate...`, `userAfterSecondUpdate`).
+
 - **Unhappy path deve provar “sem efeitos colaterais”**:
   - **Não** alterar DB/estado.
   - **Não** disparar efeitos (cache/queue/events) indevidamente.

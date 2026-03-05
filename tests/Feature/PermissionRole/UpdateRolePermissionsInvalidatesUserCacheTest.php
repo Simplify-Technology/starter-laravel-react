@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Cache;
  * users of the affected role have their per-user permission cache invalidated.
  */
 
-test('updating a role permissions invalidates only affected users permission caches (clear + swap)', function() {
+test('updating role permissions invalidates affected users caches but not unaffected users', function() {
     Cache::flush();
 
     $manageUsers = Permission::create([
@@ -67,10 +67,10 @@ test('updating a role permissions invalidates only affected users permission cac
     expect(Cache::has("user:{$user->id}:permissions"))->toBeFalse();
     expect(Cache::has("user:{$admin->id}:permissions"))->toBeTrue();
 
-    $freshUser = User::query()->findOrFail($user->id);
+    $userAfterFirstUpdateCacheReprime = User::query()->findOrFail($user->id);
 
-    expect($freshUser->hasPermissionTo('manage_users'))->toBeFalse();
-    expect(Cache::has("user:{$freshUser->id}:permissions"))->toBeTrue();
+    expect($userAfterFirstUpdateCacheReprime->hasPermissionTo('manage_users'))->toBeFalse();
+    expect(Cache::has("user:{$userAfterFirstUpdateCacheReprime->id}:permissions"))->toBeTrue();
 
     $this->actingAs($admin)
         ->put(route('roles-permissions.update', [
@@ -80,13 +80,13 @@ test('updating a role permissions invalidates only affected users permission cac
         ])
         ->assertRedirect();
 
-    expect(Cache::has("user:{$freshUser->id}:permissions"))->toBeFalse();
+    expect(Cache::has("user:{$userAfterFirstUpdateCacheReprime->id}:permissions"))->toBeFalse();
     expect(Cache::has("user:{$admin->id}:permissions"))->toBeTrue();
 
-    $updatedUser = User::query()->findOrFail($user->id);
-    expect($updatedUser->hasPermissionTo('manage_users'))->toBeFalse();
-    expect($updatedUser->hasPermissionTo('manage_roles'))->toBeTrue();
-    expect(Cache::has("user:{$updatedUser->id}:permissions"))->toBeTrue();
+    $userAfterSecondUpdate = User::query()->findOrFail($user->id);
+    expect($userAfterSecondUpdate->hasPermissionTo('manage_users'))->toBeFalse();
+    expect($userAfterSecondUpdate->hasPermissionTo('manage_roles'))->toBeTrue();
+    expect(Cache::has("user:{$userAfterSecondUpdate->id}:permissions"))->toBeTrue();
 });
 
 test('invalid permissions payload does not change role permissions or invalidate caches', function() {
@@ -139,6 +139,21 @@ test('invalid permissions payload does not change role permissions or invalidate
             'role' => $role->name,
         ]), [
             'permissions' => [$manageRoles->id],
+        ])
+        ->assertRedirect()
+        ->assertSessionHasErrors(['permissions.0']);
+
+    expect(Cache::has("user:{$user->id}:permissions"))->toBeTrue();
+    expect(Cache::has("user:{$admin->id}:permissions"))->toBeTrue();
+
+    $role->refresh();
+    expect($role->permissions()->pluck('name')->toArray())->toBe(['manage_users']);
+
+    $this->actingAs($admin)
+        ->put(route('roles-permissions.update', [
+            'role' => $role->name,
+        ]), [
+            'permissions' => ['non_existent_permission'],
         ])
         ->assertRedirect()
         ->assertSessionHasErrors(['permissions.0']);
