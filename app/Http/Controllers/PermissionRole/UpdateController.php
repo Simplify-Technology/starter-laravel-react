@@ -3,20 +3,21 @@
 namespace App\Http\Controllers\PermissionRole;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PermissionRole\UpdateRolePermissionsRequest;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class UpdateController extends Controller
 {
-    public function __invoke(Request $request, $roleName)
+    public function __invoke(UpdateRolePermissionsRequest $request, string $roleName)
     {
-        $this->authorize('manage_roles');
         $role = Role::where('name', $roleName)->firstOrFail();
 
-        $role->permissions()->sync(Permission::getIdsFromNames($request->permissions));
+        $permissionNames = $request->validated('permissions', []);
+
+        $role->permissions()->sync(Permission::getIdsFromNames($permissionNames));
 
         Cache::forget("role:$role->id:permissions");
         Cache::rememberForever("role:$role->id:permissions", fn() => $role->permissions()->pluck('name')->toArray());
