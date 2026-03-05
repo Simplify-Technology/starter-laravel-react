@@ -4,7 +4,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -30,15 +29,12 @@ export function UserActionsMenu({
     canAssignRoles,
     isDeleting = false,
 }: UserActionsMenuProps) {
-    const canDeleteUser = canDelete(user);
-    const canImpersonateUser = canImpersonate(user);
-
     const hasPrimaryItems = !!(canEdit || canManagePermissions);
     const hasRoleItems = !!(canAssignRoles && (onAssignRole || onRevokeRole));
-    const hasImpersonateItem = !!(canImpersonateUser && onImpersonate);
+    const hasImpersonateItem = !!(onImpersonate && canImpersonate(user));
     const hasToggleActiveItem = !!onToggleActive;
     const hasActionItems = hasImpersonateItem || hasToggleActiveItem;
-    const hasDeleteItem = !!(canDeleteUser && onDelete);
+    const hasDeleteItem = !!(onDelete && canDelete(user));
 
     const shouldShowPrimarySeparator = hasPrimaryItems && (hasRoleItems || hasActionItems);
     const shouldShowRolesSeparator = hasRoleItems && hasActionItems;
@@ -105,7 +101,7 @@ export function UserActionsMenu({
                 )}
 
                 {canAssignRoles && onRevokeRole && (
-                    <DropdownMenuItem onClick={() => onRevokeRole(user)} className="text-destructive focus:text-destructive cursor-pointer">
+                    <DropdownMenuItem onClick={() => onRevokeRole(user)} className="cursor-pointer">
                         <UserX className="mr-2 h-4 w-4" />
                         Remover Cargo
                     </DropdownMenuItem>
@@ -126,7 +122,7 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                {onToggleActive && (
+                {hasToggleActiveItem && (
                     <DropdownMenuItem
                         onClick={() => onToggleActive(user)}
                         aria-label={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
@@ -139,13 +135,17 @@ export function UserActionsMenu({
                             <>
                                 <UserX className="mr-2 h-4 w-4" />
                                 Desativar
-                                <DropdownMenuShortcut>Ativo</DropdownMenuShortcut>
+                                <span className="bg-muted text-muted-foreground ml-auto rounded-sm px-1.5 py-0.5 text-[10px] font-medium">
+                                    Ativo
+                                </span>
                             </>
                         ) : (
                             <>
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Ativar
-                                <DropdownMenuShortcut>Inativo</DropdownMenuShortcut>
+                                <span className="bg-muted text-muted-foreground ml-auto rounded-sm px-1.5 py-0.5 text-[10px] font-medium">
+                                    Inativo
+                                </span>
                             </>
                         )}
                     </DropdownMenuItem>
@@ -160,7 +160,8 @@ export function UserActionsMenu({
                                 onDelete(user);
                             }}
                             disabled={isDeleting}
-                            className="text-destructive focus:text-destructive cursor-pointer disabled:opacity-50"
+                            variant="destructive"
+                            className="cursor-pointer disabled:opacity-50"
                         >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
