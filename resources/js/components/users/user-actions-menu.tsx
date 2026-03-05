@@ -1,5 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { UserActionsMenuProps } from '@/types/users';
 import { Link } from '@inertiajs/react';
@@ -23,8 +30,19 @@ export function UserActionsMenu({
     canAssignRoles,
     isDeleting = false,
 }: UserActionsMenuProps) {
+    const canDeleteUser = canDelete(user);
+    const canImpersonateUser = canImpersonate(user);
+
+    const hasPrimaryItems = !!(canEdit || canManagePermissions);
     const hasRoleItems = !!(canAssignRoles && (onAssignRole || onRevokeRole));
-    const hasActionItems = !!(canImpersonate || onToggleActive);
+    const hasImpersonateItem = !!(canImpersonateUser && onImpersonate);
+    const hasToggleActiveItem = !!onToggleActive;
+    const hasActionItems = hasImpersonateItem || hasToggleActiveItem;
+    const hasDeleteItem = !!(canDeleteUser && onDelete);
+
+    const shouldShowPrimarySeparator = hasPrimaryItems && (hasRoleItems || hasActionItems);
+    const shouldShowRolesSeparator = hasRoleItems && hasActionItems;
+    const hasAnyMenuItems = hasPrimaryItems || hasRoleItems || hasActionItems || hasDeleteItem;
 
     return (
         <DropdownMenu>
@@ -47,6 +65,8 @@ export function UserActionsMenu({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+                {!hasAnyMenuItems && <DropdownMenuItem disabled>Nenhuma ação disponível</DropdownMenuItem>}
+
                 {canEdit && (
                     <DropdownMenuItem asChild>
                         <Link href={route('users.show', user.id)} className="cursor-pointer">
@@ -74,7 +94,7 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                {(canEdit || canManagePermissions) && hasRoleItems && <DropdownMenuSeparator />}
+                {shouldShowPrimarySeparator && <DropdownMenuSeparator />}
 
                 {canAssignRoles && onAssignRole && (
                     <DropdownMenuItem onClick={() => onAssignRole(user)} className="cursor-pointer">
@@ -90,9 +110,9 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                {hasRoleItems && (canEdit || canManagePermissions) && <DropdownMenuSeparator />}
+                {shouldShowRolesSeparator && <DropdownMenuSeparator />}
 
-                {canImpersonate && (
+                {hasImpersonateItem && (
                     <DropdownMenuItem
                         onClick={(e) => {
                             e.preventDefault();
@@ -118,17 +138,19 @@ export function UserActionsMenu({
                             <>
                                 <UserX className="mr-2 h-4 w-4" />
                                 Desativar
+                                <DropdownMenuShortcut>Ativo</DropdownMenuShortcut>
                             </>
                         ) : (
                             <>
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Ativar
+                                <DropdownMenuShortcut>Inativo</DropdownMenuShortcut>
                             </>
                         )}
                     </DropdownMenuItem>
                 )}
 
-                {canDelete && onDelete && (
+                {hasDeleteItem && (
                     <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
