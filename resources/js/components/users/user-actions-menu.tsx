@@ -38,9 +38,11 @@ export function UserActionsMenu({
     const hasImpersonateItem = !!(canImpersonateUser && onImpersonate);
     const hasToggleActiveItem = !!onToggleActive;
     const hasActionItems = hasImpersonateItem || hasToggleActiveItem;
+    const hasDeleteItem = !!(canDeleteUser && onDelete);
 
     const shouldShowPrimarySeparator = hasPrimaryItems && (hasRoleItems || hasActionItems);
     const shouldShowRolesSeparator = hasRoleItems && hasActionItems;
+    const hasAnyMenuItems = hasPrimaryItems || hasRoleItems || hasActionItems || hasDeleteItem;
 
     return (
         <DropdownMenu>
@@ -63,6 +65,8 @@ export function UserActionsMenu({
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+                {!hasAnyMenuItems && <DropdownMenuItem disabled>Nenhuma ação disponível</DropdownMenuItem>}
+
                 {canEdit && (
                     <DropdownMenuItem asChild>
                         <Link href={route('users.show', user.id)} className="cursor-pointer">
@@ -146,7 +150,7 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                {canDeleteUser && onDelete && (
+                {hasDeleteItem && (
                     <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
