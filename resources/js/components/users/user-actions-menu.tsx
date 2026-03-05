@@ -23,6 +23,9 @@ export function UserActionsMenu({
     canAssignRoles,
     isDeleting = false,
 }: UserActionsMenuProps) {
+    const hasRoleItems = !!(canAssignRoles && (onAssignRole || onRevokeRole));
+    const hasActionItems = !!(canImpersonate || onToggleActive);
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -53,96 +56,94 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                <>
-                    {canEdit && (
-                        <DropdownMenuItem asChild>
-                            <Link href={route('users.edit', user.id)} className="cursor-pointer">
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Link>
-                        </DropdownMenuItem>
-                    )}
+                {canEdit && (
+                    <DropdownMenuItem asChild>
+                        <Link href={route('users.edit', user.id)} className="cursor-pointer">
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar
+                        </Link>
+                    </DropdownMenuItem>
+                )}
 
-                    {canManagePermissions && (
-                        <DropdownMenuItem asChild>
-                            <Link href={route('users.permissions.show', user.id)} className="cursor-pointer">
-                                <Settings className="mr-2 h-4 w-4" />
-                                Gerenciar Permissões
-                            </Link>
-                        </DropdownMenuItem>
-                    )}
+                {canManagePermissions && (
+                    <DropdownMenuItem asChild>
+                        <Link href={route('users.permissions.show', user.id)} className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Gerenciar Permissões
+                        </Link>
+                    </DropdownMenuItem>
+                )}
 
-                    <DropdownMenuSeparator />
+                {(canEdit || canManagePermissions) && <DropdownMenuSeparator />}
 
-                    {canAssignRoles && onAssignRole && (
-                        <DropdownMenuItem onClick={() => onAssignRole(user)} className="cursor-pointer">
-                            <UserCheck className="mr-2 h-4 w-4" />
-                            Atribuir Cargo
-                        </DropdownMenuItem>
-                    )}
+                {canAssignRoles && onAssignRole && (
+                    <DropdownMenuItem onClick={() => onAssignRole(user)} className="cursor-pointer">
+                        <UserCheck className="mr-2 h-4 w-4" />
+                        Atribuir Cargo
+                    </DropdownMenuItem>
+                )}
 
-                    {canAssignRoles && onRevokeRole && (
-                        <DropdownMenuItem onClick={() => onRevokeRole(user)} className="text-destructive focus:text-destructive cursor-pointer">
-                            <UserX className="mr-2 h-4 w-4" />
-                            Remover Cargo
-                        </DropdownMenuItem>
-                    )}
+                {canAssignRoles && onRevokeRole && (
+                    <DropdownMenuItem onClick={() => onRevokeRole(user)} className="text-destructive focus:text-destructive cursor-pointer">
+                        <UserX className="mr-2 h-4 w-4" />
+                        Remover Cargo
+                    </DropdownMenuItem>
+                )}
 
-                    <DropdownMenuSeparator />
+                {hasRoleItems && hasActionItems && <DropdownMenuSeparator />}
 
-                    {canImpersonate && (
+                {canImpersonate && (
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onImpersonate?.(user);
+                        }}
+                        className="cursor-pointer"
+                    >
+                        <UserCog className="mr-2 h-4 w-4" />
+                        Personificar
+                    </DropdownMenuItem>
+                )}
+
+                {onToggleActive && (
+                    <DropdownMenuItem
+                        onClick={() => onToggleActive(user)}
+                        aria-label={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
+                        className={cn(
+                            'cursor-pointer',
+                            user.is_active ? 'text-destructive focus:text-destructive' : 'text-success focus:text-success',
+                        )}
+                    >
+                        {user.is_active ? (
+                            <>
+                                <UserX className="mr-2 h-4 w-4" />
+                                Desativar
+                            </>
+                        ) : (
+                            <>
+                                <UserCheck className="mr-2 h-4 w-4" />
+                                Ativar
+                            </>
+                        )}
+                    </DropdownMenuItem>
+                )}
+
+                {canDelete && onDelete && (
+                    <>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onClick={(e) => {
                                 e.preventDefault();
-                                onImpersonate?.(user);
+                                onDelete(user);
                             }}
-                            className="cursor-pointer"
+                            disabled={isDeleting}
+                            className="text-destructive focus:text-destructive cursor-pointer disabled:opacity-50"
                         >
-                            <UserCog className="mr-2 h-4 w-4" />
-                            Personificar
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
                         </DropdownMenuItem>
-                    )}
-
-                    {onToggleActive && (
-                        <DropdownMenuItem
-                            onClick={() => onToggleActive(user)}
-                            aria-label={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
-                            className={cn(
-                                'cursor-pointer',
-                                user.is_active ? 'text-destructive focus:text-destructive' : 'text-success focus:text-success',
-                            )}
-                        >
-                            {user.is_active ? (
-                                <>
-                                    <UserX className="mr-2 h-4 w-4" />
-                                    Desativar
-                                </>
-                            ) : (
-                                <>
-                                    <UserCheck className="mr-2 h-4 w-4" />
-                                    Ativar
-                                </>
-                            )}
-                        </DropdownMenuItem>
-                    )}
-
-                    {canDelete && onDelete && (
-                        <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onDelete(user);
-                                }}
-                                disabled={isDeleting}
-                                className="text-destructive focus:text-destructive cursor-pointer disabled:opacity-50"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Excluir
-                            </DropdownMenuItem>
-                        </>
-                    )}
-                </>
+                    </>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );
