@@ -42,6 +42,7 @@ export function UserActionsMenu({
 
     const shouldShowPrimarySeparator = hasPrimaryItems && (hasRoleItems || hasActionItems);
     const shouldShowRolesSeparator = hasRoleItems && hasActionItems;
+    const shouldShowDeleteSeparator = hasDeleteItem && (hasPrimaryItems || hasRoleItems || hasActionItems);
     const hasAnyMenuItems = hasPrimaryItems || hasRoleItems || hasActionItems || hasDeleteItem;
 
     return (
@@ -152,7 +153,7 @@ export function UserActionsMenu({
 
                 {hasDeleteItem && (
                     <>
-                        <DropdownMenuSeparator />
+                        {shouldShowDeleteSeparator && <DropdownMenuSeparator />}
                         <DropdownMenuItem
                             onClick={(e) => {
                                 e.preventDefault();
