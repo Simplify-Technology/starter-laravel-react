@@ -71,8 +71,8 @@ export function UserActionsMenu({
 
                         <DropdownMenuSeparator />
 
-                        {canAssignRoles && (
-                            <DropdownMenuItem onClick={() => onAssignRole?.(user)} className="cursor-pointer">
+                        {canAssignRoles && onAssignRole && (
+                            <DropdownMenuItem onClick={() => onAssignRole(user)} className="cursor-pointer">
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Atribuir Cargo
                             </DropdownMenuItem>
@@ -103,6 +103,7 @@ export function UserActionsMenu({
                         {onToggleActive && (
                             <DropdownMenuItem
                                 onClick={() => onToggleActive(user)}
+                                aria-label={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
                                 className={cn(
                                     'cursor-pointer',
                                     user.is_active ? 'text-destructive focus:text-destructive' : 'text-success focus:text-success',
