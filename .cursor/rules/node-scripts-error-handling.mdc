@@ -1,0 +1,31 @@
+---
+description: Padrões de robustez para scripts Node em scripts/
+globs: scripts/**/*.{js,mjs,cjs,ts,mts,cts}
+alwaysApply: false
+---
+
+## Scripts Node: tratamento de erros (execFileSync / ferramentas externas)
+
+Quando um script Node chamar binários externos (ex.: `git`, `prettier`, `pnpm`, `php`, etc.):
+
+- **Evite crash com stacktrace “cru”**: envolva chamadas a `execFileSync`/`spawnSync` em `try/catch` (ou cheque `result.status`/`result.error`) e **saia com `process.exit(1)`**.
+- **Mensagem acionável**: inclua o **comando completo** (ex.: `git diff --name-only ...`) e `error.message`.
+- **Saída do processo**: se disponível no erro, imprima `stderr` (e/ou `stdout`) para facilitar debug em CI.
+- **Consistência**: prefira um helper reutilizável (ex.: `execFileSyncOrExit`) para não duplicar lógica.
+
+Exemplo (padrão recomendado):
+
+```js
+import { execFileSync } from 'node:child_process';
+
+function execFileSyncOrExit(command, args, options) {
+  try {
+    return execFileSync(command, args, options);
+  } catch (error) {
+    process.stderr.write(`script: failed to run "${command} ${args.join(' ')}".\n`);
+    if (error?.message) process.stderr.write(`${String(error.message)}\n`);
+    if (error?.stderr) process.stderr.write(`${String(error.stderr)}\n`);
+    process.exit(1);
+  }
+}
+```
