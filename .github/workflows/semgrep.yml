@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   semgrep:
@@ -43,3 +44,13 @@ jobs:
         with:
           name: semgrep-report
           path: semgrep.sarif
+
+      # Publica o SARIF no GitHub Code Scanning (aba Security)
+      # Em PRs de forks, o token geralmente não tem permissão para security-events:write
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: >
+          always() &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        with:
+          sarif_file: semgrep.sarif
