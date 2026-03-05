@@ -87,7 +87,7 @@ export function UserActionsMenu({
 
                         <DropdownMenuSeparator />
 
-                        {canImpersonate(user) && (
+                        {canImpersonate && (
                             <DropdownMenuItem
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -105,7 +105,7 @@ export function UserActionsMenu({
                                 onClick={() => onToggleActive(user)}
                                 className={cn(
                                     'cursor-pointer',
-                                    user.is_active ? 'text-red-600 focus:text-red-600' : 'text-green-600 focus:text-green-600',
+                                    user.is_active ? 'text-destructive focus:text-destructive' : 'text-success focus:text-success',
                                 )}
                             >
                                 {user.is_active ? (
@@ -122,7 +122,7 @@ export function UserActionsMenu({
                             </DropdownMenuItem>
                         )}
 
-                        {canDelete(user) && onDelete && (
+                        {canDelete && onDelete && (
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
