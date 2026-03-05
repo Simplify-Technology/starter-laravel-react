@@ -62,14 +62,12 @@ export function UserActionsMenu({
                             </DropdownMenuItem>
                         )}
 
-                        {canManagePermissions && (
-                            <DropdownMenuItem asChild>
-                                <Link href={route('users.permissions.show', user.id)} className="cursor-pointer">
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    Gerenciar Permissões
-                                </Link>
-                            </DropdownMenuItem>
-                        )}
+                        <DropdownMenuItem asChild>
+                            <Link href={route('users.permissions.show', user.id)} className="cursor-pointer">
+                                <Settings className="mr-2 h-4 w-4" />
+                                Gerenciar Permissões
+                            </Link>
+                        </DropdownMenuItem>
 
                         <DropdownMenuSeparator />
 
@@ -102,7 +100,7 @@ export function UserActionsMenu({
                             </DropdownMenuItem>
                         )}
 
-                        {canManagePermissions && onToggleActive && (
+                        {onToggleActive && (
                             <DropdownMenuItem
                                 onClick={() => onToggleActive(user)}
                                 className={cn(
@@ -124,7 +122,7 @@ export function UserActionsMenu({
                             </DropdownMenuItem>
                         )}
 
-                        {canManagePermissions && canDelete(user) && onDelete && (
+                        {canDelete(user) && onDelete && (
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
