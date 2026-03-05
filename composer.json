@@ -58,6 +58,14 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
+        "format": [
+            "vendor/bin/pint --dirty",
+            "pnpm -s run format:dirty"
+        ],
+        "format:check": [
+            "vendor/bin/pint --test",
+            "pnpm -s run format:check"
+        ],
         "lint": "vendor/bin/pint --test",
         "lint:fix": "vendor/bin/pint",
         "ci:test": "vendor/bin/pest",

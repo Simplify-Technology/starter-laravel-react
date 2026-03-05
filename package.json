@@ -8,6 +8,7 @@
     "dev": "vite",
     "prepare": "husky || true",
     "format": "prettier --write resources/",
+    "format:dirty": "node scripts/format/format-dirty.mjs",
     "format:check": "prettier --check resources/",
     "lint": "eslint . --cache --cache-location node_modules/.cache/eslint --max-warnings=0",
     "lint:fix": "eslint . --cache --cache-location node_modules/.cache/eslint --max-warnings=0 --fix",
