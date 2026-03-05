@@ -1,11 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { UserActionsMenuProps } from '@/types/users';
 import { Link } from '@inertiajs/react';
@@ -135,9 +129,7 @@ export function UserActionsMenu({
                             <>
                                 <UserX className="mr-2 h-4 w-4" />
                                 Desativar
-                                <span className="bg-muted text-muted-foreground ml-auto rounded-sm px-1.5 py-0.5 text-[10px] font-medium">
-                                    Ativo
-                                </span>
+                                <span className="bg-muted text-muted-foreground ml-auto rounded-sm px-1.5 py-0.5 text-[10px] font-medium">Ativo</span>
                             </>
                         ) : (
                             <>
