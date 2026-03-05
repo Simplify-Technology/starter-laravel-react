@@ -30,66 +30,12 @@ trait HasRolesAndPermissions
             $permission = $permission->value;
         }
 
-        // region agent log
-        try {
-            $key = $this->getPermissionCacheKey();
-            file_put_contents(
-                base_path('.cursor/debug-6e3469.log'),
-                json_encode([
-                    'sessionId'    => '6e3469',
-                    'runId'        => 'repro-pre',
-                    'hypothesisId' => 'A',
-                    'location'     => 'app/Traits/Models/HasRolesAndPermissions.php:27-39',
-                    'message'      => 'hasPermissionTo called',
-                    'data'         => [
-                        'userId'      => (int) $this->id,
-                        'roleId'      => (int) ($this->role_id ?? 0),
-                        'permission'  => (string) $permission,
-                        'cacheKey'    => (string) $key,
-                        'cacheHasKey' => Cache::has($key),
-                    ],
-                    'timestamp' => (int) round(microtime(true) * 1000),
-                ], JSON_UNESCAPED_SLASHES) . PHP_EOL,
-                FILE_APPEND
-            );
-        } catch (\Throwable) {
-            // ignore
-        }
-        // endregion agent log
-
         $permissions = Cache::rememberForever(
             $this->getPermissionCacheKey(),
             fn() => $this->getAllPermissions()->pluck('name')->toArray()
         );
 
-        $allowed = in_array($permission, $permissions);
-
-        // region agent log
-        try {
-            file_put_contents(
-                base_path('.cursor/debug-6e3469.log'),
-                json_encode([
-                    'sessionId'    => '6e3469',
-                    'runId'        => 'repro-pre',
-                    'hypothesisId' => 'A',
-                    'location'     => 'app/Traits/Models/HasRolesAndPermissions.php:41-49',
-                    'message'      => 'hasPermissionTo result',
-                    'data'         => [
-                        'userId'                 => (int) $this->id,
-                        'permission'             => (string) $permission,
-                        'allowed'                => (bool) $allowed,
-                        'cachedPermissionsCount' => is_array($permissions) ? count($permissions) : null,
-                    ],
-                    'timestamp' => (int) round(microtime(true) * 1000),
-                ], JSON_UNESCAPED_SLASHES) . PHP_EOL,
-                FILE_APPEND
-            );
-        } catch (\Throwable) {
-            // ignore
-        }
-        // endregion agent log
-
-        return $allowed;
+        return in_array($permission, $permissions);
     }
 
     private function getPermissionCacheKey(): string
