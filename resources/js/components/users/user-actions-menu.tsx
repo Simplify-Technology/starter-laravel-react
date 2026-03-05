@@ -74,7 +74,7 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                {(canEdit || canManagePermissions) && <DropdownMenuSeparator />}
+                {(canEdit || canManagePermissions) && hasRoleItems && <DropdownMenuSeparator />}
 
                 {canAssignRoles && onAssignRole && (
                     <DropdownMenuItem onClick={() => onAssignRole(user)} className="cursor-pointer">
@@ -90,7 +90,7 @@ export function UserActionsMenu({
                     </DropdownMenuItem>
                 )}
 
-                {hasRoleItems && hasActionItems && <DropdownMenuSeparator />}
+                {hasRoleItems && (canEdit || canManagePermissions) && <DropdownMenuSeparator />}
 
                 {canImpersonate && (
                     <DropdownMenuItem
