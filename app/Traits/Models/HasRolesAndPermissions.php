@@ -36,16 +36,16 @@ trait HasRolesAndPermissions
             file_put_contents(
                 base_path('.cursor/debug-6e3469.log'),
                 json_encode([
-                    'sessionId' => '6e3469',
-                    'runId' => 'repro-pre',
+                    'sessionId'    => '6e3469',
+                    'runId'        => 'repro-pre',
                     'hypothesisId' => 'A',
-                    'location' => 'app/Traits/Models/HasRolesAndPermissions.php:27-39',
-                    'message' => 'hasPermissionTo called',
-                    'data' => [
-                        'userId' => (int) $this->id,
-                        'roleId' => (int) ($this->role_id ?? 0),
-                        'permission' => (string) $permission,
-                        'cacheKey' => (string) $key,
+                    'location'     => 'app/Traits/Models/HasRolesAndPermissions.php:27-39',
+                    'message'      => 'hasPermissionTo called',
+                    'data'         => [
+                        'userId'      => (int) $this->id,
+                        'roleId'      => (int) ($this->role_id ?? 0),
+                        'permission'  => (string) $permission,
+                        'cacheKey'    => (string) $key,
                         'cacheHasKey' => Cache::has($key),
                     ],
                     'timestamp' => (int) round(microtime(true) * 1000),
@@ -69,15 +69,15 @@ trait HasRolesAndPermissions
             file_put_contents(
                 base_path('.cursor/debug-6e3469.log'),
                 json_encode([
-                    'sessionId' => '6e3469',
-                    'runId' => 'repro-pre',
+                    'sessionId'    => '6e3469',
+                    'runId'        => 'repro-pre',
                     'hypothesisId' => 'A',
-                    'location' => 'app/Traits/Models/HasRolesAndPermissions.php:41-49',
-                    'message' => 'hasPermissionTo result',
-                    'data' => [
-                        'userId' => (int) $this->id,
-                        'permission' => (string) $permission,
-                        'allowed' => (bool) $allowed,
+                    'location'     => 'app/Traits/Models/HasRolesAndPermissions.php:41-49',
+                    'message'      => 'hasPermissionTo result',
+                    'data'         => [
+                        'userId'                 => (int) $this->id,
+                        'permission'             => (string) $permission,
+                        'allowed'                => (bool) $allowed,
                         'cachedPermissionsCount' => is_array($permissions) ? count($permissions) : null,
                     ],
                     'timestamp' => (int) round(microtime(true) * 1000),
