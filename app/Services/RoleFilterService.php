@@ -17,6 +17,17 @@ final class RoleFilterService
     }
 
     /**
+     * @return array<int, string>
+     */
+    private function allowedRoleNames(): array
+    {
+        return array_map(
+            static fn(RolesEnum $role) => $role->value,
+            RolesEnum::cases()
+        );
+    }
+
+    /**
      * Get roles that the current user can assign to others.
      * Only includes roles with lower priority than the user's role.
      * SUPER_USER role is only included if the current user is SUPER_USER.
@@ -47,6 +58,7 @@ final class RoleFilterService
         $userRoleName = $effectiveUser->role?->name;
 
         return Role::query()
+            ->whereIn('name', $this->allowedRoleNames())
             ->get()
             ->filter(function(Role $role) use ($userPriority, $isSuperUser, $userRoleName) {
                 $rolePriority = $role->getPriority();
@@ -124,6 +136,7 @@ final class RoleFilterService
         $userRoleName = $effectiveUser->role?->name;
 
         return Role::query()
+            ->whereIn('name', $this->allowedRoleNames())
             ->get()
             ->filter(function(Role $role) use ($userPriority, $isSuperUser, $userRoleName) {
                 $rolePriority = $role->getPriority();
@@ -197,11 +210,14 @@ final class RoleFilterService
 
         // SUPER_USER pode ver todas as roles
         if ($isSuperUser) {
-            return Role::query()->get();
+            return Role::query()
+                ->whereIn('name', $this->allowedRoleNames())
+                ->get();
         }
 
         // Outros usuários só podem ver roles com prioridade menor ou igual à sua
         return Role::query()
+            ->whereIn('name', $this->allowedRoleNames())
             ->get()
             ->filter(function(Role $role) use ($userPriority) {
                 $rolePriority = $role->getPriority();
@@ -233,11 +249,14 @@ final class RoleFilterService
 
         // SUPER_USER pode ver todas as roles
         if ($isSuperUser) {
-            return Role::query()->get();
+            return Role::query()
+                ->whereIn('name', $this->allowedRoleNames())
+                ->get();
         }
 
         // Outros usuários só podem ver roles com prioridade menor ou igual à sua
         return Role::query()
+            ->whereIn('name', $this->allowedRoleNames())
             ->get()
             ->filter(function(Role $role) use ($userPriority) {
                 $rolePriority = $role->getPriority();

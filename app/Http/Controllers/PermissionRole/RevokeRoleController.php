@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Http\Controllers\PermissionRole;
 
+use App\Enum\Roles as RolesEnum;
 use App\Events\RoleUserUpdatedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
@@ -47,7 +48,7 @@ final class RevokeRoleController extends Controller
         }
 
         // Verifica se pode atribuir o role VISITOR (mesma validação de prioridade)
-        $visitorRole      = Role::where('name', 'visitor')->firstOrFail();
+        $visitorRole      = Role::where('name', RolesEnum::VISITOR->value)->firstOrFail();
         $assignableRoles  = $this->roleFilterService->getAssignableRoles($effectiveUser);
         $canAssignVisitor = $assignableRoles->contains('name', $visitorRole->name);
 

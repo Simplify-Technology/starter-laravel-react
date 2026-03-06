@@ -164,3 +164,39 @@ test('invalid permissions payload does not change role permissions or invalidate
     $role->refresh();
     expect($role->permissions()->pluck('name')->toArray())->toBe(['manage_users']);
 });
+
+test('cannot update permissions for a legacy role not present in Roles enum allowlist', function() {
+    Cache::flush();
+
+    $manageRoles = Permission::create([
+        'name'  => 'manage_roles',
+        'label' => 'Manage Roles',
+    ]);
+
+    $legacyRole = Role::create([
+        'name'     => 'legacy_role_not_allowed',
+        'label'    => 'Legacy (Not Allowed)',
+        'priority' => 1,
+    ]);
+
+    $adminRole = Role::create([
+        'name'     => 'admin_for_test',
+        'label'    => 'Admin (Test)',
+        'priority' => 99,
+    ]);
+
+    $adminRole->permissions()->attach($manageRoles->id);
+
+    $admin = User::factory()->create([
+        'role_id'   => $adminRole->id,
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('roles-permissions.update', [
+            'role' => $legacyRole->name,
+        ]), [
+            'permissions' => [],
+        ])
+        ->assertNotFound();
+});

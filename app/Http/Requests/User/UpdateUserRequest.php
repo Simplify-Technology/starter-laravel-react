@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\User;
 
-use App\Models\Role;
+use App\Enum\Roles as RolesEnum;
 use App\Models\User;
 use App\Rules\CpfCnpj;
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,6 +22,11 @@ class UpdateUserRequest extends FormRequest
             ? $this->route('user')->id
             : $this->route('user');
 
+        $allowedRoleNames = array_map(
+            static fn(RolesEnum $role) => $role->value,
+            RolesEnum::cases()
+        );
+
         return [
             'name'  => ['required', 'string', 'max:255'],
             'email' => [
@@ -38,7 +43,7 @@ class UpdateUserRequest extends FormRequest
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'role_id'  => [
                 'nullable',
-                'exists:' . Role::class . ',id',
+                Rule::exists('roles', 'id')->whereIn('name', $allowedRoleNames),
             ],
             'is_active'  => ['sometimes', 'boolean'],
             'user_notes' => ['nullable', 'string', 'max:65535'],

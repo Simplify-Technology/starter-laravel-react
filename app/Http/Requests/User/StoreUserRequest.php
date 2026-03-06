@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests\User;
 
-use App\Models\Role;
+use App\Enum\Roles as RolesEnum;
 use App\Models\User;
 use App\Rules\CpfCnpj;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class StoreUserRequest extends FormRequest
@@ -17,6 +18,11 @@ class StoreUserRequest extends FormRequest
 
     public function rules(): array
     {
+        $allowedRoleNames = array_map(
+            static fn(RolesEnum $role) => $role->value,
+            RolesEnum::cases()
+        );
+
         return [
             'name'  => ['required', 'string', 'max:255'],
             'email' => [
@@ -33,7 +39,7 @@ class StoreUserRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::defaults()],
             'role_id'  => [
                 'nullable',
-                'exists:' . Role::class . ',id',
+                Rule::exists('roles', 'id')->whereIn('name', $allowedRoleNames),
             ],
             'is_active'  => ['sometimes', 'boolean'],
             'user_notes' => ['nullable', 'string', 'max:65535'],

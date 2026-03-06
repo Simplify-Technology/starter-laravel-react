@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\PermissionRole;
 
+use App\Enum\Roles as RolesEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PermissionRole\UpdateRolePermissionsRequest;
 use App\Models\Permission;
@@ -13,6 +14,13 @@ class UpdateController extends Controller
 {
     public function __invoke(UpdateRolePermissionsRequest $request, string $roleName)
     {
+        $allowedRoleNames = array_map(
+            static fn(RolesEnum $role) => $role->value,
+            RolesEnum::cases()
+        );
+
+        abort_unless(in_array($roleName, $allowedRoleNames, true), 404);
+
         $role = Role::where('name', $roleName)->firstOrFail();
 
         $permissionNames = $request->validated('permissions', []);

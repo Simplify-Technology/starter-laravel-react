@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Http\Controllers\User;
 
+use App\Enum\Roles as RolesEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Models\Role;
@@ -69,7 +70,7 @@ final class StoreController extends Controller
             }
         } else {
             // Se não fornecido, atribui role VISITOR por padrão
-            $visitorRole = Role::where('name', 'visitor')->first();
+            $visitorRole = Role::where('name', RolesEnum::VISITOR->value)->first();
 
             if ($visitorRole) {
                 $data['role_id'] = $visitorRole->id;

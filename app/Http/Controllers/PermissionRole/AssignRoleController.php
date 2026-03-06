@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 final class AssignRoleController extends Controller
 {
@@ -27,8 +28,13 @@ final class AssignRoleController extends Controller
 
     public function __invoke(Request $request, User $user): RedirectResponse
     {
+        $allowedRoleNames = array_map(
+            static fn(RolesEnum $role) => $role->value,
+            RolesEnum::cases()
+        );
+
         $request->validate([
-            'role' => ['required', 'exists:roles,name'],
+            'role' => ['required', 'exists:roles,name', Rule::in($allowedRoleNames)],
         ]);
 
         $authUser = $request->user();

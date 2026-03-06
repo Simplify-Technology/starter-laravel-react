@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 trait HasRolesAndPermissions
@@ -35,7 +36,7 @@ trait HasRolesAndPermissions
             fn() => $this->getAllPermissions()->pluck('name')->toArray()
         );
 
-        return in_array($permission, $permissions);
+        return in_array($permission, $permissions, true);
     }
 
     private function getPermissionCacheKey(): string
@@ -43,9 +44,13 @@ trait HasRolesAndPermissions
         return "user:$this->id:permissions";
     }
 
-    public function getAllPermissions()
+    public function getAllPermissions(): Collection
     {
-        return $this->role?->permissions->merge($this->permissions)->unique('id') ?? collect();
+        $rolePermissions = $this->role?->permissions ?? collect();
+
+        return $rolePermissions
+            ->merge($this->permissions)
+            ->unique('id');
     }
 
     public function assignRole(Roles|string $role): void
