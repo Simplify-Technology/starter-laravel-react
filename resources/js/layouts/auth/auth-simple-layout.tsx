@@ -1,4 +1,3 @@
-import AppLogoIcon from '@/components/app-logo-icon';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
@@ -10,25 +9,35 @@ interface AuthLayoutProps {
 
 export default function AuthSimpleLayout({ children, title, description }: PropsWithChildren<AuthLayoutProps>) {
     return (
-        <div className="dark:bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div className="w-full max-w-lg">
-                <div className="bg-secondary dark:bg-card flex flex-col gap-8 rounded-xl p-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <div className="bg-card-foreground dark:bg-card mb-1 flex h-32 w-40 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                                {/* Fallback para quando a imagem existir */}
-                                {/*<img src="/storage/logos/logo-simplify.png" className={'object-content h-full'} alt="Logo" />*/}
+        <div className="bg-muted/30 dark:bg-background relative flex min-h-svh items-center justify-center p-6 md:p-10">
+            <div
+                aria-hidden
+                className="to-background dark:to-background pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent"
+            />
+
+            <div className="relative w-full max-w-md">
+                <div className="border-border/60 bg-background dark:bg-card rounded-2xl border p-8 shadow-sm">
+                    <div className="flex flex-col items-center gap-5">
+                        <Link href={route('home')} className="flex items-center justify-center" aria-label="Ir para a página inicial">
+                            <div className="ring-border/60 flex size-14 items-center justify-center rounded-2xl bg-zinc-950 ring-1">
+                                <img
+                                    src="/logo-simplify.png"
+                                    alt="Simplify"
+                                    className="h-10 w-10 object-contain"
+                                    loading="eager"
+                                    decoding="async"
+                                    draggable={false}
+                                />
                             </div>
-                            <span className="sr-only">{title}</span>
                         </Link>
 
                         <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-muted-foreground text-center text-sm">{description}</p>
+                            <h1 className="text-2xl font-semibold tracking-tight text-balance">{title}</h1>
+                            <p className="text-muted-foreground text-sm text-balance">{description}</p>
                         </div>
                     </div>
-                    {children}
+
+                    <div className="mt-8">{children}</div>
                 </div>
             </div>
         </div>

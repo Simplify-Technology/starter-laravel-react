@@ -166,8 +166,9 @@
     --card-foreground: #ffffff;
     --popover: var(--color-primary-dark);
     --popover-foreground: #ffffff;
-    --primary: var(--color-accent-light);
-    --primary-foreground: var(--color-primary-dark);
+    /* Buttons/CTAs should be high-contrast in dark mode */
+    --primary: var(--color-accent);
+    --primary-foreground: #ffffff;
     --secondary: #2c485e;
     --secondary-foreground: #ffffff;
     --muted: #1a3a5a;

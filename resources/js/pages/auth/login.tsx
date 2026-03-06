@@ -4,6 +4,7 @@ import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -37,7 +38,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
     return (
         <AuthLayout title="Entrar na sua conta" description="Digite seu endereço de e-mail e senha para entrar.">
-            <Head title="Entar" />
+            <Head title="Entrar" />
+
+            {status && (
+                <Alert className="border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50">
+                    <AlertDescription className="text-emerald-900/90 dark:text-emerald-50/90">{status}</AlertDescription>
+                </Alert>
+            )}
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
@@ -52,6 +59,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
+                            disabled={processing}
                             placeholder="email@exemplo.com"
                         />
                         <InputError message={errors.email} />
@@ -74,6 +82,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             autoComplete="current-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
+                            disabled={processing}
                             placeholder="Senha"
                         />
                         <InputError message={errors.password} />
@@ -84,13 +93,14 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             id="remember"
                             name="remember"
                             checked={data.remember}
-                            onClick={() => setData('remember', !data.remember)}
+                            disabled={processing}
+                            onCheckedChange={(checked) => setData('remember', checked === true)}
                             tabIndex={3}
                         />
                         <Label htmlFor="remember">Lembrar de mim</Label>
                     </div>
 
-                    <Button type="submit" variant={'outline'} className="mt-4 w-full" tabIndex={4} disabled={processing}>
+                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Entrar
                     </Button>
@@ -103,8 +113,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     </TextLink>
                 </div>
             </form>
-
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );
 }

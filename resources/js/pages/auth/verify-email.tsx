@@ -4,6 +4,7 @@ import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import TextLink from '@/components/text-link';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/auth-layout';
 
@@ -21,13 +22,15 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Head title="Verificar Email" />
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    Um novo link de verificação foi enviado para o endereço de e-mail que você forneceu durante o registro.
-                </div>
+                <Alert className="border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50">
+                    <AlertDescription className="text-emerald-900/90 dark:text-emerald-50/90">
+                        Um novo link de verificação foi enviado para o endereço de e-mail que você forneceu durante o registro.
+                    </AlertDescription>
+                </Alert>
             )}
 
             <form onSubmit={submit} className="space-y-6 text-center">
-                <Button disabled={processing} variant="secondary">
+                <Button disabled={processing} variant="secondary" className="w-full">
                     {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                     Enviar link de verificação novamente
                 </Button>

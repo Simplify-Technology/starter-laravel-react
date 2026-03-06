@@ -43,16 +43,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                 <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            name="email"
-                            autoComplete="email"
-                            value={data.email}
-                            className="mt-1 block w-full"
-                            readOnly
-                            onChange={(e) => setData('email', e.target.value)}
-                        />
+                        <Input id="email" type="email" name="email" autoComplete="email" value={data.email} readOnly disabled={processing} />
                         <InputError message={errors.email} className="mt-2" />
                     </div>
 
@@ -64,9 +55,9 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                             name="password"
                             autoComplete="new-password"
                             value={data.password}
-                            className="mt-1 block w-full"
                             autoFocus
                             onChange={(e) => setData('password', e.target.value)}
+                            disabled={processing}
                             placeholder="Senha"
                         />
                         <InputError message={errors.password} />
@@ -80,8 +71,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                             name="password_confirmation"
                             autoComplete="new-password"
                             value={data.password_confirmation}
-                            className="mt-1 block w-full"
                             onChange={(e) => setData('password_confirmation', e.target.value)}
+                            disabled={processing}
                             placeholder="Confirme sua senha"
                         />
                         <InputError message={errors.password_confirmation} className="mt-2" />

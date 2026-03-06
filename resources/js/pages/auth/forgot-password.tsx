@@ -5,6 +5,7 @@ import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +26,11 @@ export default function ForgotPassword({ status }: { status?: string }) {
         <AuthLayout title="Esqueceu a senha" description="Digite seu endereço de e-mail abaixo para receber um link para redefinir sua senha.">
             <Head title="Esqueceu a senha" />
 
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+            {status && (
+                <Alert className="border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-50">
+                    <AlertDescription className="text-emerald-900/90 dark:text-emerald-50/90">{status}</AlertDescription>
+                </Alert>
+            )}
 
             <div className="space-y-6">
                 <form onSubmit={submit}>
@@ -39,6 +44,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                             value={data.email}
                             autoFocus
                             onChange={(e) => setData('email', e.target.value)}
+                            disabled={processing}
                             placeholder="email@exemplo.com"
                         />
 
