@@ -21,3 +21,9 @@ alwaysApply: true
 
 - The boilerplate no longer uses `owen-it/laravel-auditing`; use `spatie/laravel-activitylog` for auditing and security events.
 - Keep impersonation-aware causer resolution wired through `App\Resolvers\ActivityCauserResolver` so activities reflect the original impersonator whenever impersonation is active.
+
+## Cursor MCP Setup
+
+- Keep `/.cursor/mcp.json` portable and version only project-safe MCP servers such as `laravel-boost`.
+- Do not commit machine-specific MCP entries with absolute paths or local `SITE_PATH` values.
+- If a developer wants to use the `Herd` MCP, they should configure it locally on their own machine instead of adding it to the shared project file.
