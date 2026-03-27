@@ -9,10 +9,12 @@ use App\Events\ImpersonateStarted;
 use App\Events\ImpersonateStopped;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ImpersonationService;
 use Database\Seeders\PermissionRoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
 final class ImpersonateTest extends TestCase
@@ -179,7 +181,7 @@ final class ImpersonateTest extends TestCase
             ->assertStatus(403);
     }
 
-    public function test_impersonation_is_logged_in_audits(): void
+    public function test_impersonation_is_logged_in_activity_log_with_real_actor_context(): void
     {
         $superUser = User::factory()->create([
             'role_id'   => Role::where('name', Roles::SUPER_USER->value)->firstOrFail()->id,
@@ -187,23 +189,101 @@ final class ImpersonateTest extends TestCase
         ]);
         $targetUser = User::factory()->create(['is_active' => true]);
 
+        Activity::query()->delete();
+
         $this->actingAs($superUser)
             ->post(route('users.impersonate', $targetUser));
 
-        $this->assertDatabaseHas('audits', [
-            'user_id'        => $superUser->id,
-            'event'          => 'impersonate_started',
-            'auditable_id'   => $targetUser->id,
-            'auditable_type' => User::class,
-        ]);
+        $startedActivity = Activity::query()
+            ->where('log_name', 'security')
+            ->where('event', 'impersonate_started')
+            ->where('subject_type', User::class)
+            ->where('subject_id', $targetUser->id)
+            ->first();
+
+        $this->assertNotNull($startedActivity);
+        $this->assertSame($superUser->id, $startedActivity->causer_id);
+        $this->assertSame(User::class, $startedActivity->causer_type);
+        $this->assertSame('impersonate_started', $startedActivity->description);
+        $this->assertSame('impersonation', $startedActivity->getProperty('type'));
+        $this->assertSame('security', $startedActivity->getProperty('scope'));
+        $this->assertSame($superUser->id, $startedActivity->getProperty('impersonation.impersonator.id'));
+        $this->assertSame($targetUser->id, $startedActivity->getProperty('impersonation.target_user.id'));
+        $this->assertNotNull($startedActivity->getProperty('request.url'));
 
         $this->delete(route('users.impersonate.stop'));
 
-        $this->assertDatabaseHas('audits', [
-            'user_id'        => $superUser->id,
-            'event'          => 'impersonate_stopped',
-            'auditable_id'   => $targetUser->id,
-            'auditable_type' => User::class,
+        $stoppedActivity = Activity::query()
+            ->where('log_name', 'security')
+            ->where('event', 'impersonate_stopped')
+            ->where('subject_type', User::class)
+            ->where('subject_id', $targetUser->id)
+            ->first();
+
+        $this->assertNotNull($stoppedActivity);
+        $this->assertSame($superUser->id, $stoppedActivity->causer_id);
+        $this->assertSame(User::class, $stoppedActivity->causer_type);
+        $this->assertSame('impersonate_stopped', $stoppedActivity->description);
+        $this->assertSame($superUser->id, $stoppedActivity->getProperty('impersonation.impersonator.id'));
+        $this->assertSame($targetUser->id, $stoppedActivity->getProperty('impersonation.target_user.id'));
+        $this->assertNotNull($stoppedActivity->getProperty('request.url'));
+    }
+
+    public function test_forbidden_impersonation_does_not_create_activity_logs(): void
+    {
+        $superUser = User::factory()->create([
+            'role_id'   => Role::where('name', Roles::SUPER_USER->value)->firstOrFail()->id,
+            'is_active' => true
         ]);
+
+        Activity::query()->delete();
+
+        $this->actingAs($superUser)
+            ->post(route('users.impersonate', $superUser))
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('activity_log', 0);
+    }
+
+    public function test_user_changes_during_impersonation_are_attributed_to_original_user(): void
+    {
+        $superUser = User::factory()->create([
+            'role_id'   => Role::where('name', Roles::SUPER_USER->value)->firstOrFail()->id,
+            'is_active' => true
+        ]);
+        $targetUser = User::factory()->create([
+            'is_active' => true,
+            'name'      => 'Target User Before Update',
+        ]);
+
+        Activity::query()->delete();
+
+        $this->actingAs($superUser);
+
+        app(ImpersonationService::class)->start($superUser, $targetUser);
+
+        Activity::query()->delete();
+
+        $targetUser->update([
+            'name' => 'Target User After Update',
+        ]);
+
+        $activity = Activity::query()
+            ->where('log_name', 'users')
+            ->where('event', 'updated')
+            ->where('subject_type', User::class)
+            ->where('subject_id', $targetUser->id)
+            ->latest()
+            ->first();
+
+        $this->assertNotNull($activity);
+        $this->assertSame($superUser->id, $activity->causer_id);
+        $this->assertSame(User::class, $activity->causer_type);
+
+        $changes = $activity->attribute_changes?->toArray();
+
+        $this->assertIsArray($changes);
+        $this->assertSame('Target User After Update', $changes['attributes']['name'] ?? null);
+        $this->assertSame('Target User Before Update', $changes['old']['name'] ?? null);
     }
 }

@@ -5,29 +5,34 @@ declare(strict_types = 1);
 namespace App\Listeners;
 
 use App\Events\ImpersonateStopped;
-use App\Models\User;
-use OwenIt\Auditing\Models\Audit;
 
 final class LogImpersonateStopped
 {
     public function handle(ImpersonateStopped $event): void
     {
-        Audit::create([
-            'user_id'        => $event->originalUser->id,
-            'event'          => 'impersonate_stopped',
-            'auditable_id'   => $event->impersonatedUser->id,
-            'auditable_type' => User::class,
-            'old_values'     => [
-                'impersonator_id'        => $event->originalUser->id,
-                'impersonator_name'      => $event->originalUser->name,
-                'impersonated_user_id'   => $event->impersonatedUser->id,
-                'impersonated_user_name' => $event->impersonatedUser->name,
-            ],
-            'new_values' => [],
-            'url'        => request()->fullUrl(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'tags'       => 'impersonation,stop',
-        ]);
+        activity('security')
+            ->performedOn($event->impersonatedUser)
+            ->causedBy($event->originalUser)
+            ->event('impersonate_stopped')
+            ->withProperties([
+                'type'    => 'impersonation',
+                'scope'   => 'security',
+                'request' => [
+                    'url'        => request()->fullUrl(),
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ],
+                'impersonation' => [
+                    'impersonator' => [
+                        'id'   => $event->originalUser->id,
+                        'name' => $event->originalUser->name,
+                    ],
+                    'target_user' => [
+                        'id'   => $event->impersonatedUser->id,
+                        'name' => $event->impersonatedUser->name,
+                    ],
+                ],
+            ])
+            ->log('impersonate_stopped');
     }
 }

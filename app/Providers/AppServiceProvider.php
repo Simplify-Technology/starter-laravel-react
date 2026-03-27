@@ -10,6 +10,7 @@ use App\Listeners\LogImpersonateStarted;
 use App\Listeners\LogImpersonateStopped;
 use App\Models\User;
 use App\Policies\UserPolicy;
+use App\Resolvers\ActivityCauserResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Opcodes\LogViewer\Facades\LogViewer;
+use Spatie\Activitylog\Support\CauserResolver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configCommands();
         $this->configUrls();
         $this->configDate();
+        $this->configActivitylog();
         $this->configGates();
         $this->configPolicies();
         $this->configResources();
@@ -77,6 +80,13 @@ class AppServiceProvider extends ServiceProvider
     private function configDate(): void
     {
         Date::use(CarbonImmutable::class);
+    }
+
+    private function configActivitylog(): void
+    {
+        app(CauserResolver::class)->resolveUsing(
+            static fn(): ?Model => ActivityCauserResolver::resolve()
+        );
     }
 
     private function configGates(): void
