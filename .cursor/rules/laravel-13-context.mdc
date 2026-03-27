@@ -1,0 +1,23 @@
+---
+description: Laravel 13 upgrade context and temporary package guidance
+alwaysApply: true
+---
+
+## Laravel 13 Context
+
+- Assume this project targets `laravel/framework:^13`.
+- Use `Illuminate\Foundation\Http\Middleware\PreventRequestForgery` instead of `VerifyCsrfToken` when excluding CSRF middleware in tests or routes.
+- When touching cache/session configuration, preserve explicit env overrides for `CACHE_PREFIX`, `REDIS_PREFIX`, and `SESSION_COOKIE`; Laravel 13 changed the generated defaults.
+- Keep `config/cache.php` aligned with Laravel 13 hardening: `serializable_classes` must remain explicit, and cached PHP objects should only be allowed intentionally.
+- Laravel 13 adds queue routing, JSON:API resources, AI SDK, and vector search APIs. Prefer adopting them only when a feature explicitly needs them, not preemptively.
+
+## Temporary Dependency Guidance
+
+- `laravel/boost` and `laradumps/laradumps` are temporarily pinned to Laravel 13-compatible development branches by explicit commit SHA in `composer.json`.
+- Treat those constraints as a short-term freeze: do not broaden them casually, and always prefer an upstream stable tag as soon as one is available.
+- Composer supports `dev-branch#commit` only as a temporary root-level workaround; metadata still comes from the branch name, so keep `composer.lock` committed and avoid broad `composer update` runs without review.
+
+## Auditing Baseline
+
+- The boilerplate no longer uses `owen-it/laravel-auditing`; use `spatie/laravel-activitylog` for auditing and security events.
+- Keep impersonation-aware causer resolution wired through `App\Resolvers\ActivityCauserResolver` so activities reflect the original impersonator whenever impersonation is active.
