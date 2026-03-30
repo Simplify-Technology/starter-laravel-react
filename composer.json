@@ -20,8 +20,8 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
-        "laradumps/laradumps": "5.x-dev#22ac20bb88e960eb1f68535958adefbc963074ce",
-        "laravel/boost": "dev-main#1d4f6b1490ff51330e8448eb467db199a35c4002",
+        "laradumps/laradumps": "^5.3",
+        "laravel/boost": "^2.4",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
