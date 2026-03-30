@@ -77,14 +77,6 @@ final class RevokeRoleController extends Controller
         // Dispara evento
         Broadcast::event(new RoleUserUpdatedEvent($user));
 
-        Log::info('Role revoked successfully', [
-            'auth_user_id'      => $authUser->id,
-            'effective_user_id' => $effectiveUser->id,
-            'target_user_id'    => $user->id,
-            'new_role'          => $visitorRole->name,
-            'is_impersonating'  => $this->impersonationService->isImpersonating(),
-        ]);
-
         return redirect()->back()->with(['success' => 'Cargo removido com sucesso!', 'role' => $user->role?->name]);
     }
 }

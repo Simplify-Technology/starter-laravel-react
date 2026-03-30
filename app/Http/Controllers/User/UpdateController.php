@@ -101,15 +101,6 @@ final class UpdateController extends Controller
         $user->refresh();
         $user->load('role');
 
-        Log::info('User updated successfully', [
-            'auth_user_id'      => $request->user()->id,
-            'effective_user_id' => $effectiveUser->id,
-            'target_user_id'    => $user->id,
-            'role_changed'      => $roleChanged,
-            'new_role'          => $user->role?->name,
-            'is_impersonating'  => $this->impersonationService->isImpersonating(),
-        ]);
-
         return redirect()
             ->route('users.show', $user)
             ->with('success', 'Usuário atualizado com sucesso!');

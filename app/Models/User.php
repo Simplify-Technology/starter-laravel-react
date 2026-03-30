@@ -7,14 +7,15 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use OwenIt\Auditing\Contracts\Auditable;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
-class User extends Authenticatable implements MustVerifyEmail, Auditable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory;
     use Notifiable;
-    use \OwenIt\Auditing\Auditable;
     use HasRolesAndPermissions;
+    use LogsActivity;
 
     // Removido $with para evitar eager loading automático que pode causar problemas
     // Use explicitamente ->with(['role', 'permissions']) quando necessário
@@ -43,5 +44,25 @@ class User extends Authenticatable implements MustVerifyEmail, Auditable
             'password'          => 'hashed',
             'is_active'         => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('users')
+            ->logOnly([
+                'is_active',
+                'role_id',
+                'name',
+                'email',
+                'cpf_cnpj',
+                'phone',
+                'mobile',
+                'user_notes',
+            ])
+            ->logOnlyDirty()
+            ->dontLogIfAttributesChangedOnly(['updated_at'])
+            ->dontLogEmptyChanges()
+            ->setDescriptionForEvent(static fn(string $eventName): string => "user_{$eventName}");
     }
 }

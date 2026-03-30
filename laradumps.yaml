@@ -3,7 +3,7 @@ app:
   secondary_host: host.docker.internal
   port: 9191
   workdir: /var/www/html/
-  project_path: /Users/cristiano/projects/starter-laravel-react/
+  project_path: /Users/cristianomorgante/workspace/laravel/simplify-technology/boilerplate
   wsl_config: wsl+Ubuntu/
 config:
   sleep: 0

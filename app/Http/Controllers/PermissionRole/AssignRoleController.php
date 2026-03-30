@@ -50,18 +50,6 @@ final class AssignRoleController extends Controller
 
         $newRole = Role::where('name', $request->role)->firstOrFail();
 
-        // Log para auditoria
-        Log::info('Attempting to assign role', [
-            'auth_user_id'        => $authUser->id,
-            'auth_user_role'      => $authUser->role?->name,
-            'effective_user_id'   => $effectiveUser->id,
-            'effective_user_role' => $effectiveUser->role?->name,
-            'is_impersonating'    => $this->impersonationService->isImpersonating(),
-            'target_user_id'      => $user->id,
-            'target_user_role'    => $user->role?->name,
-            'new_role'            => $newRole->name,
-        ]);
-
         // Verifica permissão básica usando o usuário efetivo (original se impersonando)
         if (!$effectiveUser->hasPermissionTo('assign_roles')) {
             return redirect()->back()->withErrors(['error' => 'Você não tem permissão para atribuir cargos!']);
@@ -129,14 +117,6 @@ final class AssignRoleController extends Controller
 
         // Dispara evento
         Broadcast::event(new RoleUserUpdatedEvent($user));
-
-        Log::info('Role assigned successfully', [
-            'auth_user_id'      => $authUser->id,
-            'effective_user_id' => $effectiveUser->id,
-            'target_user_id'    => $user->id,
-            'new_role'          => $newRole->name,
-            'is_impersonating'  => $this->impersonationService->isImpersonating(),
-        ]);
 
         return redirect()->back()->with('success', 'Cargo atualizado com sucesso!');
     }
