@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -61,10 +60,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function configCommands(): void
     {
-        // if (!app()->isProduction()) {
-        //     Log::warning('Destructive database commands are enabled in development mode.');
-        // }
-
         DB::prohibitDestructiveCommands(
             app()->isProduction()
         );
@@ -99,14 +94,7 @@ class AppServiceProvider extends ServiceProvider
                         return false;
                     }
 
-                    $hasPermission = $user->hasPermissionTo($permission->value);
-
-                    Log::channel('daily')->info(
-                        "[Gate Check] Permission: $permission->value | User ID: $user->id | Allowed: " . ($hasPermission ? 'YES' : 'NO'),
-                        ['env' => app()->environment()]
-                    );
-
-                    return $hasPermission;
+                    return $user->hasPermissionTo($permission->value);
                 }
             );
         }

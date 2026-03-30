@@ -11,11 +11,10 @@ alwaysApply: true
 - Keep `config/cache.php` aligned with Laravel 13 hardening: `serializable_classes` must remain explicit, and cached PHP objects should only be allowed intentionally.
 - Laravel 13 adds queue routing, JSON:API resources, AI SDK, and vector search APIs. Prefer adopting them only when a feature explicitly needs them, not preemptively.
 
-## Temporary Dependency Guidance
+## Dependency Guidance
 
-- `laravel/boost` and `laradumps/laradumps` are temporarily pinned to Laravel 13-compatible development branches by explicit commit SHA in `composer.json`.
-- Treat those constraints as a short-term freeze: do not broaden them casually, and always prefer an upstream stable tag as soon as one is available.
-- Composer supports `dev-branch#commit` only as a temporary root-level workaround; metadata still comes from the branch name, so keep `composer.lock` committed and avoid broad `composer update` runs without review.
+- Prefer stable semver constraints for first-party and ecosystem packages whenever Laravel 13-compatible tags are available.
+- Keep `composer.lock` committed and prefer targeted `composer update vendor/package` runs over broad dependency churn.
 
 ## Auditing Baseline
 

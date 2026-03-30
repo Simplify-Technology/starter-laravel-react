@@ -85,14 +85,6 @@ final class StoreController extends Controller
         \Illuminate\Support\Facades\Cache::forget("user:$user->id:permissions");
         \Illuminate\Support\Facades\Cache::forget("user:$user->id:roles");
 
-        Log::info('User created successfully', [
-            'auth_user_id'      => $request->user()->id,
-            'effective_user_id' => $effectiveUser->id,
-            'new_user_id'       => $user->id,
-            'new_user_role'     => $user->role?->name,
-            'is_impersonating'  => $this->impersonationService->isImpersonating(),
-        ]);
-
         return redirect()
             ->route('users.index')
             ->with('success', 'Usuário criado com sucesso!');
